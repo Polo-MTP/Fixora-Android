@@ -1,3 +1,10 @@
 <resources>
-    <string name="app_name">Fixora App</string>
+    <!-- app_name lo define cada flavor en app/build.gradle.kts -->
+
+    <!-- Landing -->
+    <string name="landing_title">Ayuda de confianza, a un toque.</string>
+    <string name="landing_subtitle">Técnicos verificados cerca de ti.</string>
+    <string name="landing_start">Comenzar</string>
+    <string name="landing_provider_question">¿Ofreces servicios?</string>
+    <string name="landing_provider_link">Únete como proveedor</string>
 </resources>
