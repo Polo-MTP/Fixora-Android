@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Flecha del botón «Comenzar» (Figma, nodo 13:53). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M13.5 4.5L21 12M21 12L13.5 19.5M21 12H3"
+        android:strokeWidth="2.5"
+        android:strokeColor="#12243D"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

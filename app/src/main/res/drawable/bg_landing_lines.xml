@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Líneas de fondo de la landing (Figma, nodo 13:4). Se estira a toda la pantalla. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="382dp"
+    android:height="836dp"
+    android:viewportWidth="382"
+    android:viewportHeight="836">
+    <path
+        android:pathData="M239.974 24.2462L205.692 513.99"
+        android:strokeWidth="1.46923"
+        android:strokeColor="#365885"
+        android:strokeAlpha="0.7"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M117.538 34.041L161.615 484.605"
+        android:strokeWidth="1.46923"
+        android:strokeColor="#365885"
+        android:strokeAlpha="0.7"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M-19.5897 180.964L411.385 293.605"
+        android:strokeWidth="1.46923"
+        android:strokeColor="#365885"
+        android:strokeAlpha="0.7"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M-29.3846 352.374L421.18 327.887"
+        android:strokeWidth="1.46923"
+        android:strokeColor="#365885"
+        android:strokeAlpha="0.7"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M-9.79487 411.144L401.59 381.759"
+        android:strokeWidth="1.46923"
+        android:strokeColor="#365885"
+        android:strokeAlpha="0.7"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M-19.5897 513.99L382 465.015"
+        android:strokeWidth="1.46923"
+        android:strokeColor="#365885"
+        android:strokeAlpha="0.7"
+        android:strokeLineCap="round" />
+</vector>
