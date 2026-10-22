@@ -2,30 +2,29 @@ package com.fixora.app.feature.intro.ui
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Easing
-import androidx.compose.animation.core.EaseInCubic
 import androidx.compose.animation.core.EaseInOutCubic
 import androidx.compose.animation.core.EaseOutBack
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.VectorPath
 import androidx.compose.ui.graphics.vector.toPath
@@ -41,32 +40,33 @@ import com.fixora.app.core.designsystem.theme.Navy800
 import com.fixora.app.core.designsystem.theme.Orange500
 import com.fixora.app.core.designsystem.theme.White
 import com.fixora.app.core.ui.SystemBarsAppearance
-import kotlin.math.abs
 import kotlin.math.hypot
-import kotlin.math.max
 
-// Línea de tiempo de la intro (ms), basada en el video de referencia y comprimida a 2 s:
-// aparece el punto, de él brota el pin, se dibuja la llave, pasa un destello y,
-// al final, el pin crece hasta llenar la pantalla con el azul de la landing.
+// Línea de tiempo de la intro (ms), basada en el video de referencia:
+// aparece el punto, de él brota el pin, se dibuja la llave y pasa un destello.
+// Al final el logo se desvanece y un círculo azul se abre desde el punto hasta cubrir
+// la pantalla con el azul de la landing.
 private object Timeline {
-    const val TOTAL = 2000f
     const val DOT_START = 0f
-    const val DOT_END = 300f
-    const val PIN_START = 250f
-    const val PIN_END = 850f
-    const val WRENCH_START = 750f
-    const val WRENCH_END = 1200f
-    const val SHINE_START = 1150f
-    const val SHINE_END = 1550f
-    const val EXIT_START = 1600f
-    const val EXIT_FADE_END = 1720f
+    const val DOT_END = 370f
+    const val PIN_START = 310f
+    const val PIN_END = 1050f
+    const val WRENCH_START = 920f
+    const val WRENCH_END = 1480f
+    const val SHINE_START = 1420f
+    const val SHINE_END = 1910f
+    const val LOGO_FADE_START = 2030f
+    const val LOGO_FADE_END = 2300f
+    const val REVEAL_START = 2130f
+    const val TOTAL = 2650f
 }
 
 private val LogoWidth = 140.dp
 
 /**
  * Intro animada al abrir la app. Empieza en blanco, igual que el splash del sistema,
- * y termina con la pantalla en el azul de la landing para que el cambio no se note.
+ * y termina cubriendo la pantalla con el azul de la landing. Se dibuja encima de la
+ * landing (ver FixoraApp), que ya está lista debajo cuando la intro se desvanece.
  * Si el usuario desactivó las animaciones en Android, dura 0 ms y pasa directo.
  */
 @Composable
@@ -90,108 +90,100 @@ private fun IntroLogo(timeMs: () -> Float, modifier: Modifier = Modifier) {
     val vector = ImageVector.vectorResource(R.drawable.ic_fixora_isotipo)
     val isotipo = remember(vector) { Isotipo.from(vector) }
 
-    Canvas(
+    Box(
         modifier
             .fillMaxSize()
             .background(White)
             .semantics { contentDescription = "Fixora" },
     ) {
-        drawIntroFrame(isotipo, timeMs())
+        // El logo se desvanece y se encoge un poco antes de que se abra el círculo.
+        Canvas(
+            Modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    val fade = phase(timeMs(), Timeline.LOGO_FADE_START, Timeline.LOGO_FADE_END, EaseInOutCubic)
+                    alpha = 1f - fade
+                    scaleX = lerp(1f, 0.92f, fade)
+                    scaleY = scaleX
+                },
+        ) { drawLogo(isotipo, timeMs()) }
+
+        Canvas(Modifier.fillMaxSize()) { drawReveal(isotipo, timeMs()) }
     }
 }
 
-private fun DrawScope.drawIntroFrame(isotipo: Isotipo, t: Float) {
-    // Escala y posición del logo: centrado, con LogoWidth de ancho.
-    val unit = LogoWidth.toPx() / isotipo.width
-    val origin = Offset(
-        (size.width - isotipo.width * unit) / 2,
-        (size.height - isotipo.height * unit) / 2,
-    )
+/** Escala y posición del logo: centrado en la pantalla, con LogoWidth de ancho. */
+private fun DrawScope.logoUnit(isotipo: Isotipo) = LogoWidth.toPx() / isotipo.width
 
+private fun DrawScope.logoOrigin(isotipo: Isotipo, unit: Float) = Offset(
+    (size.width - isotipo.width * unit) / 2,
+    (size.height - isotipo.height * unit) / 2,
+)
+
+private fun DrawScope.drawLogo(isotipo: Isotipo, t: Float) {
+    val unit = logoUnit(isotipo)
+    val origin = logoOrigin(isotipo, unit)
     val dotScale = phase(t, Timeline.DOT_START, Timeline.DOT_END, EaseOutBack)
     val pinGrow = phase(t, Timeline.PIN_START, Timeline.PIN_END, EaseOutBack)
     val wrenchReveal = phase(t, Timeline.WRENCH_START, Timeline.WRENCH_END, EaseInOutCubic)
     val shine = phase(t, Timeline.SHINE_START, Timeline.SHINE_END, LinearEasing)
-    val exit = phase(t, Timeline.EXIT_START, Timeline.TOTAL, EaseInCubic)
-    val detailsAlpha = 1f - phase(t, Timeline.EXIT_START, Timeline.EXIT_FADE_END, LinearEasing)
-
-    // Al salir, el pin crece desde el centro de su círculo hasta cubrir la esquina más lejana.
-    val pinCenterPx = origin + isotipo.pinCenter * unit
-    val farthest = maxOf(
-        hypot(pinCenterPx.x, pinCenterPx.y),
-        hypot(size.width - pinCenterPx.x, pinCenterPx.y),
-        hypot(pinCenterPx.x, size.height - pinCenterPx.y),
-        hypot(size.width - pinCenterPx.x, size.height - pinCenterPx.y),
-    )
-    val exitScale = lerp(1f, max(1f, farthest / (isotipo.pinRadius * unit)) * 1.05f, exit)
 
     translate(origin.x, origin.y) {
         scale(unit, unit, pivot = Offset.Zero) {
-            scale(exitScale, exitScale, pivot = isotipo.pinCenter) {
-                // Pin: brota hacia arriba desde el punto naranja.
-                if (pinGrow > 0f) {
-                    scale(lerp(0.2f, 1f, pinGrow), pinGrow, pivot = isotipo.dotCenter) {
-                        drawPath(isotipo.pin, Navy800)
-                    }
+            // Pin: brota hacia arriba desde el punto naranja.
+            if (pinGrow > 0f) {
+                scale(lerp(0.2f, 1f, pinGrow), pinGrow, pivot = isotipo.dotCenter) {
+                    drawPath(isotipo.pin, Navy800)
                 }
-
-                if (detailsAlpha > 0f) {
-                    // Llave: se dibuja de abajo hacia arriba.
-                    if (wrenchReveal > 0f) {
-                        clipRect(top = lerp(isotipo.height, 0f, wrenchReveal), bottom = isotipo.height + 4f) {
-                            drawPath(isotipo.wrench, White, alpha = detailsAlpha)
-                        }
-                    }
-                    // Destello diagonal que cruza el pin.
-                    if (shine in 0.001f..0.999f) {
-                        clipPath(isotipo.pin) { drawShine(isotipo, shine, detailsAlpha) }
-                    }
+            }
+            // Llave: se dibuja de abajo hacia arriba.
+            if (wrenchReveal > 0f) {
+                clipRect(top = lerp(isotipo.height, 0f, wrenchReveal), bottom = isotipo.height + 4f) {
+                    drawPath(isotipo.wrench, White)
                 }
-                // Al salir, el punto se vuelve azul en lugar de desaparecer, para que el pin
-                // no se vea con la base cortada mientras crece.
-                drawDot(isotipo, dotScale, glow = bump(shine), color = lerp(Navy800, Orange500, detailsAlpha))
+            }
+            // Destello diagonal que cruza el pin.
+            if (shine in 0.001f..0.999f) {
+                clipPath(isotipo.pin) { drawShine(isotipo, shine) }
+            }
+            if (dotScale > 0f) {
+                drawCircle(Orange500, isotipo.dotRadius * dotScale, isotipo.dotCenter)
             }
         }
     }
 }
 
-private fun DrawScope.drawShine(isotipo: Isotipo, progress: Float, alpha: Float) {
+/** Círculo azul que se abre desde el punto naranja hasta cubrir la esquina más lejana. */
+private fun DrawScope.drawReveal(isotipo: Isotipo, t: Float) {
+    val reveal = phase(t, Timeline.REVEAL_START, Timeline.TOTAL, EaseInOutCubic)
+    if (reveal <= 0f) return
+    val unit = logoUnit(isotipo)
+    val center = logoOrigin(isotipo, unit) + isotipo.dotCenter * unit
+    val farthest = maxOf(
+        hypot(center.x, center.y),
+        hypot(size.width - center.x, center.y),
+        hypot(center.x, size.height - center.y),
+        hypot(size.width - center.x, size.height - center.y),
+    )
+    drawCircle(Navy800, radius = farthest * reveal, center = center)
+}
+
+private fun DrawScope.drawShine(isotipo: Isotipo, progress: Float) {
     val band = isotipo.width * 0.35f
     val x = lerp(-band * 2, isotipo.width + band, progress)
     drawRect(
         brush = Brush.linearGradient(
-            colors = listOf(Color.Transparent, White.copy(alpha = 0.45f * alpha), Color.Transparent),
+            colors = listOf(Color.Transparent, White.copy(alpha = 0.35f), Color.Transparent),
             start = Offset(x, 0f),
             end = Offset(x + band, band * 0.6f),
         ),
-        size = isotipo.size,
+        size = Size(isotipo.width, isotipo.height),
     )
-}
-
-private fun DrawScope.drawDot(isotipo: Isotipo, scale: Float, glow: Float, color: Color) {
-    if (scale <= 0f) return
-    val radius = isotipo.dotRadius * scale
-    if (glow > 0f) {
-        val glowRadius = radius * 2.2f
-        drawCircle(
-            brush = Brush.radialGradient(
-                colors = listOf(Orange500.copy(alpha = 0.6f * glow), Color.Transparent),
-                center = isotipo.dotCenter,
-                radius = glowRadius,
-            ),
-            radius = glowRadius,
-            center = isotipo.dotCenter,
-        )
-    }
-    drawCircle(color, radius, isotipo.dotCenter)
 }
 
 /** Avance de 0 a 1 de una fase de la línea de tiempo, con su curva de aceleración. */
 private fun phase(t: Float, start: Float, end: Float, easing: Easing): Float =
     if (t <= start) 0f else easing.transform(((t - start) / (end - start)).coerceAtMost(1f))
-
-/** Sube y baja: 0 → 1 → 0 a lo largo de una fase. */
-private fun bump(progress: Float): Float = if (progress <= 0f || progress >= 1f) 0f else 1f - abs(2 * progress - 1)
 
 /** Capas del isotipo leídas de ic_fixora_isotipo.xml por su nombre (pin, wrench, dot). */
 private class Isotipo(
@@ -202,11 +194,6 @@ private class Isotipo(
     val dotCenter: Offset,
     val dotRadius: Float,
 ) {
-    val size get() = Size(width, height)
-    private val pinBounds: Rect = pin.getBounds()
-    val pinRadius get() = pinBounds.width / 2
-    val pinCenter get() = Offset(pinBounds.center.x, pinBounds.top + pinRadius)
-
     companion object {
         fun from(vector: ImageVector): Isotipo {
             val paths = vector.root.filterIsInstance<VectorPath>().associateBy { it.name }

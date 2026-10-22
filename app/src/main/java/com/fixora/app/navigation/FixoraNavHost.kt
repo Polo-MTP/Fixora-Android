@@ -13,8 +13,6 @@ import androidx.navigation.compose.rememberNavController
 import com.fixora.app.BuildConfig
 import com.fixora.app.feature.auth.navigation.LandingRoute
 import com.fixora.app.feature.auth.navigation.landingScreen
-import com.fixora.app.feature.intro.navigation.IntroRoute
-import com.fixora.app.feature.intro.navigation.introScreen
 
 private const val TRANSITION_MS = 300
 
@@ -27,19 +25,11 @@ fun FixoraNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = IntroRoute,
+        startDestination = LandingRoute,
         modifier = modifier,
         enterTransition = { fadeIn(tween(TRANSITION_MS)) },
         exitTransition = { fadeOut(tween(TRANSITION_MS)) },
     ) {
-        introScreen(
-            onFinished = {
-                // La intro no queda en el historial: «atrás» desde la landing cierra la app.
-                navController.navigate(LandingRoute) {
-                    popUpTo<IntroRoute> { inclusive = true }
-                }
-            },
-        )
         landingScreen(
             // TODO(ANDROID-3): navegar al registro del cliente cuando exista la pantalla.
             onStartClick = {},
