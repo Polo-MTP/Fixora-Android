@@ -2,9 +2,6 @@ package com.fixora.app.feature.auth.ui.register
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -48,6 +45,10 @@ import com.fixora.app.core.designsystem.theme.Navy900
 import com.fixora.app.core.designsystem.theme.Slate500
 import com.fixora.app.core.designsystem.theme.SuccessGreen
 import com.fixora.app.core.designsystem.theme.White
+import com.fixora.app.core.ui.slideBackwardEnter
+import com.fixora.app.core.ui.slideBackwardExit
+import com.fixora.app.core.ui.slideForwardEnter
+import com.fixora.app.core.ui.slideForwardExit
 import com.fixora.app.feature.auth.domain.PasswordRules
 import com.fixora.app.feature.auth.ui.components.AuthFooter
 import com.fixora.app.feature.auth.ui.components.AuthScaffold
@@ -81,7 +82,15 @@ fun RegisterScreen(
 
     AnimatedContent(
         targetState = state.step,
-        transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(220)) },
+        transitionSpec = {
+            // Igual que la navegación: avanzar desliza hacia la izquierda y regresar hacia la derecha.
+            // El paso que sale queda encima al regresar, para que se vea cómo se retira.
+            if (targetState.ordinal > initialState.ordinal) {
+                (slideForwardEnter() togetherWith slideForwardExit()).apply { targetContentZIndex = 1f }
+            } else {
+                (slideBackwardEnter() togetherWith slideBackwardExit()).apply { targetContentZIndex = -1f }
+            }
+        },
         label = "registerStep",
     ) { step ->
         when (step) {

@@ -1,8 +1,5 @@
 package com.fixora.app.navigation
 
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
@@ -11,6 +8,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.fixora.app.BuildConfig
+import com.fixora.app.core.ui.slideBackwardEnter
+import com.fixora.app.core.ui.slideBackwardExit
+import com.fixora.app.core.ui.slideForwardEnter
+import com.fixora.app.core.ui.slideForwardExit
 import com.fixora.app.feature.auth.navigation.ForgotPasswordRoute
 import com.fixora.app.feature.auth.navigation.LandingRoute
 import com.fixora.app.feature.auth.navigation.LoginRoute
@@ -21,8 +22,6 @@ import com.fixora.app.feature.auth.navigation.landingScreen
 import com.fixora.app.feature.auth.navigation.loginScreen
 import com.fixora.app.feature.auth.navigation.registerScreen
 import com.fixora.app.feature.auth.navigation.registerSuccessScreen
-
-private const val TRANSITION_MS = 300
 
 @Composable
 fun FixoraNavHost(
@@ -35,8 +34,10 @@ fun FixoraNavHost(
         navController = navController,
         startDestination = LandingRoute,
         modifier = modifier,
-        enterTransition = { fadeIn(tween(TRANSITION_MS)) },
-        exitTransition = { fadeOut(tween(TRANSITION_MS)) },
+        enterTransition = { slideForwardEnter() },
+        exitTransition = { slideForwardExit() },
+        popEnterTransition = { slideBackwardEnter() },
+        popExitTransition = { slideBackwardExit() },
     ) {
         landingScreen(
             onStartClick = { navController.navigate(LoginRoute) },
