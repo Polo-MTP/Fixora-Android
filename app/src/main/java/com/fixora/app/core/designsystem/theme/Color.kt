@@ -13,6 +13,14 @@ val Navy300 = Color(0xFF8BA2BE)
 val Navy200 = Color(0xFF9CB1CA)
 
 val Orange500 = Color(0xFFFF6238)
+val Orange200 = Color(0xFFF3B4A3)
 val OrangeSoft = Color(0xFFF97316)
+
+// Formularios: fondo de la hoja, bordes, texto secundario y estados.
+val Mist50 = Color(0xFFF4F6F9)
+val Mist200 = Color(0xFFD5DDE7)
+val Slate500 = Color(0xFF5B6B80)
+val ErrorRed = Color(0xFFD93025)
+val SuccessGreen = Color(0xFF1E8E5A)
 
 val White = Color(0xFFFFFFFF)
