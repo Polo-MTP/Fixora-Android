@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.IntOffset
 // Transiciones entre pantallas: al avanzar, la nueva entra completa desde la derecha y la
 // anterior se recorre un poco a la izquierda; al regresar, al revés. La pantalla que va encima
 // se mueve sólida y solo la de abajo se oscurece un poco, para dar sensación de profundidad.
-private const val SLIDE_MS = 350
+private const val SLIDE_MS = 420
 private const val UNDER_ALPHA = 0.6f
 private val slideSpec = tween<IntOffset>(SLIDE_MS, easing = FastOutSlowInEasing)
 private val fadeSpec = tween<Float>(SLIDE_MS, easing = FastOutSlowInEasing)

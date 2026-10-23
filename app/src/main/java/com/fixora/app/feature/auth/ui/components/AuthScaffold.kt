@@ -1,5 +1,8 @@
 package com.fixora.app.feature.auth.ui.components
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,6 +30,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -42,6 +47,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.fixora.app.R
 import com.fixora.app.core.designsystem.theme.Mist50
@@ -53,6 +59,19 @@ import com.fixora.app.core.ui.SystemBarsAppearance
 
 // La hoja clara se monta sobre la cabecera azul y la tapa con sus esquinas redondeadas.
 private val SheetOverlap = 22.dp
+
+private const val ENTRANCE_MS = 600
+
+/**
+ * Aparece subiendo y desvaneciéndose entre [start] y [end] del avance de la entrada (0 a 1),
+ * para escalonar título, formulario y pie. Se aplica al dibujar, sin recomponer en cada cuadro.
+ */
+private fun Modifier.entrance(progress: () -> Float, start: Float, end: Float, offset: Dp) =
+    graphicsLayer {
+        val p = ((progress() - start) / (end - start)).coerceIn(0f, 1f)
+        alpha = p
+        translationY = (1f - p) * offset.toPx()
+    }
 
 /** Paso actual de un flujo de varias pantallas, para la barra de progreso de la cabecera. */
 data class AuthStep(val current: Int, val total: Int)
@@ -76,6 +95,12 @@ fun AuthScaffold(
     val density = LocalDensity.current
     var headerHeight by remember { mutableStateOf(0.dp) }
 
+    // Entrada suave del contenido: arranca cuando la pantalla ya se dibujó, así se ve completa
+    // aunque el primer armado de la pantalla tarde (lo que en debug se "come" el deslizamiento).
+    val entrance = remember { Animatable(0f) }
+    LaunchedEffect(Unit) { entrance.animateTo(1f, tween(ENTRANCE_MS, easing = FastOutSlowInEasing)) }
+    val progress = { entrance.value }
+
     BoxWithConstraints(
         modifier
             .fillMaxSize()
@@ -92,6 +117,7 @@ fun AuthScaffold(
                 subtitle = subtitle,
                 onBack = onBack,
                 step = step,
+                entrance = progress,
                 modifier = Modifier.onSizeChanged { headerHeight = with(density) { it.height.toDp() } },
             )
             Column(
@@ -106,13 +132,18 @@ fun AuthScaffold(
                     .imePadding()
                     .padding(start = 24.dp, end = 24.dp, top = 26.dp, bottom = 28.dp + SheetOverlap),
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(14.dp), content = content)
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                    modifier = Modifier.entrance(progress, start = 0.25f, end = 0.9f, offset = 28.dp),
+                    content = content,
+                )
                 if (footer != null) {
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 24.dp),
+                            .padding(top = 24.dp)
+                            .entrance(progress, start = 0.45f, end = 1f, offset = 16.dp),
                     ) { footer() }
                 }
             }
@@ -126,6 +157,7 @@ private fun AuthHeader(
     subtitle: AnnotatedString,
     onBack: () -> Unit,
     step: AuthStep?,
+    entrance: () -> Float,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -147,9 +179,11 @@ private fun AuthHeader(
         ) {
             BackButton(onBack)
             Spacer(Modifier.height(18.dp))
-            Text(title, style = MaterialTheme.typography.headlineLarge, color = White)
-            Spacer(Modifier.height(8.dp))
-            Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = Navy200)
+            Column(Modifier.entrance(entrance, start = 0f, end = 0.7f, offset = 18.dp)) {
+                Text(title, style = MaterialTheme.typography.headlineLarge, color = White)
+                Spacer(Modifier.height(8.dp))
+                Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = Navy200)
+            }
             if (step != null) {
                 Spacer(Modifier.height(20.dp))
                 StepProgress(step)
