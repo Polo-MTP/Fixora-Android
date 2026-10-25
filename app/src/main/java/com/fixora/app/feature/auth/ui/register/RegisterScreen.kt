@@ -72,7 +72,6 @@ private val DateFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 @Composable
 fun RegisterScreen(
     onExit: () -> Unit,
-    onLogin: () -> Unit,
     onRegistered: () -> Unit,
     viewModel: RegisterViewModel = viewModel(),
 ) {
@@ -94,7 +93,7 @@ fun RegisterScreen(
         label = "registerStep",
     ) { step ->
         when (step) {
-            RegisterStep.Account -> AccountStep(state, viewModel, onBack = back, onLogin = onLogin)
+            RegisterStep.Account -> AccountStep(state, viewModel, onBack = back)
             RegisterStep.Verify -> VerifyStep(state, viewModel, onBack = back)
             RegisterStep.Personal -> PersonalStep(
                 state = state,
@@ -111,20 +110,12 @@ private fun AccountStep(
     state: RegisterUiState,
     viewModel: RegisterViewModel,
     onBack: () -> Unit,
-    onLogin: () -> Unit,
 ) {
     AuthScaffold(
         title = stringResource(R.string.register_account_title),
         subtitle = AnnotatedString(stringResource(R.string.register_account_subtitle)),
         onBack = onBack,
         step = AuthStep(RegisterStep.Account.number, RegisterStep.total),
-        footer = {
-            AuthFooter(
-                question = stringResource(R.string.register_has_account),
-                action = stringResource(R.string.auth_login_action),
-                onAction = onLogin,
-            )
-        },
     ) {
         AuthTextField(
             value = state.email.value,
@@ -381,7 +372,7 @@ private fun BirthDatePickerDialog(
 @Preview(widthDp = 390, heightDp = 844)
 @Composable
 private fun RegisterAccountPreview() {
-    FixoraTheme { AccountStep(RegisterUiState(), RegisterViewModel(), {}, {}) }
+    FixoraTheme { AccountStep(RegisterUiState(), RegisterViewModel(), {}) }
 }
 
 @Preview(widthDp = 390, heightDp = 844)
