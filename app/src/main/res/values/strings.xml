@@ -7,4 +7,70 @@
     <string name="landing_start">Comenzar</string>
     <string name="landing_provider_question">¿Ofreces servicios?</string>
     <string name="landing_provider_link">Únete como proveedor</string>
+
+    <!-- Cuenta: común -->
+    <string name="auth_back">Regresar</string>
+    <string name="auth_step">Paso %1$d de %2$d</string>
+    <string name="auth_password_show">Mostrar</string>
+    <string name="auth_password_hide">Ocultar</string>
+    <string name="auth_field_email">Correo electrónico</string>
+    <string name="auth_field_email_placeholder">tucorreo@ejemplo.com</string>
+    <string name="auth_field_password">Contraseña</string>
+
+    <!-- Registro · 1 Cuenta -->
+    <string name="register_account_title">Crea tu cuenta</string>
+    <string name="register_account_subtitle">Con tu correo y una contraseña segura.</string>
+    <string name="register_password_placeholder">Crea una contraseña</string>
+    <string name="register_confirm_password">Confirma tu contraseña</string>
+    <string name="register_confirm_placeholder">Repite la contraseña</string>
+    <string name="register_rule_length">8 caracteres o más</string>
+    <string name="register_rule_uppercase">Una mayúscula</string>
+    <string name="register_rule_digit">Un número</string>
+    <string name="register_rule_lowercase">Una minúscula</string>
+    <string name="register_continue">Continuar</string>
+
+    <!-- Registro · 2 Verificar correo -->
+    <string name="verify_title">Verifica tu correo</string>
+    <string name="verify_subtitle">Te enviamos un código de 6 dígitos a %1$s.</string>
+    <string name="verify_code_label">Código de verificación</string>
+    <string name="verify_resend_in">Puedes pedir otro código en %1$s</string>
+    <string name="verify_not_received">¿No te llegó?</string>
+    <string name="verify_resend">Reenviar código</string>
+    <string name="verify_submit">Verificar</string>
+    <string name="verify_wrong_email">¿Correo equivocado?</string>
+    <string name="verify_change_email">Cámbialo</string>
+
+    <!-- Registro · 3 Tus datos -->
+    <string name="personal_title">Cuéntanos de ti</string>
+    <string name="personal_subtitle">Así te reconocerán los técnicos al llegar.</string>
+    <string name="personal_name">Nombre(s)</string>
+    <string name="personal_name_placeholder">Ej. Ana María</string>
+    <string name="personal_lastname_p">Apellido paterno</string>
+    <string name="personal_lastname_p_placeholder">Pérez</string>
+    <string name="personal_lastname_m">Apellido materno</string>
+    <string name="personal_lastname_m_placeholder">López</string>
+    <string name="personal_birth_date">Fecha de nacimiento</string>
+    <string name="personal_birth_date_placeholder">dd/mm/aaaa</string>
+    <string name="personal_phone">Teléfono</string>
+    <string name="personal_phone_placeholder">10 dígitos</string>
+    <string name="personal_phone_prefix">+52</string>
+    <string name="personal_submit">Crear cuenta</string>
+    <string name="date_picker_ok">Aceptar</string>
+    <string name="date_picker_cancel">Cancelar</string>
+
+    <!-- Cuenta creada -->
+    <string name="register_success_title">¡Tu cuenta está lista!</string>
+    <string name="register_success_subtitle">Ya puedes pedir ayuda a técnicos verificados cerca de ti.</string>
+    <string name="register_success_continue">Continuar</string>
+
+    <!-- Errores de validación -->
+    <string name="auth_error_required">Este campo es obligatorio.</string>
+    <string name="auth_error_email_empty">Escribe tu correo.</string>
+    <string name="auth_error_email_invalid">Revisa el formato del correo.</string>
+    <string name="auth_error_password_weak">La contraseña no cumple los requisitos.</string>
+    <string name="auth_error_confirm_empty">Confirma tu contraseña.</string>
+    <string name="auth_error_password_mismatch">Las contraseñas no coinciden.</string>
+    <string name="auth_error_phone">Escribe 10 dígitos.</string>
+    <string name="auth_error_birth_date_empty">Elige tu fecha de nacimiento.</string>
+    <string name="auth_error_underage">Debes ser mayor de edad.</string>
 </resources>

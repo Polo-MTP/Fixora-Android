@@ -4,4 +4,12 @@
     <style name="Theme.FixoraApp" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@color/fixora_navy_800</item>
     </style>
+
+    <!-- Splash del sistema: pantalla blanca vacía, igual al primer cuadro de la intro animada
+         (IntroScreen), para que el paso de una a otra no se note. -->
+    <style name="Theme.FixoraApp.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@android:color/white</item>
+        <item name="windowSplashScreenAnimatedIcon">@android:color/transparent</item>
+        <item name="postSplashScreenTheme">@style/Theme.FixoraApp</item>
+    </style>
 </resources>
