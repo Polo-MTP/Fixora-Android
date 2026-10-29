@@ -7,8 +7,10 @@ App móvil de Fixora (Kotlin + Jetpack Compose). La documentación del proyecto 
 Las variables de cada entorno están en `app/env/<flavor>.properties` (`dev` y `prod`) y se leen en código con `BuildConfig`. Para cambiar un valor solo en tu máquina, agrégalo a `local.properties` con el prefijo del flavor:
 
 ```properties
-dev.API_URL=http://192.168.1.50:3000/
+dev.API_URL=http://192.168.1.50:3001/api/
 ```
+
+En el emulador la app usa `http://10.0.2.2:3001/api/`, que es la API corriendo en tu PC (`pnpm dev` en Api-Fixora). En un celular físico conectado a la misma red Wi-Fi, usa la IP de tu PC como en el ejemplo.
 
 ## Commits
 
