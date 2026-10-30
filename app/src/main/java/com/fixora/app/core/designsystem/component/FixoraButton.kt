@@ -4,9 +4,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,16 +23,20 @@ import com.fixora.app.core.designsystem.theme.Orange200
 import com.fixora.app.core.designsystem.theme.Orange500
 import com.fixora.app.core.designsystem.theme.White
 
-/** Botón de la acción principal de una pantalla: naranja, a todo lo ancho. */
+/**
+ * Botón de la acción principal de una pantalla: naranja, a todo lo ancho. Con [loading] muestra
+ * un indicador en lugar del texto e ignora los toques, para no mandar la misma acción dos veces.
+ */
 @Composable
 fun FixoraPrimaryButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    loading: Boolean = false,
 ) {
     Button(
-        onClick = onClick,
+        onClick = { if (!loading) onClick() },
         enabled = enabled,
         shape = RoundedCornerShape(20.dp),
         colors = ButtonDefaults.buttonColors(
@@ -44,7 +50,11 @@ fun FixoraPrimaryButton(
             .fillMaxWidth()
             .height(58.dp),
     ) {
-        Text(text, style = MaterialTheme.typography.titleMedium)
+        if (loading) {
+            CircularProgressIndicator(color = White, strokeWidth = 2.5.dp, modifier = Modifier.size(24.dp))
+        } else {
+            Text(text, style = MaterialTheme.typography.titleMedium)
+        }
     }
 }
 
