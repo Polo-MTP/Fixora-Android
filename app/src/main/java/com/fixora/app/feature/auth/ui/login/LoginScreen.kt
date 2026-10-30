@@ -1,21 +1,28 @@
 package com.fixora.app.feature.auth.ui.login
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.fixora.app.R
 import com.fixora.app.core.designsystem.component.FixoraPrimaryButton
 import com.fixora.app.core.designsystem.component.FixoraTextLink
+import com.fixora.app.core.designsystem.theme.ErrorRed
 import com.fixora.app.core.designsystem.theme.FixoraTheme
+import com.fixora.app.core.ui.message
 import com.fixora.app.feature.auth.ui.components.AuthFooter
 import com.fixora.app.feature.auth.ui.components.AuthScaffold
 import com.fixora.app.feature.auth.ui.components.AuthTextField
@@ -27,8 +34,7 @@ fun LoginScreen(
     onBack: () -> Unit,
     onForgotPassword: () -> Unit,
     onRegister: () -> Unit,
-    onSubmit: () -> Unit,
-    viewModel: LoginViewModel = viewModel(),
+    viewModel: LoginViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
 
@@ -41,7 +47,7 @@ fun LoginScreen(
         onPasswordBlur = viewModel::onPasswordBlur,
         onForgotPassword = onForgotPassword,
         onRegister = onRegister,
-        onSubmit = { if (viewModel.submit()) onSubmit() },
+        onSubmit = viewModel::submit,
     )
 }
 
@@ -92,9 +98,18 @@ private fun LoginContent(
             onClick = onForgotPassword,
             modifier = Modifier.align(Alignment.End),
         )
+        state.error?.let { error ->
+            Text(
+                text = error.message(),
+                style = MaterialTheme.typography.bodySmall,
+                color = ErrorRed,
+                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+            )
+        }
         FixoraPrimaryButton(
             text = stringResource(R.string.login_submit),
             onClick = onSubmit,
+            loading = state.isLoading,
             modifier = Modifier.padding(top = 6.dp),
         )
     }

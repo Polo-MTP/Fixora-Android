@@ -1,9 +1,12 @@
 package com.fixora.app.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
@@ -22,17 +25,34 @@ import com.fixora.app.feature.auth.navigation.landingScreen
 import com.fixora.app.feature.auth.navigation.loginScreen
 import com.fixora.app.feature.auth.navigation.registerScreen
 import com.fixora.app.feature.auth.navigation.registerSuccessScreen
+import com.fixora.app.feature.home.navigation.HomeRoute
+import com.fixora.app.feature.home.navigation.homeScreen
 
+/**
+ * @param isLoggedIn decide la pantalla inicial y, cuando cambia, a dónde ir: al iniciar sesión se
+ * entra al inicio; al cerrarla (o si la API rechaza la sesión) se regresa a la landing. En ambos
+ * casos se limpia el historial para que «atrás» no regrese a la sesión anterior.
+ */
 @Composable
 fun FixoraNavHost(
+    isLoggedIn: Boolean,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
 ) {
     val uriHandler = LocalUriHandler.current
+    val startDestination = remember { if (isLoggedIn) HomeRoute else LandingRoute }
+
+    LaunchedEffect(isLoggedIn) {
+        val target: Any = if (isLoggedIn) HomeRoute else LandingRoute
+        if (navController.currentDestination?.hasRoute(target::class) == true) return@LaunchedEffect
+        navController.navigate(target) {
+            popUpTo(navController.graph.id) { inclusive = true }
+        }
+    }
 
     NavHost(
         navController = navController,
-        startDestination = LandingRoute,
+        startDestination = startDestination,
         modifier = modifier,
         enterTransition = { slideForwardEnter() },
         exitTransition = { slideForwardExit() },
@@ -47,8 +67,6 @@ fun FixoraNavHost(
             onBack = navController::popBackStack,
             onForgotPassword = { navController.navigate(ForgotPasswordRoute) },
             onRegister = { navController.navigate(RegisterRoute) },
-            // TODO(ANDROID-4): iniciar sesión con la API y entrar al inicio según el rol.
-            onSubmit = {},
         )
         forgotPasswordScreen(
             onBack = navController::popBackStack,
@@ -71,6 +89,7 @@ fun FixoraNavHost(
             // Por ahora regresa a la landing; luego irá al inicio del cliente.
             onContinue = navController::popBackStack,
         )
+        homeScreen()
     }
 }
 

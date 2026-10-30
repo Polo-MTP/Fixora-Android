@@ -90,4 +90,22 @@
     <string name="auth_error_phone">Escribe 10 dígitos.</string>
     <string name="auth_error_birth_date_empty">Elige tu fecha de nacimiento.</string>
     <string name="auth_error_underage">Debes ser mayor de edad.</string>
+
+    <!-- Errores de conexión con la API -->
+    <string name="error_no_connection">No hay conexión a internet. Revisa tu red e intenta de nuevo.</string>
+    <string name="error_timeout">El servidor tardó demasiado en responder. Intenta de nuevo.</string>
+    <string name="error_server">Algo salió mal de nuestro lado. Intenta más tarde.</string>
+    <string name="error_unknown">Ocurrió un error inesperado. Intenta de nuevo.</string>
+
+    <!-- Aviso sin conexión -->
+    <string name="offline_title">Sin conexión a internet</string>
+    <string name="offline_message">No podrás iniciar sesión ni enviar solicitudes hasta que vuelva la conexión.</string>
+
+    <!-- Inicio provisional -->
+    <string name="home_greeting">¡Hola!</string>
+    <string name="home_subtitle">Iniciaste sesión como</string>
+    <string name="home_role">Rol: %1$s</string>
+    <string name="home_status">Estado: %1$s</string>
+    <string name="home_placeholder">Aquí irá el inicio del cliente. Esta pantalla es provisional para probar la sesión.</string>
+    <string name="home_logout">Cerrar sesión</string>
 </resources>
