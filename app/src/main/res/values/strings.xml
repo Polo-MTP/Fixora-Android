@@ -91,6 +91,8 @@
     <string name="auth_error_phone">Escribe 10 dígitos.</string>
     <string name="auth_error_birth_date_empty">Elige tu fecha de nacimiento.</string>
     <string name="auth_error_underage">Debes ser mayor de edad.</string>
+    <string name="auth_error_postal_code">Escribe 5 dígitos.</string>
+    <string name="auth_error_password_unchanged">Debe ser distinta de la actual.</string>
 
     <!-- Errores de conexión con la API -->
     <string name="error_no_connection">No hay conexión a internet. Revisa tu red e intenta de nuevo.</string>
@@ -121,6 +123,62 @@
     <string name="provider_services_soon">Aquí aparecerán los servicios que aceptes y su estado.</string>
     <string name="provider_reviews_soon">Aquí verás las reseñas que te dejen tus clientes.</string>
     <string name="account_title">Mi cuenta</string>
+
+    <!-- Mi cuenta -->
+    <string name="account_sample_notice">Vista previa con datos de ejemplo: los cambios todavía no se guardan en tu cuenta.</string>
+    <string name="account_personal_subtitle">Nombre, fecha de nacimiento y teléfono</string>
+    <string name="account_addresses_main">Principal: %1$s</string>
+    <string name="account_addresses_empty">Agrega dónde necesitas los servicios</string>
+    <string name="account_save">Guardar cambios</string>
+
+    <!-- Mi cuenta · Datos personales -->
+    <string name="personal_data_title">Datos personales</string>
+    <string name="personal_data_email_hint">El correo es con el que inicias sesión y no se puede cambiar aquí.</string>
+    <string name="personal_data_saved">Datos actualizados</string>
+
+    <!-- Mi cuenta · Direcciones -->
+    <string name="addresses_title">Mis direcciones</string>
+    <string name="addresses_add">Agregar dirección</string>
+    <string name="addresses_empty">Todavía no tienes direcciones guardadas.</string>
+    <string name="addresses_main">Principal</string>
+    <string name="addresses_set_main">Usar como principal</string>
+    <string name="address_form_new_title">Nueva dirección</string>
+    <string name="address_form_edit_title">Editar dirección</string>
+    <string name="address_alias">Nombre de la dirección</string>
+    <string name="address_alias_placeholder">Ej. Casa, Trabajo</string>
+    <string name="address_alias_home">Casa</string>
+    <string name="address_alias_work">Trabajo</string>
+    <string name="address_street">Calle</string>
+    <string name="address_street_placeholder">Ej. Av. Insurgentes Sur</string>
+    <string name="address_num_ext">Núm. exterior</string>
+    <string name="address_num_ext_placeholder">1234</string>
+    <string name="address_num_int">Núm. interior</string>
+    <string name="address_num_int_placeholder">Opcional</string>
+    <string name="address_colony">Colonia</string>
+    <string name="address_colony_placeholder">Ej. Del Valle</string>
+    <string name="address_postal_code">C.P.</string>
+    <string name="address_postal_code_placeholder">5 dígitos</string>
+    <string name="address_municipality">Municipio o alcaldía</string>
+    <string name="address_municipality_placeholder">Ej. Benito Juárez</string>
+    <string name="address_state">Estado</string>
+    <string name="address_state_placeholder">Ej. Ciudad de México</string>
+    <string name="address_reference">Referencias</string>
+    <string name="address_reference_placeholder">Opcional: color de la fachada, entre calles…</string>
+    <string name="address_main_label">Dirección principal</string>
+    <string name="address_main_hint">Se usará por defecto al pedir un servicio.</string>
+    <string name="address_main_locked">Para cambiarla, marca otra dirección como principal.</string>
+    <string name="address_delete">Eliminar dirección</string>
+    <string name="address_delete_title">¿Eliminar esta dirección?</string>
+    <string name="address_delete_message">Ya no aparecerá al pedir un servicio.</string>
+    <string name="address_delete_confirm">Eliminar</string>
+
+    <!-- Mi cuenta · Cambiar contraseña -->
+    <string name="change_password_title">Cambiar contraseña</string>
+    <string name="change_password_current">Contraseña actual</string>
+    <string name="change_password_current_placeholder">Tu contraseña actual</string>
+    <string name="change_password_new">Nueva contraseña</string>
+    <string name="change_password_submit">Guardar contraseña</string>
+    <string name="change_password_saved">Contraseña actualizada</string>
 
     <!-- Roles -->
     <string name="role_client">Cliente</string>

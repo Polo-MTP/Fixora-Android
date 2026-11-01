@@ -105,22 +105,22 @@ fun ComingSoonTab(title: String, message: String, @DrawableRes icon: Int) {
 
 /** Tarjeta con el avatar, el correo y el rol de quien tiene la sesión. */
 @Composable
-fun SessionCard(email: String, role: String, name: String? = null) {
+fun SessionCard(email: String, role: String) {
     FixoraCard {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp),
             modifier = Modifier.padding(16.dp),
         ) {
-            FixoraAvatar(initialsOf(name, email))
+            FixoraAvatar(initialsOf(null, email))
             Column(Modifier.weight(1f)) {
                 Text(
-                    text = name ?: email,
+                    text = email,
                     style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                     color = Navy900,
                 )
                 Text(
-                    text = if (name != null) email else roleLabel(role),
+                    text = roleLabel(role),
                     style = MaterialTheme.typography.labelSmall,
                     color = Slate500,
                 )

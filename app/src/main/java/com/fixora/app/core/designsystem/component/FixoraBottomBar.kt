@@ -31,7 +31,7 @@ import com.fixora.app.core.designsystem.theme.Navy300
 import com.fixora.app.core.designsystem.theme.Navy900
 import com.fixora.app.core.designsystem.theme.White
 
-data class BottomBarItem(@StringRes val label: Int, @DrawableRes val icon: Int)
+data class BottomBarItem(@param:StringRes val label: Int, @param:DrawableRes val icon: Int)
 
 /** Barra de pestañas inferior de los inicios (Figma «Fixora - Inicio» y «Fixora Técnico - Inicio»). */
 @Composable

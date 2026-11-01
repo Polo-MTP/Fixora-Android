@@ -12,8 +12,18 @@ data object ClientHomeRoute
 @Serializable
 data object ProviderHomeRoute
 
-fun NavGraphBuilder.clientHomeScreen() {
-    composable<ClientHomeRoute> { ClientHomeScreen() }
+fun NavGraphBuilder.clientHomeScreen(
+    onOpenPersonalData: () -> Unit,
+    onOpenAddresses: () -> Unit,
+    onOpenChangePassword: () -> Unit,
+) {
+    composable<ClientHomeRoute> {
+        ClientHomeScreen(
+            onOpenPersonalData = onOpenPersonalData,
+            onOpenAddresses = onOpenAddresses,
+            onOpenChangePassword = onOpenChangePassword,
+        )
+    }
 }
 
 fun NavGraphBuilder.providerHomeScreen() {

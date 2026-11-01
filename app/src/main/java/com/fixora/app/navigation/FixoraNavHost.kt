@@ -16,6 +16,11 @@ import com.fixora.app.core.ui.slideBackwardEnter
 import com.fixora.app.core.ui.slideBackwardExit
 import com.fixora.app.core.ui.slideForwardEnter
 import com.fixora.app.core.ui.slideForwardExit
+import com.fixora.app.feature.account.navigation.AddressFormRoute
+import com.fixora.app.feature.account.navigation.AddressesRoute
+import com.fixora.app.feature.account.navigation.ChangePasswordRoute
+import com.fixora.app.feature.account.navigation.PersonalDataRoute
+import com.fixora.app.feature.account.navigation.accountScreens
 import com.fixora.app.feature.auth.navigation.ForgotPasswordRoute
 import com.fixora.app.feature.auth.navigation.LandingRoute
 import com.fixora.app.feature.auth.navigation.LoginRoute
@@ -93,8 +98,17 @@ fun FixoraNavHost(
             // Por ahora regresa a la landing; luego irá al inicio del cliente.
             onContinue = navController::popBackStack,
         )
-        clientHomeScreen()
+        clientHomeScreen(
+            onOpenPersonalData = { navController.navigate(PersonalDataRoute) },
+            onOpenAddresses = { navController.navigate(AddressesRoute) },
+            onOpenChangePassword = { navController.navigate(ChangePasswordRoute) },
+        )
         providerHomeScreen()
+        accountScreens(
+            onBack = navController::popBackStack,
+            onAddAddress = { navController.navigate(AddressFormRoute()) },
+            onEditAddress = { navController.navigate(AddressFormRoute(it)) },
+        )
     }
 }
 

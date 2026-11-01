@@ -2,21 +2,18 @@ package com.fixora.app.feature.home.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.fixora.app.R
 import com.fixora.app.core.designsystem.component.BottomBarItem
 import com.fixora.app.core.designsystem.theme.FixoraTheme
-import com.fixora.app.core.session.Session
+import com.fixora.app.feature.account.ui.AccountTab
 import com.fixora.app.feature.home.ui.components.ComingSoonTab
 import com.fixora.app.feature.home.ui.components.HomeTabsScaffold
-import com.fixora.app.feature.home.ui.components.ProfileTab
 
 /** Pestañas del cliente, en el orden del Figma «Fixora - Inicio». */
 enum class ClientTab(val item: BottomBarItem) {
@@ -27,20 +24,29 @@ enum class ClientTab(val item: BottomBarItem) {
 }
 
 /**
- * Inicio del cliente (ANDROID-4). Las pestañas Inicio, Mapa y Actividad son provisionales hasta
- * que se construyan esos módulos. «Atrás» desde otra pestaña regresa a Inicio antes de salir.
+ * Inicio del cliente (ANDROID-4). La pestaña Cuenta es Mi cuenta (ANDROID-5); Inicio, Mapa y
+ * Actividad son provisionales hasta que se construyan esos módulos. «Atrás» desde otra pestaña
+ * regresa a Inicio antes de salir.
  */
 @Composable
-fun ClientHomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
+fun ClientHomeScreen(
+    onOpenPersonalData: () -> Unit,
+    onOpenAddresses: () -> Unit,
+    onOpenChangePassword: () -> Unit,
+) {
     var tab by rememberSaveable { mutableStateOf(ClientTab.Home) }
     BackHandler(enabled = tab != ClientTab.Home) { tab = ClientTab.Home }
-    val session by viewModel.session.collectAsState()
 
     ClientHomeContent(
         tab = tab,
         onSelectTab = { tab = it },
-        session = session,
-        onLogout = viewModel::logout,
+        accountTab = {
+            AccountTab(
+                onOpenPersonalData = onOpenPersonalData,
+                onOpenAddresses = onOpenAddresses,
+                onOpenChangePassword = onOpenChangePassword,
+            )
+        },
     )
 }
 
@@ -48,8 +54,7 @@ fun ClientHomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
 private fun ClientHomeContent(
     tab: ClientTab,
     onSelectTab: (ClientTab) -> Unit,
-    session: Session?,
-    onLogout: () -> Unit,
+    accountTab: @Composable () -> Unit,
 ) {
     HomeTabsScaffold(
         items = ClientTab.entries.map { it.item },
@@ -72,11 +77,7 @@ private fun ClientHomeContent(
                 message = stringResource(R.string.client_activity_soon),
                 icon = R.drawable.ic_nav_activity,
             )
-            ClientTab.Account -> ProfileTab(
-                title = stringResource(R.string.account_title),
-                session = session,
-                onLogout = onLogout,
-            )
+            ClientTab.Account -> accountTab()
         }
     }
 }
@@ -85,19 +86,6 @@ private fun ClientHomeContent(
 @Composable
 private fun ClientHomePreview() {
     FixoraTheme {
-        ClientHomeContent(ClientTab.Home, {}, null, {})
-    }
-}
-
-@Preview(widthDp = 390, heightDp = 844)
-@Composable
-private fun ClientAccountPreview() {
-    FixoraTheme {
-        ClientHomeContent(
-            tab = ClientTab.Account,
-            onSelectTab = {},
-            session = Session("1", "ana@correo.com", "cliente", "activo", "", ""),
-            onLogout = {},
-        )
+        ClientHomeContent(ClientTab.Home, {}, {})
     }
 }

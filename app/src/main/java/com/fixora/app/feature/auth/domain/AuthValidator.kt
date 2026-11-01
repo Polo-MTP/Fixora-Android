@@ -14,6 +14,8 @@ enum class FieldError {
     PhoneInvalid,
     BirthDateEmpty,
     Underage,
+    PostalCodeInvalid,
+    PasswordUnchanged,
 }
 
 /** Requisitos de una contraseña nueva, para mostrarlos en vivo mientras se escribe. */

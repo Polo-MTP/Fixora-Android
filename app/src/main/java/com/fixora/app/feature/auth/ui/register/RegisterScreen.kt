@@ -8,14 +8,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -43,27 +37,23 @@ import com.fixora.app.core.designsystem.component.FixoraTextLink
 import com.fixora.app.core.designsystem.theme.FixoraTheme
 import com.fixora.app.core.designsystem.theme.Navy900
 import com.fixora.app.core.designsystem.theme.Slate500
-import com.fixora.app.core.designsystem.theme.SuccessGreen
 import com.fixora.app.core.designsystem.theme.White
 import com.fixora.app.core.ui.slideBackwardEnter
 import com.fixora.app.core.ui.slideBackwardExit
 import com.fixora.app.core.ui.slideForwardEnter
 import com.fixora.app.core.ui.slideForwardExit
-import com.fixora.app.feature.auth.domain.PasswordRules
 import com.fixora.app.feature.auth.ui.components.AuthFooter
 import com.fixora.app.feature.auth.ui.components.AuthScaffold
 import com.fixora.app.feature.auth.ui.components.AuthStep
 import com.fixora.app.feature.auth.ui.components.AuthTextField
+import com.fixora.app.feature.auth.ui.components.BirthDateFormat
+import com.fixora.app.feature.auth.ui.components.BirthDatePickerDialog
+import com.fixora.app.feature.auth.ui.components.PasswordRulesView
 import com.fixora.app.feature.auth.ui.components.VerificationCodeField
 import com.fixora.app.feature.auth.ui.components.message
 import kotlinx.coroutines.delay
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 
 private const val RESEND_SECONDS = 59
-private val DateFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
 /**
  * Registro del cliente en tres pasos (módulos 1 y 2): cuenta, verificación del correo y datos
@@ -160,31 +150,6 @@ private fun AccountStep(
             modifier = Modifier.padding(top = 6.dp),
         )
     }
-}
-
-/** Requisitos de la contraseña: se marcan en verde mientras se cumplen. */
-@Composable
-private fun PasswordRulesView(rules: PasswordRules) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Row(Modifier.fillMaxWidth()) {
-            Rule(stringResource(R.string.register_rule_length), rules.minLength, Modifier.weight(1f))
-            Rule(stringResource(R.string.register_rule_uppercase), rules.uppercase, Modifier.weight(1f))
-        }
-        Row(Modifier.fillMaxWidth()) {
-            Rule(stringResource(R.string.register_rule_digit), rules.digit, Modifier.weight(1f))
-            Rule(stringResource(R.string.register_rule_lowercase), rules.lowercase, Modifier.weight(1f))
-        }
-    }
-}
-
-@Composable
-private fun Rule(text: String, met: Boolean, modifier: Modifier = Modifier) {
-    Text(
-        text = (if (met) "● " else "○ ") + text,
-        style = MaterialTheme.typography.labelSmall,
-        color = if (met) SuccessGreen else Slate500,
-        modifier = modifier,
-    )
 }
 
 @Composable
@@ -306,7 +271,7 @@ private fun PersonalStep(
             )
         }
         AuthTextField(
-            value = state.birthDate?.format(DateFormat).orEmpty(),
+            value = state.birthDate?.format(BirthDateFormat).orEmpty(),
             onValueChange = {},
             label = stringResource(R.string.personal_birth_date),
             placeholder = stringResource(R.string.personal_birth_date_placeholder),
@@ -341,40 +306,6 @@ private fun PersonalStep(
                 showDatePicker = false
             },
         )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun BirthDatePickerDialog(
-    initial: LocalDate,
-    today: LocalDate,
-    onDismiss: () -> Unit,
-    onConfirm: (LocalDate) -> Unit,
-) {
-    // El selector de Material trabaja en milisegundos UTC.
-    val todayMillis = today.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
-    val pickerState = rememberDatePickerState(
-        initialSelectedDateMillis = initial.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli(),
-        yearRange = (today.year - 100)..today.year,
-        selectableDates = object : SelectableDates {
-            override fun isSelectableDate(utcTimeMillis: Long) = utcTimeMillis <= todayMillis
-        },
-    )
-    DatePickerDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = {
-                pickerState.selectedDateMillis?.let {
-                    onConfirm(Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toLocalDate())
-                }
-            }) { Text(stringResource(R.string.date_picker_ok)) }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.date_picker_cancel)) }
-        },
-    ) {
-        DatePicker(state = pickerState)
     }
 }
 
