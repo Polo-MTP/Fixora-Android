@@ -37,7 +37,7 @@ fun FixoraApp(viewModel: AppViewModel = hiltViewModel()) {
         // La sesión guardada se lee en milisegundos, mucho antes de que acabe la intro: para
         // entonces ya se sabe si se empieza en la landing o en el inicio.
         if (sessionState != SessionState.Loading) {
-            FixoraNavHost(isLoggedIn = sessionState == SessionState.LoggedIn)
+            FixoraNavHost(homeArea = (sessionState as? SessionState.LoggedIn)?.area)
         }
         AnimatedVisibility(
             visible = showIntro,

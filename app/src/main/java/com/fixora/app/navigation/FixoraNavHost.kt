@@ -11,6 +11,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.fixora.app.BuildConfig
+import com.fixora.app.core.session.HomeArea
 import com.fixora.app.core.ui.slideBackwardEnter
 import com.fixora.app.core.ui.slideBackwardExit
 import com.fixora.app.core.ui.slideForwardEnter
@@ -25,25 +26,28 @@ import com.fixora.app.feature.auth.navigation.landingScreen
 import com.fixora.app.feature.auth.navigation.loginScreen
 import com.fixora.app.feature.auth.navigation.registerScreen
 import com.fixora.app.feature.auth.navigation.registerSuccessScreen
-import com.fixora.app.feature.home.navigation.HomeRoute
-import com.fixora.app.feature.home.navigation.homeScreen
+import com.fixora.app.feature.home.navigation.ClientHomeRoute
+import com.fixora.app.feature.home.navigation.ProviderHomeRoute
+import com.fixora.app.feature.home.navigation.clientHomeScreen
+import com.fixora.app.feature.home.navigation.providerHomeScreen
 
 /**
- * @param isLoggedIn decide la pantalla inicial y, cuando cambia, a dónde ir: al iniciar sesión se
- * entra al inicio; al cerrarla (o si la API rechaza la sesión) se regresa a la landing. En ambos
+ * @param homeArea inicio que le toca a la sesión según el rol (null = sin sesión). Decide la
+ * pantalla inicial y, cuando cambia, a dónde ir: al iniciar sesión se entra al inicio del cliente
+ * o del proveedor; al cerrarla (o si la API rechaza la sesión) se regresa a la landing. En ambos
  * casos se limpia el historial para que «atrás» no regrese a la sesión anterior.
  */
 @Composable
 fun FixoraNavHost(
-    isLoggedIn: Boolean,
+    homeArea: HomeArea?,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
 ) {
     val uriHandler = LocalUriHandler.current
-    val startDestination = remember { if (isLoggedIn) HomeRoute else LandingRoute }
+    val startDestination = remember { homeRoute(homeArea) }
 
-    LaunchedEffect(isLoggedIn) {
-        val target: Any = if (isLoggedIn) HomeRoute else LandingRoute
+    LaunchedEffect(homeArea) {
+        val target = homeRoute(homeArea)
         if (navController.currentDestination?.hasRoute(target::class) == true) return@LaunchedEffect
         navController.navigate(target) {
             popUpTo(navController.graph.id) { inclusive = true }
@@ -89,7 +93,8 @@ fun FixoraNavHost(
             // Por ahora regresa a la landing; luego irá al inicio del cliente.
             onContinue = navController::popBackStack,
         )
-        homeScreen()
+        clientHomeScreen()
+        providerHomeScreen()
     }
 }
 
@@ -97,4 +102,10 @@ fun FixoraNavHost(
 private fun UriHandler.openIfConfigured(url: String) {
     if (url.isBlank()) return
     runCatching { openUri(url) }
+}
+
+private fun homeRoute(area: HomeArea?): Any = when (area) {
+    HomeArea.Client -> ClientHomeRoute
+    HomeArea.Provider -> ProviderHomeRoute
+    null -> LandingRoute
 }

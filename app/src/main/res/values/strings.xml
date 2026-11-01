@@ -26,6 +26,7 @@
     <string name="login_submit">Iniciar sesión</string>
     <string name="login_no_account">¿No tienes cuenta?</string>
     <string name="login_register">Regístrate</string>
+    <string name="login_error_web_only">Esta cuenta es de administración. Entra desde el panel web de Fixora.</string>
 
     <!-- Recuperar contraseña -->
     <string name="forgot_title">Recupera tu contraseña</string>
@@ -101,11 +102,29 @@
     <string name="offline_title">Sin conexión a internet</string>
     <string name="offline_message">No podrás iniciar sesión ni enviar solicitudes hasta que vuelva la conexión.</string>
 
-    <!-- Inicio provisional -->
+    <!-- Inicios por rol: pestañas -->
+    <string name="tab_home">Inicio</string>
+    <string name="tab_map">Mapa</string>
+    <string name="tab_activity">Actividad</string>
+    <string name="tab_account">Cuenta</string>
+    <string name="tab_services">Servicios</string>
+    <string name="tab_reviews">Reseñas</string>
+    <string name="tab_profile">Perfil</string>
+
+    <!-- Inicios por rol: contenido provisional -->
     <string name="home_greeting">¡Hola!</string>
-    <string name="home_subtitle">Iniciaste sesión como</string>
-    <string name="home_role">Rol: %1$s</string>
-    <string name="home_status">Estado: %1$s</string>
-    <string name="home_placeholder">Aquí irá el inicio del cliente. Esta pantalla es provisional para probar la sesión.</string>
     <string name="home_logout">Cerrar sesión</string>
+    <string name="client_home_soon">Muy pronto podrás buscar técnicos verificados y pedir ayuda desde aquí.</string>
+    <string name="client_map_soon">Aquí verás en el mapa a los técnicos disponibles cerca de ti.</string>
+    <string name="client_activity_soon">Aquí aparecerán tus servicios en curso y tu historial.</string>
+    <string name="provider_home_soon">Pronto verás aquí tus solicitudes, ingresos y calificación del día.</string>
+    <string name="provider_services_soon">Aquí aparecerán los servicios que aceptes y su estado.</string>
+    <string name="provider_reviews_soon">Aquí verás las reseñas que te dejen tus clientes.</string>
+    <string name="account_title">Mi cuenta</string>
+
+    <!-- Roles -->
+    <string name="role_client">Cliente</string>
+    <string name="role_provider">Proveedor</string>
+    <string name="role_manager">Gerente</string>
+    <string name="role_employee">Empleado</string>
 </resources>
