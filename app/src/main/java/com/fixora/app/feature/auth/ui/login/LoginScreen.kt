@@ -22,7 +22,9 @@ import com.fixora.app.core.designsystem.component.FixoraPrimaryButton
 import com.fixora.app.core.designsystem.component.FixoraTextLink
 import com.fixora.app.core.designsystem.theme.ErrorRed
 import com.fixora.app.core.designsystem.theme.FixoraTheme
+import com.fixora.app.core.network.ApiError
 import com.fixora.app.core.ui.message
+import com.fixora.app.feature.auth.data.AuthRepository
 import com.fixora.app.feature.auth.ui.components.AuthFooter
 import com.fixora.app.feature.auth.ui.components.AuthScaffold
 import com.fixora.app.feature.auth.ui.components.AuthTextField
@@ -100,7 +102,7 @@ private fun LoginContent(
         )
         state.error?.let { error ->
             Text(
-                text = error.message(),
+                text = error.loginMessage(),
                 style = MaterialTheme.typography.bodySmall,
                 color = ErrorRed,
                 modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
@@ -122,3 +124,12 @@ private fun LoginPreview() {
         LoginContent(LoginUiState(), {}, {}, {}, {}, {}, {}, {}, {})
     }
 }
+
+/** Las cuentas de administrador y soporte se usan en el panel web, no en la app. */
+@Composable
+private fun ApiError.loginMessage(): String =
+    if (this is ApiError.Http && code == AuthRepository.WEB_ONLY_ROLE) {
+        stringResource(R.string.login_error_web_only)
+    } else {
+        message()
+    }
