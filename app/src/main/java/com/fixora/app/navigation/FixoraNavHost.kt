@@ -25,12 +25,10 @@ import com.fixora.app.feature.auth.navigation.ForgotPasswordRoute
 import com.fixora.app.feature.auth.navigation.LandingRoute
 import com.fixora.app.feature.auth.navigation.LoginRoute
 import com.fixora.app.feature.auth.navigation.RegisterRoute
-import com.fixora.app.feature.auth.navigation.RegisterSuccessRoute
 import com.fixora.app.feature.auth.navigation.forgotPasswordScreen
 import com.fixora.app.feature.auth.navigation.landingScreen
 import com.fixora.app.feature.auth.navigation.loginScreen
 import com.fixora.app.feature.auth.navigation.registerScreen
-import com.fixora.app.feature.auth.navigation.registerSuccessScreen
 import com.fixora.app.feature.home.navigation.ClientHomeRoute
 import com.fixora.app.feature.home.navigation.ProviderHomeRoute
 import com.fixora.app.feature.home.navigation.clientHomeScreen
@@ -86,17 +84,6 @@ fun FixoraNavHost(
         registerScreen(
             onExit = navController::popBackStack,
             onLogin = { navController.popBackStack<LoginRoute>(inclusive = false) },
-            // TODO(ANDROID-3): crear la cuenta en la API antes de mostrar la confirmación.
-            onRegistered = {
-                // Al terminar, «atrás» ya no regresa al formulario sino a la landing.
-                navController.navigate(RegisterSuccessRoute) {
-                    popUpTo<LandingRoute>()
-                }
-            },
-        )
-        registerSuccessScreen(
-            // Por ahora regresa a la landing; luego irá al inicio del cliente.
-            onContinue = navController::popBackStack,
         )
         clientHomeScreen(
             onOpenPersonalData = { navController.navigate(PersonalDataRoute) },

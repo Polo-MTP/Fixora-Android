@@ -6,7 +6,6 @@ import com.fixora.app.feature.auth.ui.forgot.ForgotPasswordScreen
 import com.fixora.app.feature.auth.ui.landing.LandingScreen
 import com.fixora.app.feature.auth.ui.login.LoginScreen
 import com.fixora.app.feature.auth.ui.register.RegisterScreen
-import com.fixora.app.feature.auth.ui.register.RegisterSuccessScreen
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -20,9 +19,6 @@ data object ForgotPasswordRoute
 
 @Serializable
 data object RegisterRoute
-
-@Serializable
-data object RegisterSuccessRoute
 
 fun NavGraphBuilder.landingScreen(
     onStartClick: () -> Unit,
@@ -60,18 +56,12 @@ fun NavGraphBuilder.forgotPasswordScreen(
     }
 }
 
+/** Al terminar, el registro guarda la sesión y FixoraNavHost lleva al inicio del cliente. */
 fun NavGraphBuilder.registerScreen(
     onExit: () -> Unit,
     onLogin: () -> Unit,
-    onRegistered: () -> Unit,
 ) {
     composable<RegisterRoute> {
-        RegisterScreen(onExit = onExit, onLogin = onLogin, onRegistered = onRegistered)
-    }
-}
-
-fun NavGraphBuilder.registerSuccessScreen(onContinue: () -> Unit) {
-    composable<RegisterSuccessRoute> {
-        RegisterSuccessScreen(onContinue = onContinue)
+        RegisterScreen(onExit = onExit, onLogin = onLogin)
     }
 }

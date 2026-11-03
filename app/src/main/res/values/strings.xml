@@ -47,7 +47,7 @@
     <string name="register_continue">Continuar</string>
     <string name="register_has_account">¿Ya tienes cuenta?</string>
 
-    <!-- Registro · 2 Verificar correo -->
+    <!-- Registro · 3 Verificar correo -->
     <string name="verify_title">Verifica tu correo</string>
     <string name="verify_subtitle">Te enviamos un código de 6 dígitos a %1$s.</string>
     <string name="verify_code_label">Código de verificación</string>
@@ -57,8 +57,10 @@
     <string name="verify_submit">Verificar</string>
     <string name="verify_wrong_email">¿Correo equivocado?</string>
     <string name="verify_change_email">Cámbialo</string>
+    <string name="verify_code_resent">Te enviamos un código nuevo.</string>
+    <string name="register_error_email_send">Creamos tu cuenta, pero no pudimos enviarte el código. Pide otro.</string>
 
-    <!-- Registro · 3 Tus datos -->
+    <!-- Registro · 2 Tus datos -->
     <string name="personal_title">Cuéntanos de ti</string>
     <string name="personal_subtitle">Así te reconocerán los técnicos al llegar.</string>
     <string name="personal_name">Nombre(s)</string>
