@@ -47,7 +47,7 @@ android {
             dimension = "env"
             applicationIdSuffix = ".dev"
             versionNameSuffix = "-dev"
-            resValue("string", "app_name", "Fixora Dev")
+            resValue("string", "app_name", "Fixora")
         }
         create("prod") {
             dimension = "env"
