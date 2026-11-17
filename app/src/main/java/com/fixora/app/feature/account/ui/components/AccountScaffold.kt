@@ -35,6 +35,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.fixora.app.R
+import com.fixora.app.core.designsystem.component.FixoraTextLink
 import com.fixora.app.core.designsystem.theme.ErrorRed
 import com.fixora.app.core.designsystem.theme.Mist200
 import com.fixora.app.core.designsystem.theme.Mist50
@@ -42,7 +43,9 @@ import com.fixora.app.core.designsystem.theme.Navy800
 import com.fixora.app.core.designsystem.theme.Navy900
 import com.fixora.app.core.designsystem.theme.Slate500
 import com.fixora.app.core.designsystem.theme.White
+import com.fixora.app.core.network.ApiError
 import com.fixora.app.core.ui.SystemBarsAppearance
+import com.fixora.app.core.ui.message
 
 /**
  * Estructura de las pantallas de Mi cuenta: botón de regresar y título arriba, el formulario con
@@ -117,20 +120,26 @@ private fun BackButton(onClick: () -> Unit) {
     }
 }
 
-/** Aviso de que la pantalla usa datos de ejemplo mientras la API no tenga los endpoints (API-10). */
+/** Aviso de que no se pudieron cargar los datos de la API, con la opción de volver a intentarlo. */
 @Composable
-fun SampleDataNotice(modifier: Modifier = Modifier) {
-    Text(
-        text = stringResource(R.string.account_sample_notice),
-        style = MaterialTheme.typography.labelSmall,
-        color = Slate500,
+fun LoadErrorNotice(error: ApiError, onRetry: () -> Unit, modifier: Modifier = Modifier) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
             .background(White)
             .border(1.dp, Mist200, RoundedCornerShape(14.dp))
-            .padding(horizontal = 14.dp, vertical = 10.dp),
-    )
+            .padding(horizontal = 14.dp, vertical = 12.dp)
+            .semantics { liveRegion = LiveRegionMode.Polite },
+    ) {
+        Text(
+            text = stringResource(R.string.account_load_error, error.message()),
+            style = MaterialTheme.typography.bodySmall,
+            color = Slate500,
+        )
+        FixoraTextLink(text = stringResource(R.string.account_retry), onClick = onRetry)
+    }
 }
 
 /** Mensaje de error de la API sobre el botón de guardar. */

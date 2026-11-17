@@ -34,9 +34,12 @@ import com.fixora.app.core.designsystem.theme.Navy800
 import com.fixora.app.core.designsystem.theme.Navy900
 import com.fixora.app.core.designsystem.theme.Orange500
 import com.fixora.app.core.designsystem.theme.Slate500
+import com.fixora.app.core.network.ApiError
+import com.fixora.app.core.ui.message
 import com.fixora.app.feature.account.domain.Address
 import com.fixora.app.feature.account.ui.components.AccountScaffold
-import com.fixora.app.feature.account.ui.components.SampleDataNotice
+import com.fixora.app.feature.account.ui.components.FormErrorText
+import com.fixora.app.feature.account.ui.components.LoadErrorNotice
 
 /** Direcciones guardadas del cliente (ANDROID-5): tocar una la edita; una es la principal. */
 @Composable
@@ -47,29 +50,38 @@ fun AddressesScreen(
     viewModel: AddressesViewModel = hiltViewModel(),
 ) {
     val addresses by viewModel.addresses.collectAsState()
+    val loadError by viewModel.loadError.collectAsState()
+    val actionError by viewModel.actionError.collectAsState()
     AddressesContent(
         addresses = addresses,
+        loadError = loadError,
+        actionError = actionError,
         onBack = onBack,
         onAdd = onAdd,
         onEdit = onEdit,
         onSetMain = viewModel::setMain,
+        onRetryLoad = viewModel::retryLoad,
     )
 }
 
 @Composable
 private fun AddressesContent(
     addresses: List<Address>?,
+    loadError: ApiError?,
+    actionError: ApiError?,
     onBack: () -> Unit,
     onAdd: () -> Unit,
     onEdit: (String) -> Unit,
     onSetMain: (String) -> Unit,
+    onRetryLoad: () -> Unit,
 ) {
     AccountScaffold(
         title = stringResource(R.string.addresses_title),
         onBack = onBack,
         bottomBar = { FixoraPrimaryButton(text = stringResource(R.string.addresses_add), onClick = onAdd) },
     ) {
-        SampleDataNotice()
+        if (addresses == null) loadError?.let { LoadErrorNotice(it, onRetry = onRetryLoad) }
+        actionError?.let { FormErrorText(it.message()) }
         if (addresses?.isEmpty() == true) {
             Text(
                 text = stringResource(R.string.addresses_empty),
@@ -131,7 +143,8 @@ private fun AddressesPreview() {
                 Address("1", "Casa", "Av. Insurgentes Sur", "1234", "5", "Del Valle", "03100", "Benito Juárez", "Ciudad de México", "", true),
                 Address("2", "Trabajo", "Paseo de la Reforma", "250", "", "Juárez", "06600", "Cuauhtémoc", "Ciudad de México", "", false),
             ),
-            onBack = {}, onAdd = {}, onEdit = {}, onSetMain = {},
+            loadError = null, actionError = null,
+            onBack = {}, onAdd = {}, onEdit = {}, onSetMain = {}, onRetryLoad = {},
         )
     }
 }

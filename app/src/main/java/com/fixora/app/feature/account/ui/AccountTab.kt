@@ -30,7 +30,6 @@ import com.fixora.app.core.designsystem.theme.FixoraTheme
 import com.fixora.app.core.designsystem.theme.Navy900
 import com.fixora.app.core.designsystem.theme.Slate500
 import com.fixora.app.feature.account.domain.PersonalData
-import com.fixora.app.feature.account.ui.components.SampleDataNotice
 import java.time.LocalDate
 
 /** Pestaña «Cuenta» del cliente (ANDROID-5): perfil, accesos a cada sección y cerrar sesión. */
@@ -67,7 +66,6 @@ private fun AccountTabContent(
             .padding(horizontal = 24.dp, vertical = 20.dp),
     ) {
         Text(stringResource(R.string.account_title), style = MaterialTheme.typography.headlineLarge, color = Navy900)
-        SampleDataNotice()
         FixoraCard {
             Row(
                 verticalAlignment = Alignment.CenterVertically,

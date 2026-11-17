@@ -15,7 +15,6 @@ import com.fixora.app.core.designsystem.theme.FixoraTheme
 import com.fixora.app.core.ui.message
 import com.fixora.app.feature.account.ui.components.AccountScaffold
 import com.fixora.app.feature.account.ui.components.FormErrorText
-import com.fixora.app.feature.account.ui.components.SampleDataNotice
 import com.fixora.app.feature.auth.ui.components.AuthTextField
 import com.fixora.app.feature.auth.ui.components.PasswordRulesView
 import com.fixora.app.feature.auth.ui.components.message
@@ -72,7 +71,6 @@ private fun ChangePasswordContent(
             )
         },
     ) {
-        SampleDataNotice()
         AuthTextField(
             value = state.current.value,
             onValueChange = onCurrentChange,

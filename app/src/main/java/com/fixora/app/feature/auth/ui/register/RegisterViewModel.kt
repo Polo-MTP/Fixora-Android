@@ -9,6 +9,7 @@ import com.fixora.app.feature.auth.data.AuthRepository
 import com.fixora.app.feature.auth.data.NewClient
 import com.fixora.app.feature.auth.domain.AuthValidator
 import com.fixora.app.feature.auth.ui.FormField
+import com.fixora.app.feature.auth.ui.components.RESEND_SECONDS
 import com.fixora.app.feature.auth.ui.visibleIf
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,9 +20,6 @@ import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
-
-/** Segundos que la API pide esperar entre un envío del código y el siguiente. */
-const val RESEND_SECONDS = 60
 
 /**
  * Pasos del registro del cliente (módulos 1 y 2 en Plane). La API pide los datos personales para

@@ -33,6 +33,13 @@
     <string name="forgot_subtitle">Escribe tu correo y te enviaremos un código para crear una nueva.</string>
     <string name="forgot_submit">Enviar código</string>
     <string name="forgot_remembered">¿La recordaste?</string>
+    <string name="forgot_reset_title">Crea tu nueva contraseña</string>
+    <string name="forgot_reset_subtitle">Si %1$s tiene una cuenta, te enviamos un código de 6 dígitos. Escríbelo junto con tu nueva contraseña.</string>
+    <string name="forgot_reset_submit">Cambiar contraseña</string>
+    <string name="forgot_error_email_send">No pudimos enviarte el código. Intenta de nuevo en unos minutos.</string>
+    <string name="forgot_success_title">¡Contraseña actualizada!</string>
+    <string name="forgot_success_subtitle">Ya puedes iniciar sesión con tu nueva contraseña. Por seguridad, cerramos las sesiones que tenías abiertas.</string>
+    <string name="forgot_success_continue">Iniciar sesión</string>
 
     <!-- Registro · 1 Cuenta -->
     <string name="register_account_title">Crea tu cuenta</string>
@@ -127,7 +134,8 @@
     <string name="account_title">Mi cuenta</string>
 
     <!-- Mi cuenta -->
-    <string name="account_sample_notice">Vista previa con datos de ejemplo: los cambios todavía no se guardan en tu cuenta.</string>
+    <string name="account_load_error">No pudimos cargar tus datos. %1$s</string>
+    <string name="account_retry">Reintentar</string>
     <string name="account_personal_subtitle">Nombre, fecha de nacimiento y teléfono</string>
     <string name="account_addresses_main">Principal: %1$s</string>
     <string name="account_addresses_empty">Agrega dónde necesitas los servicios</string>

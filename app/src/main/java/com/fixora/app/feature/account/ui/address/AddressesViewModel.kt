@@ -2,11 +2,15 @@ package com.fixora.app.feature.account.ui.address
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.fixora.app.core.network.ApiError
+import com.fixora.app.core.network.ApiResult
 import com.fixora.app.feature.account.data.AccountRepository
 import com.fixora.app.feature.account.domain.Address
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -23,7 +27,24 @@ class AddressesViewModel @Inject constructor(
         .map { list -> list.sortedByDescending { it.isMain } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
+    /** Error de la última carga; la pantalla lo muestra solo mientras no hay lista. */
+    val loadError: StateFlow<ApiError?> = accountRepository.addressesError
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    private val _actionError = MutableStateFlow<ApiError?>(null)
+
+    /** Error al marcar una dirección como principal. */
+    val actionError: StateFlow<ApiError?> = _actionError.asStateFlow()
+
+    fun retryLoad() {
+        viewModelScope.launch { accountRepository.refreshAddresses() }
+    }
+
     fun setMain(id: String) {
-        viewModelScope.launch { accountRepository.setMainAddress(id) }
+        _actionError.value = null
+        viewModelScope.launch {
+            val result = accountRepository.setMainAddress(id)
+            if (result is ApiResult.Failure) _actionError.value = result.error
+        }
     }
 }

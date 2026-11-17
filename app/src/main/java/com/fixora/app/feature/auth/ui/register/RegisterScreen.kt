@@ -10,14 +10,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -34,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.fixora.app.R
 import com.fixora.app.core.designsystem.component.FixoraPrimaryButton
-import com.fixora.app.core.designsystem.component.FixoraTextLink
 import com.fixora.app.core.designsystem.theme.ErrorRed
 import com.fixora.app.core.designsystem.theme.FixoraTheme
 import com.fixora.app.core.designsystem.theme.Navy900
@@ -54,9 +50,9 @@ import com.fixora.app.feature.auth.ui.components.AuthTextField
 import com.fixora.app.feature.auth.ui.components.BirthDateFormat
 import com.fixora.app.feature.auth.ui.components.BirthDatePickerDialog
 import com.fixora.app.feature.auth.ui.components.PasswordRulesView
+import com.fixora.app.feature.auth.ui.components.ResendCountdown
 import com.fixora.app.feature.auth.ui.components.VerificationCodeField
 import com.fixora.app.feature.auth.ui.components.message
-import kotlinx.coroutines.delay
 
 /**
  * Registro del cliente (módulos 1 y 2): cuenta, datos personales y verificación del correo. Al
@@ -295,38 +291,6 @@ private fun VerifyStep(
             enabled = state.isCodeComplete,
             loading = state.isLoading,
         )
-    }
-}
-
-/**
- * Cuenta regresiva para poder pedir otro código; al llegar a cero muestra «Reenviar código». Se
- * reinicia cada vez que cambia [round] (se envió un código nuevo).
- */
-@Composable
-private fun ResendCountdown(round: Int, startSeconds: Int, onResend: () -> Unit) {
-    var secondsLeft by rememberSaveable(round) { mutableIntStateOf(startSeconds) }
-    LaunchedEffect(round) {
-        while (secondsLeft > 0) {
-            delay(1_000)
-            secondsLeft--
-        }
-    }
-
-    Row(
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        if (secondsLeft > 0) {
-            Text(
-                text = stringResource(R.string.verify_resend_in, "%d:%02d".format(secondsLeft / 60, secondsLeft % 60)),
-                style = MaterialTheme.typography.bodyMedium,
-                color = Slate500,
-            )
-        } else {
-            Text("${stringResource(R.string.verify_not_received)} ", style = MaterialTheme.typography.bodyMedium, color = Slate500)
-            FixoraTextLink(stringResource(R.string.verify_resend), onClick = onResend)
-        }
     }
 }
 
