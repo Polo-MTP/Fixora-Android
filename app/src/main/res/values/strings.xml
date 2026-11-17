@@ -231,4 +231,8 @@
     <string name="vehicle_delete_title">¿Quitar este vehículo?</string>
     <string name="vehicle_delete_message">El cliente ya no verá las placas de tu vehículo.</string>
     <string name="vehicle_delete_confirm">Quitar</string>
+
+    <!-- Notificaciones push -->
+    <string name="push_channel_general">Avisos de Fixora</string>
+    <string name="push_channel_general_description">Cambios en tus solicitudes, servicios y cuenta.</string>
 </resources>

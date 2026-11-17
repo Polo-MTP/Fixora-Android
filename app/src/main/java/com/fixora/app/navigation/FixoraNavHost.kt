@@ -11,6 +11,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.fixora.app.BuildConfig
+import com.fixora.app.core.notifications.PushMessage
 import com.fixora.app.core.session.HomeArea
 import com.fixora.app.core.ui.slideBackwardEnter
 import com.fixora.app.core.ui.slideBackwardExit
@@ -42,11 +43,15 @@ import com.fixora.app.feature.profile.navigation.profileScreens
  * pantalla inicial y, cuando cambia, a dónde ir: al iniciar sesión se entra al inicio del cliente
  * o del proveedor; al cerrarla (o si la API rechaza la sesión) se regresa a la landing. En ambos
  * casos se limpia el historial para que «atrás» no regrese a la sesión anterior.
+ * @param openedNotification notificación con la que se abrió la app; se resuelve con
+ * [notificationRoute] y luego se avisa con [onNotificationHandled] para no repetirla.
  */
 @Composable
 fun FixoraNavHost(
     homeArea: HomeArea?,
     modifier: Modifier = Modifier,
+    openedNotification: PushMessage? = null,
+    onNotificationHandled: () -> Unit = {},
     navController: NavHostController = rememberNavController(),
 ) {
     val uriHandler = LocalUriHandler.current
@@ -58,6 +63,13 @@ fun FixoraNavHost(
         navController.navigate(target) {
             popUpTo(navController.graph.id) { inclusive = true }
         }
+    }
+
+    LaunchedEffect(openedNotification, homeArea) {
+        val message = openedNotification ?: return@LaunchedEffect
+        // Sin sesión no hay a dónde llevar: se queda en la landing.
+        if (homeArea != null) notificationRoute(message)?.let { navController.navigate(it) }
+        onNotificationHandled()
     }
 
     NavHost(
