@@ -78,8 +78,6 @@ fun FixoraNavHost(
         forgotPasswordScreen(
             onBack = navController::popBackStack,
             onLogin = navController::popBackStack,
-            // TODO(ANDROID-4): pedir a la API el código de recuperación.
-            onSubmit = {},
         )
         registerScreen(
             onExit = navController::popBackStack,

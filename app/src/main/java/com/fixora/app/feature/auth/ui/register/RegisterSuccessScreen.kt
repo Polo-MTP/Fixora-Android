@@ -38,9 +38,14 @@ import com.fixora.app.core.designsystem.theme.SuccessGreen
 import com.fixora.app.core.designsystem.theme.White
 import com.fixora.app.core.ui.SystemBarsAppearance
 
-/** Confirmación al terminar el registro. */
+/** Confirmación al terminar el registro; la recuperación de contraseña la usa con sus textos. */
 @Composable
-fun RegisterSuccessScreen(onContinue: () -> Unit) {
+fun RegisterSuccessScreen(
+    onContinue: () -> Unit,
+    title: String = stringResource(R.string.register_success_title),
+    subtitle: String = stringResource(R.string.register_success_subtitle),
+    action: String = stringResource(R.string.register_success_continue),
+) {
     SystemBarsAppearance(lightIcons = false)
     // Entrada: el círculo crece con un pequeño rebote y luego suben los textos y el botón.
     val entrance = remember { Animatable(0f) }
@@ -79,21 +84,21 @@ fun RegisterSuccessScreen(onContinue: () -> Unit) {
             },
         ) {
             Text(
-                text = stringResource(R.string.register_success_title),
+                text = title,
                 style = MaterialTheme.typography.headlineLarge,
                 color = Navy900,
                 textAlign = TextAlign.Center,
             )
             Spacer(Modifier.height(10.dp))
             Text(
-                text = stringResource(R.string.register_success_subtitle),
+                text = subtitle,
                 style = MaterialTheme.typography.bodyMedium,
                 color = Slate500,
                 textAlign = TextAlign.Center,
             )
             Spacer(Modifier.height(32.dp))
             FixoraPrimaryButton(
-                text = stringResource(R.string.register_success_continue),
+                text = action,
                 onClick = onContinue,
             )
         }

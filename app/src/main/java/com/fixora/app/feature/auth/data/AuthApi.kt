@@ -18,6 +18,13 @@ interface AuthApi {
 
     @POST("auth/resend-verification")
     suspend fun resendVerification(@Body body: EmailRequest): MessageResponse
+
+    /** Responde lo mismo exista o no la cuenta, para no revelar qué correos están registrados. */
+    @POST("auth/forgot-password")
+    suspend fun forgotPassword(@Body body: EmailRequest): MessageResponse
+
+    @POST("auth/reset-password")
+    suspend fun resetPassword(@Body body: ResetPasswordRequest): MessageResponse
 }
 
 @Serializable
@@ -50,6 +57,14 @@ data class VerifyEmailRequest(val email: String, val code: String)
 
 @Serializable
 data class EmailRequest(val email: String)
+
+@Serializable
+data class ResetPasswordRequest(
+    val email: String,
+    /** Los 6 dígitos que la API mandó al correo. */
+    val code: String,
+    @SerialName("new_password") val newPassword: String,
+)
 
 @Serializable
 data class MessageResponse(val message: String)

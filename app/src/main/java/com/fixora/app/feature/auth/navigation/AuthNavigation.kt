@@ -46,13 +46,13 @@ fun NavGraphBuilder.loginScreen(
     }
 }
 
+/** Al cambiar la contraseña, [onLogin] regresa al login para entrar con la nueva. */
 fun NavGraphBuilder.forgotPasswordScreen(
     onBack: () -> Unit,
     onLogin: () -> Unit,
-    onSubmit: () -> Unit,
 ) {
     composable<ForgotPasswordRoute> {
-        ForgotPasswordScreen(onBack = onBack, onLogin = onLogin, onSubmit = onSubmit)
+        ForgotPasswordScreen(onBack = onBack, onLogin = onLogin)
     }
 }
 
