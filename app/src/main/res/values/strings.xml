@@ -235,4 +235,19 @@
     <!-- Notificaciones push -->
     <string name="push_channel_general">Avisos de Fixora</string>
     <string name="push_channel_general_description">Cambios en tus solicitudes, servicios y cuenta.</string>
+
+    <!-- En línea / Fuera de línea (ANDROID-9) -->
+    <string name="availability_online">En línea</string>
+    <string name="availability_offline">Fuera de línea</string>
+    <string name="availability_online_hint">Apareces en el mapa y puedes recibir solicitudes.</string>
+    <string name="availability_offline_hint">Conéctate para aparecer en el mapa y recibir solicitudes.</string>
+    <string name="availability_branch_closed">Tu sucursal está cerrada o no acepta solicitudes ahora. Podrás conectarte en su horario.</string>
+    <string name="availability_load_error">No pudimos consultar tu estado. %1$s</string>
+    <string name="availability_location_denied">Para conectarte necesitamos tu ubicación: así el cliente sabe que estás cerca. Actívala en los permisos de la app.</string>
+    <string name="availability_location_unavailable">No pudimos obtener tu ubicación. Revisa que esté encendida e inténtalo de nuevo.</string>
+    <string name="availability_channel">Estado En línea</string>
+    <string name="availability_channel_description">Aviso fijo mientras compartes tu ubicación para recibir solicitudes.</string>
+    <string name="availability_notification_title">Estás en línea</string>
+    <string name="availability_notification_text">Compartimos tu ubicación para que te lleguen solicitudes cercanas.</string>
+    <string name="availability_go_offline">Desconectarme</string>
 </resources>

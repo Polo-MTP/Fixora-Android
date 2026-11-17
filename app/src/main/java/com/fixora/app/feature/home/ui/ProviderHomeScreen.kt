@@ -11,6 +11,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.fixora.app.R
 import com.fixora.app.core.designsystem.component.BottomBarItem
 import com.fixora.app.core.designsystem.theme.FixoraTheme
+import com.fixora.app.feature.availability.ui.ProviderHomeTab
 import com.fixora.app.feature.home.ui.components.ComingSoonTab
 import com.fixora.app.feature.home.ui.components.HomeTabsScaffold
 import com.fixora.app.feature.profile.ui.ProviderProfileTab
@@ -25,8 +26,8 @@ enum class ProviderTab(val item: BottomBarItem) {
 
 /**
  * Inicio del proveedor, gerente y empleado (ANDROID-4). Solo entran cuentas aprobadas: la API
- * rechaza el login de las que siguen «por aprobar». Inicio, Servicios y Reseñas son provisionales;
- * Perfil tiene la foto, biografía y vehículo del técnico (ANDROID-7).
+ * rechaza el login de las que siguen «por aprobar». Inicio tiene el interruptor En línea (ANDROID-9);
+ * Servicios y Reseñas son provisionales; Perfil tiene la foto, biografía y vehículo (ANDROID-7).
  */
 @Composable
 fun ProviderHomeScreen(
@@ -41,6 +42,7 @@ fun ProviderHomeScreen(
     ProviderHomeContent(
         tab = tab,
         onSelectTab = { tab = it },
+        homeTab = { ProviderHomeTab() },
         profileTab = {
             ProviderProfileTab(
                 onOpenPhoto = onOpenPhoto,
@@ -56,6 +58,7 @@ fun ProviderHomeScreen(
 private fun ProviderHomeContent(
     tab: ProviderTab,
     onSelectTab: (ProviderTab) -> Unit,
+    homeTab: @Composable () -> Unit,
     profileTab: @Composable () -> Unit,
 ) {
     HomeTabsScaffold(
@@ -64,11 +67,7 @@ private fun ProviderHomeContent(
         onSelect = { onSelectTab(ProviderTab.entries[it]) },
     ) {
         when (tab) {
-            ProviderTab.Home -> ComingSoonTab(
-                title = stringResource(R.string.home_greeting),
-                message = stringResource(R.string.provider_home_soon),
-                icon = R.drawable.ic_nav_home,
-            )
+            ProviderTab.Home -> homeTab()
             ProviderTab.Services -> ComingSoonTab(
                 title = stringResource(R.string.tab_services),
                 message = stringResource(R.string.provider_services_soon),
@@ -88,6 +87,6 @@ private fun ProviderHomeContent(
 @Composable
 private fun ProviderHomePreview() {
     FixoraTheme {
-        ProviderHomeContent(tab = ProviderTab.Home, onSelectTab = {}, profileTab = {})
+        ProviderHomeContent(tab = ProviderTab.Home, onSelectTab = {}, homeTab = {}, profileTab = {})
     }
 }

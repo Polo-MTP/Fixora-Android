@@ -76,23 +76,29 @@ fun ComingSoonTab(title: String, message: String, @DrawableRes icon: Int) {
             .padding(horizontal = 24.dp, vertical = 20.dp),
     ) {
         TabTitle(title)
-        FixoraCard {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(14.dp),
-                modifier = Modifier.padding(18.dp),
+        ComingSoonCard(message, icon)
+    }
+}
+
+/** Tarjeta que explica lo que habrá en una sección que todavía no existe. */
+@Composable
+fun ComingSoonCard(message: String, @DrawableRes icon: Int) {
+    FixoraCard {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            modifier = Modifier.padding(18.dp),
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Mist50),
             ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(Mist50),
-                ) {
-                    Icon(painterResource(icon), contentDescription = null, tint = Navy800, modifier = Modifier.size(24.dp))
-                }
-                Text(message, style = MaterialTheme.typography.bodyMedium, color = Slate500, modifier = Modifier.weight(1f))
+                Icon(painterResource(icon), contentDescription = null, tint = Navy800, modifier = Modifier.size(24.dp))
             }
+            Text(message, style = MaterialTheme.typography.bodyMedium, color = Slate500, modifier = Modifier.weight(1f))
         }
     }
 }

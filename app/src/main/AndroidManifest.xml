@@ -5,6 +5,12 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- En línea (ANDROID-9): la ubicación se reporta desde un servicio en primer plano que se
+         inicia con la app abierta, así que no hace falta ACCESS_BACKGROUND_LOCATION. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
 
     <application
         android:name=".FixoraApplication"
@@ -51,6 +57,12 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+
+        <!-- Reporta la ubicación mientras el técnico está En línea (ANDROID-9). -->
+        <service
+            android:name=".feature.availability.service.OnlineService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
 
         <!-- Con la app en segundo plano Android muestra la notificación con estos valores. -->
         <meta-data

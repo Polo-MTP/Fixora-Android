@@ -1,11 +1,13 @@
 package com.fixora.app.core.notifications
 
+import com.fixora.app.core.session.LogoutListener
 import com.fixora.app.core.session.SessionStore
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dagger.multibindings.IntoSet
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -43,5 +45,11 @@ abstract class NotificationsModule {
             json = json,
             scope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
         )
+
+        /** Al cerrar sesión desactiva el token para que no le lleguen avisos de esa cuenta. */
+        @Provides
+        @IntoSet
+        fun provideUnregisterOnLogout(registrar: DeviceTokenRegistrar): LogoutListener =
+            LogoutListener { registrar.unregister() }
     }
 }
