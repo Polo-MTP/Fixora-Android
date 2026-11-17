@@ -24,6 +24,8 @@ import javax.inject.Inject
 
 data class PersonalDataUiState(
     val isLoaded: Boolean = false,
+    /** No se pudieron cargar los datos de la API; la pantalla ofrece reintentar. */
+    val loadError: ApiError? = null,
     val email: String = "",
     val name: FormField = FormField(),
     val lastNameP: FormField = FormField(),
@@ -61,12 +63,19 @@ class PersonalDataViewModel @Inject constructor(
     val uiState: StateFlow<PersonalDataUiState> = _uiState.asStateFlow()
 
     init {
+        // Mientras los datos no lleguen, se muestra el error de la última carga (si hubo).
+        viewModelScope.launch {
+            accountRepository.personalDataError.collect { error ->
+                _uiState.update { if (it.isLoaded) it else it.copy(loadError = error) }
+            }
+        }
         viewModelScope.launch {
             val data = accountRepository.personalData.first()
             val email = sessionRepository.session.first()?.email.orEmpty()
             _uiState.update {
                 it.copy(
                     isLoaded = true,
+                    loadError = null,
                     email = email,
                     name = FormField(data.name),
                     lastNameP = FormField(data.lastNameP),
@@ -76,6 +85,11 @@ class PersonalDataViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    /** Al llegar los datos, el `first()` de init llena el formulario. */
+    fun retryLoad() {
+        viewModelScope.launch { accountRepository.refreshPersonalData() }
     }
 
     fun onNameChange(value: String) = _uiState.update { it.copy(name = it.name.onChange(value), error = null) }

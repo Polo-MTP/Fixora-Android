@@ -26,7 +26,7 @@ import com.fixora.app.core.designsystem.theme.Slate500
 import com.fixora.app.core.ui.message
 import com.fixora.app.feature.account.ui.components.AccountScaffold
 import com.fixora.app.feature.account.ui.components.FormErrorText
-import com.fixora.app.feature.account.ui.components.SampleDataNotice
+import com.fixora.app.feature.account.ui.components.LoadErrorNotice
 import com.fixora.app.feature.auth.ui.FormField
 import com.fixora.app.feature.auth.ui.components.AuthTextField
 import com.fixora.app.feature.auth.ui.components.BirthDateFormat
@@ -62,6 +62,7 @@ fun PersonalDataScreen(
         onPhoneChange = viewModel::onPhoneChange,
         onPhoneBlur = viewModel::onPhoneBlur,
         onSave = viewModel::save,
+        onRetryLoad = viewModel::retryLoad,
     )
 }
 
@@ -78,6 +79,7 @@ private fun PersonalDataContent(
     onPhoneChange: (String) -> Unit,
     onPhoneBlur: () -> Unit,
     onSave: () -> Unit,
+    onRetryLoad: () -> Unit,
 ) {
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
 
@@ -93,7 +95,7 @@ private fun PersonalDataContent(
             )
         },
     ) {
-        SampleDataNotice()
+        state.loadError?.takeIf { !state.isLoaded }?.let { LoadErrorNotice(it, onRetry = onRetryLoad) }
         AuthTextField(
             value = state.name.value,
             onValueChange = onNameChange,
@@ -183,6 +185,7 @@ private fun PersonalDataPreview() {
             ),
             onBack = {}, onNameChange = {}, onNameBlur = {}, onLastNamePChange = {}, onLastNamePBlur = {},
             onLastNameMChange = {}, onBirthDateSelected = {}, onPhoneChange = {}, onPhoneBlur = {}, onSave = {},
+            onRetryLoad = {},
         )
     }
 }

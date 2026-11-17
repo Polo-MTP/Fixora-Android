@@ -127,7 +127,8 @@
     <string name="account_title">Mi cuenta</string>
 
     <!-- Mi cuenta -->
-    <string name="account_sample_notice">Vista previa con datos de ejemplo: los cambios todavía no se guardan en tu cuenta.</string>
+    <string name="account_load_error">No pudimos cargar tus datos. %1$s</string>
+    <string name="account_retry">Reintentar</string>
     <string name="account_personal_subtitle">Nombre, fecha de nacimiento y teléfono</string>
     <string name="account_addresses_main">Principal: %1$s</string>
     <string name="account_addresses_empty">Agrega dónde necesitas los servicios</string>
