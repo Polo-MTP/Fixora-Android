@@ -195,4 +195,40 @@
     <string name="role_provider">Proveedor</string>
     <string name="role_manager">Gerente</string>
     <string name="role_employee">Empleado</string>
+
+    <!-- Perfil del técnico (ANDROID-7) -->
+    <string name="profile_visible_hint">Tu foto, tu biografía y tu vehículo los verá el cliente antes de que llegues.</string>
+    <string name="profile_not_technician">Esta cuenta no atiende servicios, así que no tiene foto ni vehículo. Los técnicos de tu negocio los agregan desde su propia cuenta.</string>
+    <string name="profile_photo_title">Foto y biografía</string>
+    <string name="profile_photo_subtitle_empty">Agrega tu foto y una breve presentación</string>
+    <string name="profile_photo_description">Foto de perfil</string>
+    <string name="profile_photo_take">Tomar foto</string>
+    <string name="profile_photo_pick">Elegir de la galería</string>
+    <string name="profile_photo_hint">Usa una foto de frente y con buena luz: el cliente la verá para reconocerte.</string>
+    <string name="profile_photo_unreadable">No pudimos leer esa foto. Prueba con otra.</string>
+    <string name="profile_photo_no_camera">No encontramos una app de cámara en tu celular.</string>
+    <string name="profile_photo_saved">Perfil actualizado</string>
+    <string name="profile_bio">Biografía</string>
+    <string name="profile_bio_placeholder">Cuéntale al cliente tu experiencia y en qué te especializas</string>
+    <plurals name="profile_bio_remaining">
+        <item quantity="one">Queda %d carácter</item>
+        <item quantity="other">Quedan %d caracteres</item>
+    </plurals>
+
+    <string name="vehicle_title">Vehículo</string>
+    <string name="vehicle_subtitle_empty">Sin vehículo registrado</string>
+    <string name="vehicle_hint">El cliente verá las placas para saber que eres tú quien llega.</string>
+    <string name="vehicle_plate">Placas</string>
+    <string name="vehicle_plate_placeholder">ABC-123-D</string>
+    <string name="vehicle_brand">Marca</string>
+    <string name="vehicle_brand_placeholder">Nissan</string>
+    <string name="vehicle_model">Modelo</string>
+    <string name="vehicle_model_placeholder">NP300</string>
+    <string name="vehicle_color">Color</string>
+    <string name="vehicle_color_placeholder">Blanco</string>
+    <string name="vehicle_error_plate">Revisa las placas.</string>
+    <string name="vehicle_delete">Quitar vehículo</string>
+    <string name="vehicle_delete_title">¿Quitar este vehículo?</string>
+    <string name="vehicle_delete_message">El cliente ya no verá las placas de tu vehículo.</string>
+    <string name="vehicle_delete_confirm">Quitar</string>
 </resources>

@@ -33,6 +33,9 @@ import com.fixora.app.feature.home.navigation.ClientHomeRoute
 import com.fixora.app.feature.home.navigation.ProviderHomeRoute
 import com.fixora.app.feature.home.navigation.clientHomeScreen
 import com.fixora.app.feature.home.navigation.providerHomeScreen
+import com.fixora.app.feature.profile.navigation.TechnicianPhotoRoute
+import com.fixora.app.feature.profile.navigation.VehicleRoute
+import com.fixora.app.feature.profile.navigation.profileScreens
 
 /**
  * @param homeArea inicio que le toca a la sesión según el rol (null = sin sesión). Decide la
@@ -88,12 +91,18 @@ fun FixoraNavHost(
             onOpenAddresses = { navController.navigate(AddressesRoute) },
             onOpenChangePassword = { navController.navigate(ChangePasswordRoute) },
         )
-        providerHomeScreen()
+        providerHomeScreen(
+            onOpenPhoto = { navController.navigate(TechnicianPhotoRoute) },
+            onOpenVehicle = { navController.navigate(VehicleRoute) },
+            onOpenPersonalData = { navController.navigate(PersonalDataRoute) },
+            onOpenChangePassword = { navController.navigate(ChangePasswordRoute) },
+        )
         accountScreens(
             onBack = navController::popBackStack,
             onAddAddress = { navController.navigate(AddressFormRoute()) },
             onEditAddress = { navController.navigate(AddressFormRoute(it)) },
         )
+        profileScreens(onBack = navController::popBackStack)
     }
 }
 

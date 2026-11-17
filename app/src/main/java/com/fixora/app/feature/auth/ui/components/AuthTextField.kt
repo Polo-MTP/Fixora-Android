@@ -55,6 +55,8 @@ fun AuthTextField(
     isPassword: Boolean = false,
     prefix: String? = null,
     onClick: (() -> Unit)? = null,
+    /** Más de 1 vuelve el campo multilínea (por ejemplo, una biografía). */
+    minLines: Int = 1,
 ) {
     var hadFocus by remember { mutableStateOf(false) }
     var showPassword by rememberSaveable { mutableStateOf(false) }
@@ -66,7 +68,8 @@ fun AuthTextField(
             OutlinedTextField(
                 value = value,
                 onValueChange = onValueChange,
-                singleLine = true,
+                singleLine = minLines == 1,
+                minLines = minLines,
                 readOnly = onClick != null,
                 isError = error != null,
                 shape = RoundedCornerShape(16.dp),

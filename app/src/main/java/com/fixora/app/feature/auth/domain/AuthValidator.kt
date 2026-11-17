@@ -16,6 +16,7 @@ enum class FieldError {
     Underage,
     PostalCodeInvalid,
     PasswordUnchanged,
+    PlateInvalid,
 }
 
 /** Requisitos de una contraseña nueva, para mostrarlos en vivo mientras se escribe. */
