@@ -34,6 +34,10 @@ import com.fixora.app.feature.home.navigation.ClientHomeRoute
 import com.fixora.app.feature.home.navigation.ProviderHomeRoute
 import com.fixora.app.feature.home.navigation.clientHomeScreen
 import com.fixora.app.feature.home.navigation.providerHomeScreen
+import com.fixora.app.feature.portfolio.navigation.AddWorkRoute
+import com.fixora.app.feature.portfolio.navigation.CertificatesRoute
+import com.fixora.app.feature.portfolio.navigation.PortfolioRoute
+import com.fixora.app.feature.portfolio.navigation.portfolioScreens
 import com.fixora.app.feature.profile.navigation.TechnicianPhotoRoute
 import com.fixora.app.feature.profile.navigation.VehicleRoute
 import com.fixora.app.feature.profile.navigation.profileScreens
@@ -106,6 +110,8 @@ fun FixoraNavHost(
         providerHomeScreen(
             onOpenPhoto = { navController.navigate(TechnicianPhotoRoute) },
             onOpenVehicle = { navController.navigate(VehicleRoute) },
+            onOpenPortfolio = { navController.navigate(PortfolioRoute) },
+            onOpenCertificates = { navController.navigate(CertificatesRoute) },
             onOpenPersonalData = { navController.navigate(PersonalDataRoute) },
             onOpenChangePassword = { navController.navigate(ChangePasswordRoute) },
         )
@@ -115,6 +121,10 @@ fun FixoraNavHost(
             onEditAddress = { navController.navigate(AddressFormRoute(it)) },
         )
         profileScreens(onBack = navController::popBackStack)
+        portfolioScreens(
+            onBack = navController::popBackStack,
+            onAddWork = { navController.navigate(AddWorkRoute) },
+        )
     }
 }
 

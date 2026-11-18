@@ -2,6 +2,7 @@ package com.fixora.app.feature.profile.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.fixora.app.core.session.Roles
 import com.fixora.app.core.session.SessionRepository
 import com.fixora.app.feature.account.data.AccountRepository
 import com.fixora.app.feature.account.domain.PersonalData
@@ -22,7 +23,15 @@ data class ProviderProfileUiState(
     val role: String = "",
     val fullName: String? = null,
     val profile: ProfileState = ProfileState.Loading,
-)
+) {
+    private val normalizedRole get() = role.trim().lowercase()
+
+    /** La API deja registrar trabajos al dueño (proveedor) y al gerente de la sucursal. */
+    val canManageWorks get() = normalizedRole == Roles.PROVIDER || normalizedRole == Roles.MANAGER
+
+    /** Los certificados son del proveedor dueño: los demás roles no tienen solicitud de proveedor. */
+    val canManageCertificates get() = normalizedRole == Roles.PROVIDER
+}
 
 /** Pestaña «Perfil» del proveedor, gerente y técnico (ANDROID-7). */
 @HiltViewModel

@@ -27,12 +27,15 @@ enum class ProviderTab(val item: BottomBarItem) {
 /**
  * Inicio del proveedor, gerente y empleado (ANDROID-4). Solo entran cuentas aprobadas: la API
  * rechaza el login de las que siguen «por aprobar». Inicio tiene el interruptor En línea (ANDROID-9);
- * Servicios y Reseñas son provisionales; Perfil tiene la foto, biografía y vehículo (ANDROID-7).
+ * Servicios y Reseñas son provisionales; Perfil tiene la foto, biografía y vehículo (ANDROID-7), y
+ * los trabajos realizados y certificados (ANDROID-8).
  */
 @Composable
 fun ProviderHomeScreen(
     onOpenPhoto: () -> Unit,
     onOpenVehicle: () -> Unit,
+    onOpenPortfolio: () -> Unit,
+    onOpenCertificates: () -> Unit,
     onOpenPersonalData: () -> Unit,
     onOpenChangePassword: () -> Unit,
 ) {
@@ -47,6 +50,8 @@ fun ProviderHomeScreen(
             ProviderProfileTab(
                 onOpenPhoto = onOpenPhoto,
                 onOpenVehicle = onOpenVehicle,
+                onOpenPortfolio = onOpenPortfolio,
+                onOpenCertificates = onOpenCertificates,
                 onOpenPersonalData = onOpenPersonalData,
                 onOpenChangePassword = onOpenChangePassword,
             )

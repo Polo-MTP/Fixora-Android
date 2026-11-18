@@ -44,6 +44,8 @@ interface TechnicianProfileApi {
 @Serializable
 data class EmployeeDetailDto(
     val id: String,
+    /** Sucursal del técnico: el portafolio de trabajos (ANDROID-8) va por sucursal. */
+    @SerialName("branch_id") val branchId: String? = null,
     val profile: ProfileDto? = null,
     val vehicle: VehicleDto? = null,
 )

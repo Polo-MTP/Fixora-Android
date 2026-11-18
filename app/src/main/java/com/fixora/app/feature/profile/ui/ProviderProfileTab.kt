@@ -44,6 +44,8 @@ import com.fixora.app.feature.profile.ui.components.ProfilePhoto
 fun ProviderProfileTab(
     onOpenPhoto: () -> Unit,
     onOpenVehicle: () -> Unit,
+    onOpenPortfolio: () -> Unit,
+    onOpenCertificates: () -> Unit,
     onOpenPersonalData: () -> Unit,
     onOpenChangePassword: () -> Unit,
     viewModel: ProviderProfileViewModel = hiltViewModel(),
@@ -53,6 +55,8 @@ fun ProviderProfileTab(
         state = state,
         onOpenPhoto = onOpenPhoto,
         onOpenVehicle = onOpenVehicle,
+        onOpenPortfolio = onOpenPortfolio,
+        onOpenCertificates = onOpenCertificates,
         onOpenPersonalData = onOpenPersonalData,
         onOpenChangePassword = onOpenChangePassword,
         onRetry = viewModel::refresh,
@@ -65,6 +69,8 @@ private fun ProviderProfileContent(
     state: ProviderProfileUiState,
     onOpenPhoto: () -> Unit,
     onOpenVehicle: () -> Unit,
+    onOpenPortfolio: () -> Unit,
+    onOpenCertificates: () -> Unit,
     onOpenPersonalData: () -> Unit,
     onOpenChangePassword: () -> Unit,
     onRetry: () -> Unit,
@@ -91,6 +97,13 @@ private fun ProviderProfileContent(
             )
             ProfileState.Loading -> Unit
         }
+
+        ShowcaseCard(
+            showWorks = state.canManageWorks && technician != null,
+            showCertificates = state.canManageCertificates,
+            onOpenPortfolio = onOpenPortfolio,
+            onOpenCertificates = onOpenCertificates,
+        )
 
         FixoraCard {
             FixoraListRow(
@@ -169,6 +182,39 @@ private fun TechnicianCard(profile: TechnicianProfile, onOpenPhoto: () -> Unit, 
     )
 }
 
+/**
+ * Lo que el proveedor presume en su ficha (ANDROID-8): trabajos realizados (dueño o gerente de la
+ * sucursal) y certificados (solo el dueño, que es quien tiene la solicitud de proveedor).
+ */
+@Composable
+private fun ShowcaseCard(
+    showWorks: Boolean,
+    showCertificates: Boolean,
+    onOpenPortfolio: () -> Unit,
+    onOpenCertificates: () -> Unit,
+) {
+    if (!showWorks && !showCertificates) return
+    FixoraCard {
+        if (showWorks) {
+            FixoraListRow(
+                icon = R.drawable.ic_nav_services,
+                title = stringResource(R.string.portfolio_title),
+                subtitle = stringResource(R.string.portfolio_subtitle),
+                onClick = onOpenPortfolio,
+            )
+        }
+        if (showWorks && showCertificates) FixoraCardDivider()
+        if (showCertificates) {
+            FixoraListRow(
+                icon = R.drawable.ic_certificate,
+                title = stringResource(R.string.certificates_title),
+                subtitle = stringResource(R.string.certificates_subtitle),
+                onClick = onOpenCertificates,
+            )
+        }
+    }
+}
+
 @Preview(widthDp = 390, heightDp = 844, showBackground = true, backgroundColor = 0xFFF4F6F9)
 @Composable
 private fun ProviderProfilePreview() {
@@ -187,7 +233,8 @@ private fun ProviderProfilePreview() {
                     ),
                 ),
             ),
-            onOpenPhoto = {}, onOpenVehicle = {}, onOpenPersonalData = {}, onOpenChangePassword = {},
+            onOpenPhoto = {}, onOpenVehicle = {}, onOpenPortfolio = {}, onOpenCertificates = {},
+            onOpenPersonalData = {}, onOpenChangePassword = {},
             onRetry = {}, onLogout = {},
         )
     }

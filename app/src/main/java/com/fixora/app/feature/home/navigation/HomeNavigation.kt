@@ -29,6 +29,8 @@ fun NavGraphBuilder.clientHomeScreen(
 fun NavGraphBuilder.providerHomeScreen(
     onOpenPhoto: () -> Unit,
     onOpenVehicle: () -> Unit,
+    onOpenPortfolio: () -> Unit,
+    onOpenCertificates: () -> Unit,
     onOpenPersonalData: () -> Unit,
     onOpenChangePassword: () -> Unit,
 ) {
@@ -36,6 +38,8 @@ fun NavGraphBuilder.providerHomeScreen(
         ProviderHomeScreen(
             onOpenPhoto = onOpenPhoto,
             onOpenVehicle = onOpenVehicle,
+            onOpenPortfolio = onOpenPortfolio,
+            onOpenCertificates = onOpenCertificates,
             onOpenPersonalData = onOpenPersonalData,
             onOpenChangePassword = onOpenChangePassword,
         )

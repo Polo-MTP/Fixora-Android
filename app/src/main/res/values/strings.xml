@@ -250,4 +250,60 @@
     <string name="availability_notification_title">Estás en línea</string>
     <string name="availability_notification_text">Compartimos tu ubicación para que te lleguen solicitudes cercanas.</string>
     <string name="availability_go_offline">Desconectarme</string>
+
+    <!-- Evidencias de trabajo y certificados (ANDROID-8) -->
+    <string name="dialog_cancel">Cancelar</string>
+    <string name="portfolio_title">Trabajos realizados</string>
+    <string name="portfolio_subtitle">Muestra lo que has hecho, con fotos</string>
+    <string name="portfolio_hint">El cliente ve estos trabajos en tu ficha antes de pedirte un servicio.</string>
+    <string name="portfolio_empty">Todavía no agregas trabajos. Muestra a tus clientes lo que has hecho.</string>
+    <string name="portfolio_no_branch">Esta cuenta no tiene una sucursal donde atienda, así que no tiene trabajos que mostrar.</string>
+    <string name="portfolio_add">Agregar trabajo</string>
+    <string name="portfolio_delete">Quitar</string>
+    <string name="portfolio_delete_title">¿Quitar este trabajo?</string>
+    <string name="portfolio_delete_message">Ya no se verá en tu ficha.</string>
+    <string name="portfolio_photo_description">Foto del trabajo %1$s</string>
+    <plurals name="portfolio_photos_count">
+        <item quantity="one">%d foto</item>
+        <item quantity="other">%d fotos</item>
+    </plurals>
+
+    <string name="add_work_title">Agregar trabajo</string>
+    <string name="add_work_field_title">Título</string>
+    <string name="add_work_field_title_placeholder">Cambio de tubería de cobre</string>
+    <string name="add_work_title_required">Escribe un título para el trabajo.</string>
+    <string name="add_work_field_description">Descripción (opcional)</string>
+    <string name="add_work_field_description_placeholder">Qué hiciste, cuánto tardó, qué materiales usaste</string>
+    <string name="add_work_photos">Fotos (opcional)</string>
+    <plurals name="add_work_photos_left">
+        <item quantity="one">Puedes agregar %d foto más</item>
+        <item quantity="other">Puedes agregar %d fotos más</item>
+    </plurals>
+    <string name="add_work_remove_photo">Quitar foto</string>
+    <string name="add_work_photo_unreadable">No pudimos leer una de las fotos. Quítala o prueba con otra.</string>
+    <string name="add_work_save">Guardar trabajo</string>
+    <string name="add_work_saved">Trabajo agregado</string>
+
+    <string name="certificates_title">Certificados</string>
+    <string name="certificates_subtitle">Cursos, títulos y certificaciones</string>
+    <string name="certificates_hint">Sube tus certificados o títulos en PDF o imagen. Un administrador los revisa y, ya aprobados, eliges cuáles se ven en tu ficha.</string>
+    <string name="certificates_empty">Todavía no tienes certificados.</string>
+    <string name="certificates_upload">Subir certificado</string>
+    <string name="certificates_uploaded">Recibimos tu certificado. Te avisaremos cuando un administrador lo revise.</string>
+    <string name="certificates_uploaded_on">Subido el %1$s</string>
+    <string name="certificates_status_pending">Pendiente de revisión</string>
+    <string name="certificates_status_approved">Aprobado</string>
+    <string name="certificates_status_rejected">Rechazado</string>
+    <string name="certificates_reason">Motivo: %1$s</string>
+    <string name="certificates_show_in_profile">Mostrar en mi ficha</string>
+    <string name="certificates_wrong_type">El archivo debe ser un PDF o una imagen (JPG, PNG o WebP).</string>
+    <string name="certificates_too_large">El archivo pesa más de 10 MB. Prueba con uno más ligero.</string>
+    <string name="certificates_unreadable">No pudimos leer ese archivo. Prueba con otro.</string>
+
+    <!-- Visor de fotos -->
+    <string name="photo_viewer_open">Ver en grande</string>
+    <string name="photo_viewer_close">Cerrar</string>
+    <string name="photo_viewer_position">%1$d de %2$d</string>
+    <string name="portfolio_add_photos">Agregar fotos</string>
+
 </resources>
