@@ -1,6 +1,8 @@
 package com.fixora.app.feature.account.data
 
 import com.fixora.app.core.session.SessionStore
+import com.fixora.app.feature.account.ui.photo.AccountPhotoReader
+import com.fixora.app.feature.profile.data.PhotoReader
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,4 +26,7 @@ object AccountModule {
     @Singleton
     fun provideAccountRepository(api: AccountApi, json: Json, sessionStore: SessionStore): AccountRepository =
         RemoteAccountRepository(api, json, sessionStore.session.map { it?.userId })
+
+    @Provides
+    fun provideAccountPhotoReader(reader: PhotoReader): AccountPhotoReader = AccountPhotoReader(reader::readAsJpeg)
 }

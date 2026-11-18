@@ -3,11 +3,17 @@ package com.fixora.app.feature.account.data
 import com.fixora.app.core.network.DataResponse
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonObject
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
+import retrofit2.http.Multipart
 import retrofit2.http.PATCH
 import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Part
 import retrofit2.http.Path
 
 /** Endpoints de Mi cuenta en la API (API-10). Todos requieren sesión. */
@@ -37,10 +43,34 @@ interface AccountApi {
     /** La API la desactiva; si era la principal, la siguiente pasa a serlo. */
     @DELETE("me/addresses/{id}")
     suspend fun deleteAddress(@Path("id") id: String)
+
+    /** La foto se sube primero; la API devuelve su llave y esa se pone en la cuenta. */
+    @Multipart
+    @POST("files/upload")
+    suspend fun uploadFile(
+        @Part("category") category: RequestBody,
+        @Part file: MultipartBody.Part,
+    ): DataResponse<UploadedPhotoDto>
+
+    /**
+     * {"photo_key": "..."} pone la foto y {"photo_key": null} la quita. Va como JsonObject porque el
+     * Json de la app omite los null, y aquí el null sí se tiene que mandar.
+     */
+    @PUT("me/photo")
+    suspend fun updatePhoto(@Body body: JsonObject): DataResponse<AccountPhotoDto>
 }
 
 @Serializable
-data class MeDto(@SerialName("personal_data") val personalData: PersonalDataDto? = null)
+data class MeDto(
+    @SerialName("personal_data") val personalData: PersonalDataDto? = null,
+    @SerialName("photo_url") val photoUrl: String? = null,
+)
+
+@Serializable
+data class UploadedPhotoDto(@SerialName("file_key") val fileKey: String)
+
+@Serializable
+data class AccountPhotoDto(@SerialName("photo_url") val photoUrl: String? = null)
 
 @Serializable
 data class PersonalDataDto(

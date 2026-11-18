@@ -13,12 +13,14 @@ data object ClientHomeRoute
 data object ProviderHomeRoute
 
 fun NavGraphBuilder.clientHomeScreen(
+    onOpenPhoto: () -> Unit,
     onOpenPersonalData: () -> Unit,
     onOpenAddresses: () -> Unit,
     onOpenChangePassword: () -> Unit,
 ) {
     composable<ClientHomeRoute> {
         ClientHomeScreen(
+            onOpenPhoto = onOpenPhoto,
             onOpenPersonalData = onOpenPersonalData,
             onOpenAddresses = onOpenAddresses,
             onOpenChangePassword = onOpenChangePassword,

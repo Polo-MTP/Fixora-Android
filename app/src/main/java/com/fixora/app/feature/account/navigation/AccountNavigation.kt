@@ -5,6 +5,7 @@ import androidx.navigation.compose.composable
 import com.fixora.app.feature.account.ui.address.AddressFormScreen
 import com.fixora.app.feature.account.ui.address.AddressesScreen
 import com.fixora.app.feature.account.ui.password.ChangePasswordScreen
+import com.fixora.app.feature.account.ui.photo.AccountPhotoScreen
 import com.fixora.app.feature.account.ui.personal.PersonalDataScreen
 import kotlinx.serialization.Serializable
 
@@ -21,6 +22,9 @@ data class AddressFormRoute(val addressId: String? = null)
 @Serializable
 data object ChangePasswordRoute
 
+@Serializable
+data object AccountPhotoRoute
+
 /** Pantallas de Mi cuenta que se abren desde la pestaña «Cuenta» del cliente. */
 fun NavGraphBuilder.accountScreens(
     onBack: () -> Unit,
@@ -33,4 +37,5 @@ fun NavGraphBuilder.accountScreens(
     }
     composable<AddressFormRoute> { AddressFormScreen(onBack = onBack) }
     composable<ChangePasswordRoute> { ChangePasswordScreen(onBack = onBack) }
+    composable<AccountPhotoRoute> { AccountPhotoScreen(onBack = onBack) }
 }

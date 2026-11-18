@@ -306,4 +306,11 @@
     <string name="photo_viewer_position">%1$d de %2$d</string>
     <string name="portfolio_add_photos">Agregar fotos</string>
 
+    <!-- Foto de perfil del cliente -->
+    <string name="account_photo_title">Foto de perfil</string>
+    <string name="account_photo_subtitle_empty">Agrega una foto para que el técnico te reconozca</string>
+    <string name="account_photo_subtitle_change">Cambia o quita tu foto</string>
+    <string name="account_photo_remove">Quitar foto</string>
+    <string name="account_photo_hint">Usa una foto donde se te vea la cara: la verá el técnico que atienda tu servicio.</string>
+    <string name="account_photo_saved">Foto de perfil actualizada</string>
 </resources>

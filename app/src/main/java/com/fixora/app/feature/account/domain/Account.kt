@@ -10,6 +10,8 @@ data class PersonalData(
     val lastNameM: String,
     val birthDate: LocalDate?,
     val phone: String,
+    /** Enlace firmado a la foto de perfil, vigente unas horas; null si no tiene. */
+    val photoUrl: String? = null,
 ) {
     val fullName get() = listOf(name, lastNameP, lastNameM).filter { it.isNotBlank() }.joinToString(" ")
 }

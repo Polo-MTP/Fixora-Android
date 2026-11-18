@@ -17,6 +17,7 @@ import com.fixora.app.core.ui.slideBackwardEnter
 import com.fixora.app.core.ui.slideBackwardExit
 import com.fixora.app.core.ui.slideForwardEnter
 import com.fixora.app.core.ui.slideForwardExit
+import com.fixora.app.feature.account.navigation.AccountPhotoRoute
 import com.fixora.app.feature.account.navigation.AddressFormRoute
 import com.fixora.app.feature.account.navigation.AddressesRoute
 import com.fixora.app.feature.account.navigation.ChangePasswordRoute
@@ -103,6 +104,7 @@ fun FixoraNavHost(
             onLogin = { navController.popBackStack<LoginRoute>(inclusive = false) },
         )
         clientHomeScreen(
+            onOpenPhoto = { navController.navigate(AccountPhotoRoute) },
             onOpenPersonalData = { navController.navigate(PersonalDataRoute) },
             onOpenAddresses = { navController.navigate(AddressesRoute) },
             onOpenChangePassword = { navController.navigate(ChangePasswordRoute) },

@@ -19,6 +19,12 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
 
 /** Datos ya descargados de un usuario. Si cambia la sesión, los de otro usuario no se muestran. */
 private data class Cached<T>(val userId: String, val value: T)
@@ -57,7 +63,30 @@ class RemoteAccountRepository(
     override suspend fun updatePersonalData(data: PersonalData): ApiResult<Unit> {
         val userId = currentUserId.first() ?: return NoSession
         val result = safeApiCall(json) { api.updatePersonalData(data.toRequest()) }
-        if (result is ApiResult.Success) personalCache.value = Cached(userId, result.data.data.toDomain())
+        if (result is ApiResult.Success) {
+            // La respuesta no trae la foto: se conserva la que ya estaba.
+            val photoUrl = personalCache.value?.takeIf { it.userId == userId }?.value?.photoUrl
+            personalCache.value = Cached(userId, result.data.data.toDomain().copy(photoUrl = photoUrl))
+        }
+        return result.toUnit()
+    }
+
+    override suspend fun updatePhoto(photo: ByteArray?): ApiResult<Unit> {
+        val userId = currentUserId.first() ?: return NoSession
+        val photoKey = photo?.let { bytes ->
+            val part = MultipartBody.Part.createFormData("file", "perfil.jpg", bytes.toRequestBody("image/jpeg".toMediaType()))
+            when (val upload = safeApiCall(json) { api.uploadFile(PhotosCategory, part) }) {
+                is ApiResult.Success -> upload.data.data.fileKey
+                is ApiResult.Failure -> return upload
+            }
+        }
+        val body = JsonObject(mapOf("photo_key" to (photoKey?.let(::JsonPrimitive) ?: JsonNull)))
+        val result = safeApiCall(json) { api.updatePhoto(body) }
+        if (result is ApiResult.Success) {
+            personalCache.value?.takeIf { it.userId == userId }?.let { cached ->
+                personalCache.value = cached.copy(value = cached.value.copy(photoUrl = result.data.data.photoUrl))
+            }
+        }
         return result.toUnit()
     }
 
@@ -116,7 +145,8 @@ class RemoteAccountRepository(
         personalError.value = null
         when (val result = retryApiCall(json) { api.getMe() }) {
             is ApiResult.Success -> {
-                personalCache.value = Cached(userId, result.data.data.personalData.toDomain())
+                val me = result.data.data
+                personalCache.value = Cached(userId, me.personalData.toDomain().copy(photoUrl = me.photoUrl))
                 ApiResult.Success(Unit)
             }
             is ApiResult.Failure -> result.also { personalError.value = it.error }
@@ -162,6 +192,7 @@ class RemoteAccountRepository(
     private companion object {
         // Sin sesión no hay a quién pedirle datos; la app ya está regresando a la landing.
         val NoSession = ApiResult.Failure(ApiError.Http(status = 401, code = null, message = null))
+        val PhotosCategory = "photos".toRequestBody("text/plain".toMediaType())
     }
 }
 
