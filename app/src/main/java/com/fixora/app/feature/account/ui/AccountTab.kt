@@ -20,7 +20,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.fixora.app.R
-import com.fixora.app.core.designsystem.component.FixoraAvatar
 import com.fixora.app.core.designsystem.component.FixoraCard
 import com.fixora.app.core.designsystem.component.FixoraCardDivider
 import com.fixora.app.core.designsystem.component.FixoraListRow
@@ -30,11 +29,13 @@ import com.fixora.app.core.designsystem.theme.FixoraTheme
 import com.fixora.app.core.designsystem.theme.Navy900
 import com.fixora.app.core.designsystem.theme.Slate500
 import com.fixora.app.feature.account.domain.PersonalData
+import com.fixora.app.feature.profile.ui.components.ProfilePhoto
 import java.time.LocalDate
 
 /** Pestaña «Cuenta» del cliente (ANDROID-5): perfil, accesos a cada sección y cerrar sesión. */
 @Composable
 fun AccountTab(
+    onOpenPhoto: () -> Unit,
     onOpenPersonalData: () -> Unit,
     onOpenAddresses: () -> Unit,
     onOpenChangePassword: () -> Unit,
@@ -43,6 +44,7 @@ fun AccountTab(
     val state by viewModel.uiState.collectAsState()
     AccountTabContent(
         state = state,
+        onOpenPhoto = onOpenPhoto,
         onOpenPersonalData = onOpenPersonalData,
         onOpenAddresses = onOpenAddresses,
         onOpenChangePassword = onOpenChangePassword,
@@ -53,6 +55,7 @@ fun AccountTab(
 @Composable
 private fun AccountTabContent(
     state: AccountUiState,
+    onOpenPhoto: () -> Unit,
     onOpenPersonalData: () -> Unit,
     onOpenAddresses: () -> Unit,
     onOpenChangePassword: () -> Unit,
@@ -73,7 +76,8 @@ private fun AccountTabContent(
                 modifier = Modifier.padding(16.dp),
             ) {
                 val fullName = state.personal?.fullName
-                FixoraAvatar(initialsOf(fullName, state.email))
+                // Al tocarla se abre en grande.
+                ProfilePhoto(model = state.personal?.photoUrl, initials = initialsOf(fullName, state.email))
                 Column(Modifier.weight(1f)) {
                     Text(
                         text = fullName ?: state.email,
@@ -87,6 +91,15 @@ private fun AccountTabContent(
             }
         }
         FixoraCard {
+            FixoraListRow(
+                icon = R.drawable.ic_photo_camera,
+                title = stringResource(R.string.account_photo_title),
+                subtitle = stringResource(
+                    if (state.personal?.photoUrl != null) R.string.account_photo_subtitle_change else R.string.account_photo_subtitle_empty,
+                ),
+                onClick = onOpenPhoto,
+            )
+            FixoraCardDivider()
             FixoraListRow(
                 icon = R.drawable.ic_nav_account,
                 title = stringResource(R.string.personal_data_title),
@@ -130,6 +143,7 @@ private fun AccountTabPreview() {
                 personal = PersonalData("Ana María", "Pérez", "López", LocalDate.of(1995, 4, 12), "5512345678"),
                 mainAddress = null,
             ),
+            onOpenPhoto = {},
             onOpenPersonalData = {},
             onOpenAddresses = {},
             onOpenChangePassword = {},

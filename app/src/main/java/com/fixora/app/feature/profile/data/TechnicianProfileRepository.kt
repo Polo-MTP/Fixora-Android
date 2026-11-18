@@ -133,6 +133,7 @@ private fun ByteArray.toPhotoPart(): MultipartBody.Part =
 
 private fun EmployeeDetailDto.toDomain() = TechnicianProfile(
     employeeId = id,
+    branchId = branchId,
     photoUrl = profile?.photoUrl,
     bio = profile?.bio.orEmpty(),
     vehicle = vehicle?.toDomain(),

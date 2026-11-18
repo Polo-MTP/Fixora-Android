@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
@@ -81,6 +82,58 @@ class RemoteAccountRepositoryTest {
 
         assertEquals(PersonalData("Ana", "Pérez", "", LocalDate.of(1995, 4, 12), ""), data)
         assertEquals("/api/me", take().url.encodedPath)
+    }
+
+    private val meWithPhoto = data(
+        """{"user":{"id":"1","email":"ana@correo.com","role":"cliente","state":"activo"},
+           |"personal_data":{"name":"Ana","lastname_p":"Pérez","lastname_m":null,"birth_date":null,"phone":null},
+           |"photo_url":"https://f/ana.jpg"}""".trimMargin(),
+    )
+
+    @Test
+    fun photo_comesWithPersonalDataAndSurvivesSavingOtherFields() = runBlocking {
+        respond(meWithPhoto)
+        assertEquals("https://f/ana.jpg", repository.personalData.first().photoUrl)
+
+        respond(data("""{"name":"Ana","lastname_p":"López","lastname_m":null,"birth_date":null,"phone":null}"""))
+        repository.updatePersonalData(PersonalData("Ana", "López", "", null, ""))
+
+        assertEquals("López", repository.personalData.first().lastNameP)
+        assertEquals("https://f/ana.jpg", repository.personalData.first().photoUrl)
+    }
+
+    @Test
+    fun updatePhoto_uploadsThePhotoAndSendsItsKey() = runBlocking {
+        respond(meWithPhoto)
+        repository.personalData.first()
+        take()
+        respond(data("""{"file_key":"photos/1/2026/11/perfil.jpg"}"""))
+        respond(data("""{"photo_url":"https://f/nueva.jpg"}"""))
+
+        assertTrue(repository.updatePhoto(byteArrayOf(1, 2)) is ApiResult.Success)
+
+        assertEquals("/api/files/upload", take().url.encodedPath)
+        val put = take()
+        assertEquals("PUT", put.method)
+        assertEquals("/api/me/photo", put.url.encodedPath)
+        assertEquals("photos/1/2026/11/perfil.jpg", put.jsonBody().text("photo_key"))
+        assertEquals("https://f/nueva.jpg", repository.personalData.first().photoUrl)
+    }
+
+    @Test
+    fun updatePhoto_withNullSendsAnExplicitNullToRemoveIt() = runBlocking {
+        respond(meWithPhoto)
+        repository.personalData.first()
+        take()
+        respond(data("""{"photo_url":null}"""))
+
+        repository.updatePhoto(null)
+
+        val put = take()
+        // El Json de la app omite los null; aquí sí tiene que ir para que la API quite la foto.
+        assertEquals(JsonNull, put.jsonBody()["photo_key"])
+        assertEquals(null, repository.personalData.first().photoUrl)
+        assertEquals(2, server.requestCount)
     }
 
     @Test

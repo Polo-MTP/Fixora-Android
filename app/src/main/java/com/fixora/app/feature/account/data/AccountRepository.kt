@@ -33,4 +33,7 @@ interface AccountRepository {
     suspend fun deleteAddress(id: String): ApiResult<Unit>
     suspend fun setMainAddress(id: String): ApiResult<Unit>
     suspend fun changePassword(current: String, new: String): ApiResult<Unit>
+
+    /** Pone la foto de perfil ([photo] en JPEG) o la quita si es null. */
+    suspend fun updatePhoto(photo: ByteArray?): ApiResult<Unit>
 }

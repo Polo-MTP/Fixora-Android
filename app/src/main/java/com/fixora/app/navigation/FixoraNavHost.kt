@@ -17,6 +17,7 @@ import com.fixora.app.core.ui.slideBackwardEnter
 import com.fixora.app.core.ui.slideBackwardExit
 import com.fixora.app.core.ui.slideForwardEnter
 import com.fixora.app.core.ui.slideForwardExit
+import com.fixora.app.feature.account.navigation.AccountPhotoRoute
 import com.fixora.app.feature.account.navigation.AddressFormRoute
 import com.fixora.app.feature.account.navigation.AddressesRoute
 import com.fixora.app.feature.account.navigation.ChangePasswordRoute
@@ -34,6 +35,10 @@ import com.fixora.app.feature.home.navigation.ClientHomeRoute
 import com.fixora.app.feature.home.navigation.ProviderHomeRoute
 import com.fixora.app.feature.home.navigation.clientHomeScreen
 import com.fixora.app.feature.home.navigation.providerHomeScreen
+import com.fixora.app.feature.portfolio.navigation.AddWorkRoute
+import com.fixora.app.feature.portfolio.navigation.CertificatesRoute
+import com.fixora.app.feature.portfolio.navigation.PortfolioRoute
+import com.fixora.app.feature.portfolio.navigation.portfolioScreens
 import com.fixora.app.feature.profile.navigation.TechnicianPhotoRoute
 import com.fixora.app.feature.profile.navigation.VehicleRoute
 import com.fixora.app.feature.profile.navigation.profileScreens
@@ -99,6 +104,7 @@ fun FixoraNavHost(
             onLogin = { navController.popBackStack<LoginRoute>(inclusive = false) },
         )
         clientHomeScreen(
+            onOpenPhoto = { navController.navigate(AccountPhotoRoute) },
             onOpenPersonalData = { navController.navigate(PersonalDataRoute) },
             onOpenAddresses = { navController.navigate(AddressesRoute) },
             onOpenChangePassword = { navController.navigate(ChangePasswordRoute) },
@@ -106,6 +112,8 @@ fun FixoraNavHost(
         providerHomeScreen(
             onOpenPhoto = { navController.navigate(TechnicianPhotoRoute) },
             onOpenVehicle = { navController.navigate(VehicleRoute) },
+            onOpenPortfolio = { navController.navigate(PortfolioRoute) },
+            onOpenCertificates = { navController.navigate(CertificatesRoute) },
             onOpenPersonalData = { navController.navigate(PersonalDataRoute) },
             onOpenChangePassword = { navController.navigate(ChangePasswordRoute) },
         )
@@ -115,6 +123,10 @@ fun FixoraNavHost(
             onEditAddress = { navController.navigate(AddressFormRoute(it)) },
         )
         profileScreens(onBack = navController::popBackStack)
+        portfolioScreens(
+            onBack = navController::popBackStack,
+            onAddWork = { navController.navigate(AddWorkRoute) },
+        )
     }
 }
 

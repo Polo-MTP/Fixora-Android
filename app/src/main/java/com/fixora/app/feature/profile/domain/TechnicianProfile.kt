@@ -5,6 +5,8 @@ import com.fixora.app.feature.auth.domain.FieldError
 /** Lo que el cliente verá del técnico antes de que llegue: foto, biografía y vehículo. */
 data class TechnicianProfile(
     val employeeId: String,
+    /** Sucursal donde atiende; null si la API no la mandó. */
+    val branchId: String? = null,
     /** Enlace firmado a la foto, vigente unas horas; null si no tiene. */
     val photoUrl: String?,
     val bio: String,
