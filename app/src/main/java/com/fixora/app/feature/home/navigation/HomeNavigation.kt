@@ -26,6 +26,18 @@ fun NavGraphBuilder.clientHomeScreen(
     }
 }
 
-fun NavGraphBuilder.providerHomeScreen() {
-    composable<ProviderHomeRoute> { ProviderHomeScreen() }
+fun NavGraphBuilder.providerHomeScreen(
+    onOpenPhoto: () -> Unit,
+    onOpenVehicle: () -> Unit,
+    onOpenPersonalData: () -> Unit,
+    onOpenChangePassword: () -> Unit,
+) {
+    composable<ProviderHomeRoute> {
+        ProviderHomeScreen(
+            onOpenPhoto = onOpenPhoto,
+            onOpenVehicle = onOpenVehicle,
+            onOpenPersonalData = onOpenPersonalData,
+            onOpenChangePassword = onOpenChangePassword,
+        )
+    }
 }

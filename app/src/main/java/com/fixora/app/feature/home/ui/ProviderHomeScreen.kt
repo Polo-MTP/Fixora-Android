@@ -2,21 +2,19 @@ package com.fixora.app.feature.home.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.fixora.app.R
 import com.fixora.app.core.designsystem.component.BottomBarItem
 import com.fixora.app.core.designsystem.theme.FixoraTheme
-import com.fixora.app.core.session.Session
+import com.fixora.app.feature.availability.ui.ProviderHomeTab
 import com.fixora.app.feature.home.ui.components.ComingSoonTab
 import com.fixora.app.feature.home.ui.components.HomeTabsScaffold
-import com.fixora.app.feature.home.ui.components.ProfileTab
+import com.fixora.app.feature.profile.ui.ProviderProfileTab
 
 /** Pestañas del proveedor, en el orden del Figma «Fixora Técnico - Inicio». */
 enum class ProviderTab(val item: BottomBarItem) {
@@ -28,19 +26,31 @@ enum class ProviderTab(val item: BottomBarItem) {
 
 /**
  * Inicio del proveedor, gerente y empleado (ANDROID-4). Solo entran cuentas aprobadas: la API
- * rechaza el login de las que siguen «por aprobar». Las pestañas son provisionales.
+ * rechaza el login de las que siguen «por aprobar». Inicio tiene el interruptor En línea (ANDROID-9);
+ * Servicios y Reseñas son provisionales; Perfil tiene la foto, biografía y vehículo (ANDROID-7).
  */
 @Composable
-fun ProviderHomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
+fun ProviderHomeScreen(
+    onOpenPhoto: () -> Unit,
+    onOpenVehicle: () -> Unit,
+    onOpenPersonalData: () -> Unit,
+    onOpenChangePassword: () -> Unit,
+) {
     var tab by rememberSaveable { mutableStateOf(ProviderTab.Home) }
     BackHandler(enabled = tab != ProviderTab.Home) { tab = ProviderTab.Home }
-    val session by viewModel.session.collectAsState()
 
     ProviderHomeContent(
         tab = tab,
         onSelectTab = { tab = it },
-        session = session,
-        onLogout = viewModel::logout,
+        homeTab = { ProviderHomeTab() },
+        profileTab = {
+            ProviderProfileTab(
+                onOpenPhoto = onOpenPhoto,
+                onOpenVehicle = onOpenVehicle,
+                onOpenPersonalData = onOpenPersonalData,
+                onOpenChangePassword = onOpenChangePassword,
+            )
+        },
     )
 }
 
@@ -48,8 +58,8 @@ fun ProviderHomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
 private fun ProviderHomeContent(
     tab: ProviderTab,
     onSelectTab: (ProviderTab) -> Unit,
-    session: Session?,
-    onLogout: () -> Unit,
+    homeTab: @Composable () -> Unit,
+    profileTab: @Composable () -> Unit,
 ) {
     HomeTabsScaffold(
         items = ProviderTab.entries.map { it.item },
@@ -57,11 +67,7 @@ private fun ProviderHomeContent(
         onSelect = { onSelectTab(ProviderTab.entries[it]) },
     ) {
         when (tab) {
-            ProviderTab.Home -> ComingSoonTab(
-                title = stringResource(R.string.home_greeting),
-                message = stringResource(R.string.provider_home_soon),
-                icon = R.drawable.ic_nav_home,
-            )
+            ProviderTab.Home -> homeTab()
             ProviderTab.Services -> ComingSoonTab(
                 title = stringResource(R.string.tab_services),
                 message = stringResource(R.string.provider_services_soon),
@@ -72,24 +78,15 @@ private fun ProviderHomeContent(
                 message = stringResource(R.string.provider_reviews_soon),
                 icon = R.drawable.ic_nav_reviews,
             )
-            ProviderTab.Profile -> ProfileTab(
-                title = stringResource(R.string.tab_profile),
-                session = session,
-                onLogout = onLogout,
-            )
+            ProviderTab.Profile -> profileTab()
         }
     }
 }
 
 @Preview(widthDp = 390, heightDp = 844)
 @Composable
-private fun ProviderProfilePreview() {
+private fun ProviderHomePreview() {
     FixoraTheme {
-        ProviderHomeContent(
-            tab = ProviderTab.Profile,
-            onSelectTab = {},
-            session = Session("2", "juan@plomeria.mx", "proveedor", "activo", "", ""),
-            onLogout = {},
-        )
+        ProviderHomeContent(tab = ProviderTab.Home, onSelectTab = {}, homeTab = {}, profileTab = {})
     }
 }

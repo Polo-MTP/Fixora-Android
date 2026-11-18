@@ -15,6 +15,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.fixora.app.core.notifications.PushMessage
+import com.fixora.app.core.notifications.RequestNotificationPermission
 import com.fixora.app.core.ui.OfflineBanner
 import com.fixora.app.feature.intro.ui.IntroScreen
 import com.fixora.app.navigation.FixoraNavHost
@@ -27,17 +29,28 @@ private const val INTRO_FADE_OUT_MS = 350
  * sin el salto de construir la pantalla siguiente en ese momento.
  */
 @Composable
-fun FixoraApp(viewModel: AppViewModel = hiltViewModel()) {
+fun FixoraApp(
+    viewModel: AppViewModel = hiltViewModel(),
+    openedNotification: PushMessage? = null,
+    onNotificationHandled: () -> Unit = {},
+) {
     // rememberSaveable: al girar la pantalla la intro no se repite.
     var showIntro by rememberSaveable { mutableStateOf(true) }
     val sessionState by viewModel.sessionState.collectAsState()
     val isOnline by viewModel.isOnline.collectAsState()
 
+    // Se pide al terminar la intro para que el diálogo no aparezca encima de la animación.
+    RequestNotificationPermission(enabled = sessionState is SessionState.LoggedIn && !showIntro)
+
     Box(Modifier.fillMaxSize()) {
         // La sesión guardada se lee en milisegundos, mucho antes de que acabe la intro: para
         // entonces ya se sabe si se empieza en la landing o en el inicio.
         if (sessionState != SessionState.Loading) {
-            FixoraNavHost(homeArea = (sessionState as? SessionState.LoggedIn)?.area)
+            FixoraNavHost(
+                homeArea = (sessionState as? SessionState.LoggedIn)?.area,
+                openedNotification = openedNotification,
+                onNotificationHandled = onNotificationHandled,
+            )
         }
         AnimatedVisibility(
             visible = showIntro,

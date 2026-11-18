@@ -4,6 +4,13 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- En línea (ANDROID-9): la ubicación se reporta desde un servicio en primer plano que se
+         inicia con la app abierta, así que no hace falta ACCESS_BACKGROUND_LOCATION. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
 
     <application
         android:name=".FixoraApplication"
@@ -20,6 +27,7 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
+            android:launchMode="singleTop"
             android:theme="@style/Theme.FixoraApp.Starting"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
@@ -28,6 +36,44 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- La app de cámara guarda aquí la foto de perfil (ANDROID-7). No hace falta el permiso
+             CAMERA: quien usa la cámara es esa app, no Fixora. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <!-- Notificaciones push (ANDROID-6). -->
+        <service
+            android:name=".core.notifications.FixoraMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!-- Reporta la ubicación mientras el técnico está En línea (ANDROID-9). -->
+        <service
+            android:name=".feature.availability.service.OnlineService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
+
+        <!-- Con la app en segundo plano Android muestra la notificación con estos valores. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="general" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notification" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/fixora_navy_800" />
     </application>
 
 </manifest>

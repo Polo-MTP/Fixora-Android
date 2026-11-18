@@ -20,4 +20,5 @@ fun FieldError?.message(): String? = when (this) {
     FieldError.Underage -> stringResource(R.string.auth_error_underage)
     FieldError.PostalCodeInvalid -> stringResource(R.string.auth_error_postal_code)
     FieldError.PasswordUnchanged -> stringResource(R.string.auth_error_password_unchanged)
+    FieldError.PlateInvalid -> stringResource(R.string.vehicle_error_plate)
 }

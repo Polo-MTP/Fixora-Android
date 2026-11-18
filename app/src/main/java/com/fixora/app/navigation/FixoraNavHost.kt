@@ -11,6 +11,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.fixora.app.BuildConfig
+import com.fixora.app.core.notifications.PushMessage
 import com.fixora.app.core.session.HomeArea
 import com.fixora.app.core.ui.slideBackwardEnter
 import com.fixora.app.core.ui.slideBackwardExit
@@ -33,17 +34,24 @@ import com.fixora.app.feature.home.navigation.ClientHomeRoute
 import com.fixora.app.feature.home.navigation.ProviderHomeRoute
 import com.fixora.app.feature.home.navigation.clientHomeScreen
 import com.fixora.app.feature.home.navigation.providerHomeScreen
+import com.fixora.app.feature.profile.navigation.TechnicianPhotoRoute
+import com.fixora.app.feature.profile.navigation.VehicleRoute
+import com.fixora.app.feature.profile.navigation.profileScreens
 
 /**
  * @param homeArea inicio que le toca a la sesión según el rol (null = sin sesión). Decide la
  * pantalla inicial y, cuando cambia, a dónde ir: al iniciar sesión se entra al inicio del cliente
  * o del proveedor; al cerrarla (o si la API rechaza la sesión) se regresa a la landing. En ambos
  * casos se limpia el historial para que «atrás» no regrese a la sesión anterior.
+ * @param openedNotification notificación con la que se abrió la app; se resuelve con
+ * [notificationRoute] y luego se avisa con [onNotificationHandled] para no repetirla.
  */
 @Composable
 fun FixoraNavHost(
     homeArea: HomeArea?,
     modifier: Modifier = Modifier,
+    openedNotification: PushMessage? = null,
+    onNotificationHandled: () -> Unit = {},
     navController: NavHostController = rememberNavController(),
 ) {
     val uriHandler = LocalUriHandler.current
@@ -55,6 +63,13 @@ fun FixoraNavHost(
         navController.navigate(target) {
             popUpTo(navController.graph.id) { inclusive = true }
         }
+    }
+
+    LaunchedEffect(openedNotification, homeArea) {
+        val message = openedNotification ?: return@LaunchedEffect
+        // Sin sesión no hay a dónde llevar: se queda en la landing.
+        if (homeArea != null) notificationRoute(message)?.let { navController.navigate(it) }
+        onNotificationHandled()
     }
 
     NavHost(
@@ -88,12 +103,18 @@ fun FixoraNavHost(
             onOpenAddresses = { navController.navigate(AddressesRoute) },
             onOpenChangePassword = { navController.navigate(ChangePasswordRoute) },
         )
-        providerHomeScreen()
+        providerHomeScreen(
+            onOpenPhoto = { navController.navigate(TechnicianPhotoRoute) },
+            onOpenVehicle = { navController.navigate(VehicleRoute) },
+            onOpenPersonalData = { navController.navigate(PersonalDataRoute) },
+            onOpenChangePassword = { navController.navigate(ChangePasswordRoute) },
+        )
         accountScreens(
             onBack = navController::popBackStack,
             onAddAddress = { navController.navigate(AddressFormRoute()) },
             onEditAddress = { navController.navigate(AddressFormRoute(it)) },
         )
+        profileScreens(onBack = navController::popBackStack)
     }
 }
 

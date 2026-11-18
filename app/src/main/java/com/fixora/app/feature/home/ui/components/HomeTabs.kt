@@ -23,22 +23,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.fixora.app.R
 import com.fixora.app.core.designsystem.component.BottomBarItem
-import com.fixora.app.core.designsystem.component.FixoraAvatar
 import com.fixora.app.core.designsystem.component.FixoraBottomBar
 import com.fixora.app.core.designsystem.component.FixoraCard
-import com.fixora.app.core.designsystem.component.FixoraListRow
-import com.fixora.app.core.designsystem.component.initialsOf
-import com.fixora.app.core.designsystem.theme.ErrorRed
 import com.fixora.app.core.designsystem.theme.Mist50
 import com.fixora.app.core.designsystem.theme.Navy800
 import com.fixora.app.core.designsystem.theme.Navy900
 import com.fixora.app.core.designsystem.theme.Slate500
 import com.fixora.app.core.session.Roles
-import com.fixora.app.core.session.Session
 import com.fixora.app.core.ui.SystemBarsAppearance
 
 /** Estructura de los inicios: el contenido de la pestaña elegida arriba y la barra de pestañas abajo. */
@@ -82,82 +76,36 @@ fun ComingSoonTab(title: String, message: String, @DrawableRes icon: Int) {
             .padding(horizontal = 24.dp, vertical = 20.dp),
     ) {
         TabTitle(title)
-        FixoraCard {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(14.dp),
-                modifier = Modifier.padding(18.dp),
-            ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(Mist50),
-                ) {
-                    Icon(painterResource(icon), contentDescription = null, tint = Navy800, modifier = Modifier.size(24.dp))
-                }
-                Text(message, style = MaterialTheme.typography.bodyMedium, color = Slate500, modifier = Modifier.weight(1f))
-            }
-        }
+        ComingSoonCard(message, icon)
     }
 }
 
-/** Tarjeta con el avatar, el correo y el rol de quien tiene la sesión. */
+/** Tarjeta que explica lo que habrá en una sección que todavía no existe. */
 @Composable
-fun SessionCard(email: String, role: String) {
+fun ComingSoonCard(message: String, @DrawableRes icon: Int) {
     FixoraCard {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp),
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(18.dp),
         ) {
-            FixoraAvatar(initialsOf(null, email))
-            Column(Modifier.weight(1f)) {
-                Text(
-                    text = email,
-                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                    color = Navy900,
-                )
-                Text(
-                    text = roleLabel(role),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Slate500,
-                )
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Mist50),
+            ) {
+                Icon(painterResource(icon), contentDescription = null, tint = Navy800, modifier = Modifier.size(24.dp))
             }
+            Text(message, style = MaterialTheme.typography.bodyMedium, color = Slate500, modifier = Modifier.weight(1f))
         }
     }
 }
 
-/** Pestaña de perfil mínima: quién tiene la sesión y el botón para cerrarla. */
+/** Nombre del rol para mostrarlo en el perfil. */
 @Composable
-fun ProfileTab(title: String, session: Session?, onLogout: () -> Unit) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp, vertical = 20.dp),
-    ) {
-        TabTitle(title)
-        if (session != null) SessionCard(email = session.email, role = session.role)
-        FixoraCard { LogoutRow(onLogout) }
-    }
-}
-
-@Composable
-fun LogoutRow(onLogout: () -> Unit) {
-    FixoraListRow(
-        icon = R.drawable.ic_logout,
-        title = stringResource(R.string.home_logout),
-        onClick = onLogout,
-        tint = ErrorRed,
-        showChevron = false,
-    )
-}
-
-@Composable
-private fun roleLabel(role: String): String = when (role.trim().lowercase()) {
+fun roleLabel(role: String): String = when (role.trim().lowercase()) {
     Roles.CLIENT -> stringResource(R.string.role_client)
     Roles.PROVIDER -> stringResource(R.string.role_provider)
     Roles.MANAGER -> stringResource(R.string.role_manager)

@@ -1,5 +1,6 @@
 package com.fixora.app.feature.account.data
 
+import com.fixora.app.core.network.DataResponse
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import retrofit2.http.Body
@@ -37,10 +38,6 @@ interface AccountApi {
     @DELETE("me/addresses/{id}")
     suspend fun deleteAddress(@Path("id") id: String)
 }
-
-/** Las respuestas de Mi cuenta vienen como `{ success, message, data }`. */
-@Serializable
-data class DataResponse<T>(val data: T)
 
 @Serializable
 data class MeDto(@SerialName("personal_data") val personalData: PersonalDataDto? = null)
