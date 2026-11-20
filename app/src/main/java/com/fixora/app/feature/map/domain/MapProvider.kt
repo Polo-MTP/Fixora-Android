@@ -49,6 +49,10 @@ data class ServiceCategory(val id: String, val name: String, val slug: String) {
 data class MapFilters(
     val radiusKm: Int = MapRules.DEFAULT_RADIUS_KM,
     val availableNow: Boolean = false,
+    /** Calificación promedio mínima; null es cualquiera. Sin reseñas cuenta como 0. */
+    val minRating: Double? = null,
+    /** Precio base máximo en pesos; null es cualquiera. */
+    val maxPrice: Int? = null,
 )
 
 data class MapSearchResult(val providers: List<MapProvider>, val total: Int)
@@ -56,6 +60,8 @@ data class MapSearchResult(val providers: List<MapProvider>, val total: Int)
 object MapRules {
     const val DEFAULT_RADIUS_KM = 10
     val RADIUS_OPTIONS_KM = listOf(2, 5, 10, 20, 50)
+    val RATING_OPTIONS = listOf(3.0, 4.0, 4.5)
+    val MAX_PRICE_OPTIONS = listOf(300, 500, 800, 1200)
 
     /** La API regresa como máximo 50 por página; en el mapa se piden los más cercanos. */
     const val MAX_RESULTS = 50

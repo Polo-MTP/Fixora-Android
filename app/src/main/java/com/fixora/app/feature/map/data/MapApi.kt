@@ -16,6 +16,8 @@ interface MapApi {
         @Query("radius_km") radiusKm: Int,
         @Query("category_id") categoryId: String?,
         @Query("available_now") availableNow: Boolean?,
+        @Query("min_rating") minRating: Double?,
+        @Query("max_price") maxPrice: Int?,
         @Query("sort") sort: String,
         @Query("limit") limit: Int,
     ): BranchSearchResponse

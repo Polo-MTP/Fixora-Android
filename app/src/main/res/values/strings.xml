@@ -336,6 +336,12 @@
     <string name="map_filters_reset">Restablecer</string>
     <string name="map_filters_distance">Distancia</string>
     <string name="map_filters_distance_value">%1$d km</string>
+    <string name="map_filters_any">Cualquiera</string>
+    <string name="map_filters_rating">Calificación mínima</string>
+    <string name="map_filters_rating_value">%1$s o más</string>
+    <string name="map_filters_price">Precio base máximo</string>
+    <string name="map_filters_price_hint">Del servicio elegido; en «Todos», que tenga algún servicio a ese precio o menos.</string>
+    <string name="map_filters_price_value">Hasta $%1$s</string>
     <string name="map_filters_available">Solo abiertos ahora</string>
     <string name="map_filters_available_hint">Negocios en su horario de atención y que aceptan solicitudes.</string>
     <string name="map_filters_apply">Aplicar</string>

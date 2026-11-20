@@ -29,6 +29,8 @@ class RemoteMapRepository(
             radiusKm = filters.radiusKm,
             categoryId = categoryId,
             availableNow = true.takeIf { filters.availableNow },
+            minRating = filters.minRating,
+            maxPrice = filters.maxPrice,
             // En el mapa importan los más cercanos: si hay más de 50, se quedan fuera los lejanos.
             sort = "distancia",
             limit = MapRules.MAX_RESULTS,
