@@ -29,6 +29,13 @@ class FixoraMessagingService : FirebaseMessagingService() {
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
+        // Solicitud entrante (ANDROID-13): la API la manda solo con datos para que llegue aquí
+        // aunque la app esté cerrada y se muestre como alarma a pantalla completa.
+        if (message.data[PushNotifier.KEY_IS_ALARM] == "true") {
+            val title = message.data["title"] ?: return
+            notifier.showAlarm(title, message.data["body"].orEmpty(), message.data)
+            return
+        }
         // Los mensajes solo de datos (sin título) no muestran nada por ahora.
         val notification = message.notification
         val title = notification?.title ?: message.data["title"] ?: return

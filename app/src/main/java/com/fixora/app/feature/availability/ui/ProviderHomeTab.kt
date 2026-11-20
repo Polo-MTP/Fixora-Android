@@ -41,14 +41,16 @@ import com.fixora.app.core.designsystem.theme.Slate500
 import com.fixora.app.core.designsystem.theme.SuccessGreen
 import com.fixora.app.core.designsystem.theme.White
 import com.fixora.app.core.ui.message
+import com.fixora.app.core.notifications.AlertsSetupCard
 import com.fixora.app.feature.availability.data.AvailabilityState
 import com.fixora.app.feature.availability.location.FusedLocationSource
 import com.fixora.app.feature.home.ui.components.ComingSoonCard
 import com.fixora.app.feature.home.ui.components.TabTitle
 
 /**
- * Pestaña Inicio del proveedor: el interruptor En línea / Fuera de línea (ANDROID-9) y, debajo,
- * lo que vendrá (solicitudes, ingresos y calificación del día).
+ * Pestaña Inicio del proveedor: el interruptor En línea / Fuera de línea (ANDROID-9), el aviso si
+ * faltan permisos para la alarma de solicitudes (ANDROID-13) y, debajo, lo que vendrá
+ * (solicitudes, ingresos y calificación del día).
  */
 @Composable
 fun ProviderHomeTab(viewModel: AvailabilityViewModel = hiltViewModel()) {
@@ -79,6 +81,7 @@ private fun ProviderHomeContent(
     ) {
         TabTitle(stringResource(R.string.home_greeting))
         if (state.isVisible) AvailabilityCard(state, onToggle, onRetry)
+        AlertsSetupCard()
         ComingSoonCard(message = stringResource(R.string.provider_home_soon), icon = R.drawable.ic_nav_home)
     }
 }

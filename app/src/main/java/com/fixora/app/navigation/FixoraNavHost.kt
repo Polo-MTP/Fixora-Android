@@ -42,6 +42,7 @@ import com.fixora.app.feature.portfolio.navigation.portfolioScreens
 import com.fixora.app.feature.profile.navigation.TechnicianPhotoRoute
 import com.fixora.app.feature.providerprofile.navigation.ProviderProfileRoute
 import com.fixora.app.feature.providerprofile.navigation.providerProfileScreen
+import com.fixora.app.feature.servicerequest.navigation.serviceRequestScreen
 import com.fixora.app.feature.profile.navigation.VehicleRoute
 import com.fixora.app.feature.profile.navigation.profileScreens
 
@@ -134,6 +135,7 @@ fun FixoraNavHost(
             onAddWork = { navController.navigate(AddWorkRoute) },
         )
         providerProfileScreen(onBack = navController::popBackStack)
+        serviceRequestScreen(onBack = navController::popBackStack)
     }
 }
 

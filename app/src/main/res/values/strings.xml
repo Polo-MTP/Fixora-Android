@@ -232,6 +232,9 @@
 
     <!-- Notificaciones push -->
     <string name="push_channel_general">Avisos de Fixora</string>
+    <string name="push_channel_alarm">Solicitudes entrantes</string>
+    <string name="push_channel_alarm_description">Alarma con sonido cuando te llega una solicitud de servicio o una emergencia cercana.</string>
+    <string name="push_alarm_open">Ver solicitud</string>
     <string name="push_channel_general_description">Cambios en tus solicitudes, servicios y cuenta.</string>
 
     <!-- En línea / Fuera de línea (ANDROID-9) -->
@@ -428,4 +431,32 @@
     <string name="provider_review_step_documents">Si observamos algún documento, súbelo de nuevo desde el portal de proveedores.</string>
     <string name="provider_review_ok">Entendido</string>
     <string name="provider_review_portal">Ir al portal de proveedores</string>
+
+    <!-- Solicitud abierta desde un aviso (ANDROID-13) -->
+    <string name="request_title">Solicitud #%1$s</string>
+    <string name="request_title_loading">Solicitud</string>
+    <string name="request_urgent">Urgente</string>
+    <string name="request_service">Servicio</string>
+    <string name="request_client">Cliente</string>
+    <string name="request_zone">Zona</string>
+    <string name="request_base_price">Precio base</string>
+    <string name="request_scheduled_for">Agendada para</string>
+    <string name="request_received">Recibida</string>
+    <string name="request_answer_before">Responde antes de las</string>
+    <string name="request_technician">Técnico</string>
+    <string name="request_status_pending">Esperando respuesta</string>
+    <string name="request_status_accepted">Aceptada</string>
+    <string name="request_status_scheduled">Agendada</string>
+    <string name="request_status_on_the_way">En camino</string>
+    <string name="request_status_arrived">El técnico llegó</string>
+    <string name="request_status_completed">Terminada</string>
+    <string name="request_status_canceled">Cancelada</string>
+    <string name="request_status_expired">Venció</string>
+    <string name="request_status_unknown">Sin estado</string>
+
+    <!-- Permisos de las alarmas en el inicio del proveedor (ANDROID-13) -->
+    <string name="alerts_setup_title">Activa las alertas de solicitudes</string>
+    <string name="alerts_setup_notifications">Las notificaciones están apagadas: no te llegarán las solicitudes nuevas.</string>
+    <string name="alerts_setup_full_screen">Permite que Fixora muestre las solicitudes a pantalla completa, aunque tu celular esté bloqueado.</string>
+    <string name="alerts_setup_action">Activar</string>
 </resources>
