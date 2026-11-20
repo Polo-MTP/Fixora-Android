@@ -40,6 +40,8 @@ import com.fixora.app.feature.portfolio.navigation.CertificatesRoute
 import com.fixora.app.feature.portfolio.navigation.PortfolioRoute
 import com.fixora.app.feature.portfolio.navigation.portfolioScreens
 import com.fixora.app.feature.profile.navigation.TechnicianPhotoRoute
+import com.fixora.app.feature.providerprofile.navigation.ProviderProfileRoute
+import com.fixora.app.feature.providerprofile.navigation.providerProfileScreen
 import com.fixora.app.feature.profile.navigation.VehicleRoute
 import com.fixora.app.feature.profile.navigation.profileScreens
 
@@ -104,6 +106,9 @@ fun FixoraNavHost(
             onLogin = { navController.popBackStack<LoginRoute>(inclusive = false) },
         )
         clientHomeScreen(
+            onOpenProvider = { branchId, distanceKm, categoryId ->
+                navController.navigate(ProviderProfileRoute(branchId, distanceKm, categoryId))
+            },
             onOpenPhoto = { navController.navigate(AccountPhotoRoute) },
             onOpenPersonalData = { navController.navigate(PersonalDataRoute) },
             onOpenAddresses = { navController.navigate(AddressesRoute) },
@@ -127,6 +132,7 @@ fun FixoraNavHost(
             onBack = navController::popBackStack,
             onAddWork = { navController.navigate(AddWorkRoute) },
         )
+        providerProfileScreen(onBack = navController::popBackStack)
     }
 }
 

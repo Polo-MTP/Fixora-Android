@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
@@ -14,6 +15,8 @@ import com.fixora.app.core.designsystem.theme.FixoraTheme
 import com.fixora.app.feature.account.ui.AccountTab
 import com.fixora.app.feature.home.ui.components.ComingSoonTab
 import com.fixora.app.feature.home.ui.components.HomeTabsScaffold
+import com.fixora.app.feature.map.ui.MapLaunch
+import com.fixora.app.feature.map.ui.MapTab
 
 /** Pestañas del cliente, en el orden del Figma «Fixora - Inicio». */
 enum class ClientTab(val item: BottomBarItem) {
@@ -24,23 +27,36 @@ enum class ClientTab(val item: BottomBarItem) {
 }
 
 /**
- * Inicio del cliente (ANDROID-4). La pestaña Cuenta es Mi cuenta (ANDROID-5); Inicio, Mapa y
- * Actividad son provisionales hasta que se construyan esos módulos. «Atrás» desde otra pestaña
- * regresa a Inicio antes de salir.
+ * Inicio del cliente (ANDROID-4). Inicio tiene el buscador y los accesos por servicio (ANDROID-12),
+ * que abren Mapa ya filtrado (ANDROID-10); Cuenta es Mi cuenta (ANDROID-5) y Actividad es
+ * provisional hasta que se construya ese módulo.
+ * «Atrás» desde otra pestaña regresa a Inicio antes de salir.
  */
 @Composable
 fun ClientHomeScreen(
+    onOpenProvider: (branchId: String, distanceKm: String, categoryId: String?) -> Unit,
     onOpenPhoto: () -> Unit,
     onOpenPersonalData: () -> Unit,
     onOpenAddresses: () -> Unit,
     onOpenChangePassword: () -> Unit,
 ) {
     var tab by rememberSaveable { mutableStateOf(ClientTab.Home) }
+    // Filtro que el Inicio le pasa al mapa; el mapa lo aplica una vez y avisa para limpiarlo.
+    var mapLaunch by remember { mutableStateOf<MapLaunch?>(null) }
     BackHandler(enabled = tab != ClientTab.Home) { tab = ClientTab.Home }
 
     ClientHomeContent(
         tab = tab,
         onSelectTab = { tab = it },
+        homeTab = {
+            ClientHomeTab(onOpenMap = { launch ->
+                mapLaunch = launch
+                tab = ClientTab.Map
+            })
+        },
+        mapTab = {
+            MapTab(launch = mapLaunch, onLaunchHandled = { mapLaunch = null }, onOpenProvider = onOpenProvider)
+        },
         accountTab = {
             AccountTab(
                 onOpenPhoto = onOpenPhoto,
@@ -56,6 +72,8 @@ fun ClientHomeScreen(
 private fun ClientHomeContent(
     tab: ClientTab,
     onSelectTab: (ClientTab) -> Unit,
+    homeTab: @Composable () -> Unit,
+    mapTab: @Composable () -> Unit,
     accountTab: @Composable () -> Unit,
 ) {
     HomeTabsScaffold(
@@ -64,16 +82,8 @@ private fun ClientHomeContent(
         onSelect = { onSelectTab(ClientTab.entries[it]) },
     ) {
         when (tab) {
-            ClientTab.Home -> ComingSoonTab(
-                title = stringResource(R.string.home_greeting),
-                message = stringResource(R.string.client_home_soon),
-                icon = R.drawable.ic_nav_home,
-            )
-            ClientTab.Map -> ComingSoonTab(
-                title = stringResource(R.string.tab_map),
-                message = stringResource(R.string.client_map_soon),
-                icon = R.drawable.ic_nav_map,
-            )
+            ClientTab.Home -> homeTab()
+            ClientTab.Map -> mapTab()
             ClientTab.Activity -> ComingSoonTab(
                 title = stringResource(R.string.tab_activity),
                 message = stringResource(R.string.client_activity_soon),
@@ -88,6 +98,6 @@ private fun ClientHomeContent(
 @Composable
 private fun ClientHomePreview() {
     FixoraTheme {
-        ClientHomeContent(ClientTab.Home, {}, {})
+        ClientHomeContent(ClientTab.Home, {}, {}, {}, {})
     }
 }

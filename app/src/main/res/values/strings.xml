@@ -125,8 +125,6 @@
     <!-- Inicios por rol: contenido provisional -->
     <string name="home_greeting">¡Hola!</string>
     <string name="home_logout">Cerrar sesión</string>
-    <string name="client_home_soon">Muy pronto podrás buscar técnicos verificados y pedir ayuda desde aquí.</string>
-    <string name="client_map_soon">Aquí verás en el mapa a los técnicos disponibles cerca de ti.</string>
     <string name="client_activity_soon">Aquí aparecerán tus servicios en curso y tu historial.</string>
     <string name="provider_home_soon">Pronto verás aquí tus solicitudes, ingresos y calificación del día.</string>
     <string name="provider_services_soon">Aquí aparecerán los servicios que aceptes y su estado.</string>
@@ -313,4 +311,103 @@
     <string name="account_photo_remove">Quitar foto</string>
     <string name="account_photo_hint">Usa una foto donde se te vea la cara: la verá el técnico que atienda tu servicio.</string>
     <string name="account_photo_saved">Foto de perfil actualizada</string>
+
+    <!-- Mapa de proveedores del cliente (ANDROID-10) -->
+    <string name="map_search_hint">¿Qué necesitas arreglar?</string>
+    <string name="map_search_clear">Borrar búsqueda</string>
+    <string name="map_filters">Filtros</string>
+    <string name="map_category_all">Todos</string>
+    <string name="map_search_here">Buscar en esta zona</string>
+    <string name="map_my_location">Mi ubicación</string>
+    <string name="map_loading">Buscando técnicos…</string>
+    <plurals name="map_providers_nearby">
+        <item quantity="one">%d técnico cerca</item>
+        <item quantity="other">%d técnicos cerca</item>
+    </plurals>
+    <plurals name="map_providers_available">
+        <item quantity="one">%d técnico disponible</item>
+        <item quantity="other">%d técnicos disponibles</item>
+    </plurals>
+    <string name="map_providers_hint">Toca un ícono para ver el negocio</string>
+    <string name="map_providers_empty_title">No hay técnicos cerca</string>
+    <string name="map_providers_empty">No encontramos técnicos a %1$d km. Prueba con otro servicio o aumenta la distancia en Filtros.</string>
+    <string name="map_providers_limited">Se muestran los %1$d más cercanos de %2$d.</string>
+    <string name="map_location_off">Sin tu ubicación buscamos en el centro de la CDMX. Toca aquí para activarla.</string>
+    <string name="map_filters_reset">Restablecer</string>
+    <string name="map_filters_distance">Distancia</string>
+    <string name="map_filters_distance_value">%1$d km</string>
+    <string name="map_filters_available">Solo abiertos ahora</string>
+    <string name="map_filters_available_hint">Negocios en su horario de atención y que aceptan solicitudes.</string>
+    <string name="map_filters_apply">Aplicar</string>
+    <string name="map_provider_independent">Técnico independiente</string>
+    <string name="map_provider_close">Cerrar</string>
+    <string name="map_provider_no_reviews">Sin reseñas</string>
+    <string name="map_provider_rating">%1$s (%2$d)</string>
+    <string name="map_provider_distance">%1$s km</string>
+    <string name="map_provider_open">Abierto</string>
+    <string name="map_provider_closed">Cerrado</string>
+    <string name="map_provider_price">Desde $%1$s en %2$s</string>
+
+    <!-- Ficha pública del proveedor (ANDROID-11) -->
+    <string name="map_provider_open_profile">Ver negocio</string>
+    <string name="provider_profile_verified">Verificado por Fixora</string>
+    <string name="provider_profile_distance">a %1$s km</string>
+    <plurals name="provider_profile_reviews">
+        <item quantity="one">%d reseña</item>
+        <item quantity="other">%d reseñas</item>
+    </plurals>
+    <string name="provider_profile_jobs_label">Servicios</string>
+    <string name="provider_profile_price_label">Precio base</string>
+    <string name="provider_profile_price_from_label">Precio desde</string>
+    <string name="provider_profile_price_value">$%1$s</string>
+    <string name="provider_profile_tab_info">Info</string>
+    <string name="provider_profile_tab_reviews">Reseñas (%1$d)</string>
+    <string name="provider_profile_tab_works">Trabajos (%1$d)</string>
+    <string name="provider_profile_tab_certificates">Certificados (%1$d)</string>
+    <string name="provider_profile_services">Servicios que ofrece</string>
+    <string name="provider_profile_service_duration">Aprox. %1$d min</string>
+    <string name="provider_profile_vehicle">Vehículo</string>
+    <string name="provider_profile_plates">Placas %1$s</string>
+    <string name="provider_profile_schedule">Horario</string>
+    <string name="provider_profile_no_schedule">Sin horario publicado</string>
+    <string name="provider_profile_area">Atiende en</string>
+    <string name="provider_profile_about">Acerca del negocio</string>
+    <string name="provider_profile_price_note">El precio puede ajustarse según el trabajo. Si cambia, tú decides si aceptas.</string>
+    <string name="provider_profile_no_reviews">Todavía no tiene reseñas.</string>
+    <string name="provider_profile_reviews_latest">Se muestran las %1$d más recientes de %2$d.</string>
+    <string name="provider_profile_review_author_unknown">Cliente</string>
+    <string name="provider_profile_stars">%1$d de 5 estrellas</string>
+    <string name="provider_profile_no_works">Todavía no ha publicado trabajos.</string>
+    <string name="provider_profile_no_certificates">No tiene certificados publicados.</string>
+    <string name="provider_profile_certificate_open">Ver</string>
+    <string name="provider_profile_certificate_pdf">Documento PDF</string>
+    <string name="provider_profile_certificate_photo">Foto</string>
+    <string name="provider_profile_certificate_no_app">No hay una aplicación para abrir el PDF.</string>
+    <string name="provider_profile_request">Solicitar servicio</string>
+    <string name="provider_profile_request_soon">Muy pronto podrás solicitar el servicio desde aquí.</string>
+    <string name="provider_profile_not_accepting">Por ahora no está recibiendo solicitudes.</string>
+    <string-array name="week_days_short">
+        <item>Dom</item>
+        <item>Lun</item>
+        <item>Mar</item>
+        <item>Mié</item>
+        <item>Jue</item>
+        <item>Vie</item>
+        <item>Sáb</item>
+    </string-array>
+    <string name="schedule_every_day">Todos los días</string>
+    <string name="schedule_day_range">%1$s a %2$s</string>
+    <string name="schedule_hours">%1$s, %2$s a %3$s</string>
+    <string name="schedule_all_day">%1$s, 24 horas</string>
+
+    <!-- Inicio del cliente (ANDROID-12) -->
+    <string name="client_home_greeting">Hola, %1$s</string>
+    <string name="client_home_greeting_plain">Hola</string>
+    <string name="client_home_question">¿Qué necesitas arreglar hoy?</string>
+    <string name="client_home_search_hint">Busca un servicio o negocio</string>
+    <string name="client_home_services">Servicios</string>
+    <string name="client_home_see_all">Ver todos</string>
+    <string name="client_home_see_less">Ver menos</string>
+    <string name="client_home_nearby">Cerca de ti</string>
+    <string name="client_home_map_title">Ver técnicos en el mapa</string>
 </resources>
