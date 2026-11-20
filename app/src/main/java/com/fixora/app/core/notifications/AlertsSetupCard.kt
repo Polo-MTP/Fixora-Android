@@ -81,7 +81,7 @@ fun AlertsSetupCard(modifier: Modifier = Modifier) {
                 .size(40.dp)
                 .background(Orange500.copy(alpha = 0.1f), CircleShape),
         ) {
-            Icon(painterResource(R.drawable.ic_notification), contentDescription = null, tint = Orange500, modifier = Modifier.size(20.dp))
+            Icon(painterResource(R.drawable.ic_bell), contentDescription = null, tint = Orange500, modifier = Modifier.size(20.dp))
         }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(

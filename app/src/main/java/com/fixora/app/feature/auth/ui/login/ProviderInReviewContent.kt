@@ -55,7 +55,7 @@ internal fun ProviderInReviewContent(
                 text = stringResource(R.string.provider_review_step_review),
             )
             ReviewStep(
-                icon = R.drawable.ic_notification,
+                icon = R.drawable.ic_bell,
                 title = stringResource(R.string.provider_review_step_notice_title),
                 text = stringResource(R.string.provider_review_step_notice),
             )

@@ -36,6 +36,8 @@ import com.fixora.app.feature.home.navigation.ClientHomeRoute
 import com.fixora.app.feature.home.navigation.ProviderHomeRoute
 import com.fixora.app.feature.home.navigation.clientHomeScreen
 import com.fixora.app.feature.home.navigation.providerHomeScreen
+import com.fixora.app.feature.notifications.navigation.NotificationsRoute
+import com.fixora.app.feature.notifications.navigation.notificationsScreen
 import com.fixora.app.feature.portfolio.navigation.AddWorkRoute
 import com.fixora.app.feature.portfolio.navigation.CertificatesRoute
 import com.fixora.app.feature.portfolio.navigation.PortfolioRoute
@@ -125,6 +127,7 @@ fun FixoraNavHost(
             onLogin = { navController.popBackStack<LoginRoute>(inclusive = false) },
         )
         clientHomeScreen(
+            onOpenNotifications = { navController.navigate(NotificationsRoute) },
             onOpenProvider = { branchId, distanceKm, categoryId ->
                 navController.navigate(ProviderProfileRoute(branchId, distanceKm, categoryId))
             },
@@ -134,6 +137,7 @@ fun FixoraNavHost(
             onOpenChangePassword = { navController.navigate(ChangePasswordRoute) },
         )
         providerHomeScreen(
+            onOpenNotifications = { navController.navigate(NotificationsRoute) },
             onOpenPhoto = { navController.navigate(TechnicianPhotoRoute) },
             onOpenVehicle = { navController.navigate(VehicleRoute) },
             onOpenPortfolio = { navController.navigate(PortfolioRoute) },
@@ -152,6 +156,10 @@ fun FixoraNavHost(
             onAddWork = { navController.navigate(AddWorkRoute) },
         )
         providerProfileScreen(onBack = navController::popBackStack)
+        notificationsScreen(
+            onBack = navController::popBackStack,
+            onOpen = { route -> navController.navigate(route) },
+        )
         serviceRequestScreen(
             onBack = navController::popBackStack,
             onAccepted = { requestId ->

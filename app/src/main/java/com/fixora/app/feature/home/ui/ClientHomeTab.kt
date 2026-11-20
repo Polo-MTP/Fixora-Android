@@ -63,6 +63,7 @@ import com.fixora.app.feature.account.ui.components.LoadErrorNotice
 import com.fixora.app.feature.map.domain.ServiceCategory
 import com.fixora.app.feature.map.ui.MapLaunch
 import com.fixora.app.feature.map.ui.iconRes
+import com.fixora.app.feature.notifications.ui.NotificationBell
 
 private const val SERVICE_COLUMNS = 4
 private val MapGround = Color(0xFFE9EEF3)
@@ -75,6 +76,7 @@ private const val COLLAPSED_SERVICES = 8
 @Composable
 fun ClientHomeTab(
     onOpenMap: (MapLaunch) -> Unit,
+    onOpenNotifications: () -> Unit,
     viewModel: ClientHomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -85,6 +87,7 @@ fun ClientHomeTab(
         onCategory = { onOpenMap(viewModel.categoryLaunch(it)) },
         onNearby = { onOpenMap(MapLaunch()) },
         onRetry = viewModel::retry,
+        bell = { NotificationBell(onClick = onOpenNotifications) },
     )
 }
 
@@ -96,6 +99,7 @@ private fun ClientHomeContent(
     onCategory: (ServiceCategory) -> Unit,
     onNearby: () -> Unit,
     onRetry: () -> Unit,
+    bell: @Composable () -> Unit = {},
 ) {
     Column(
         modifier = Modifier
@@ -104,8 +108,15 @@ private fun ClientHomeContent(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp, vertical = 16.dp),
     ) {
-        FixoraLogo(color = Navy900, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold))
-        Spacer(Modifier.height(20.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            FixoraLogo(
+                color = Navy900,
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier.weight(1f),
+            )
+            bell()
+        }
+        Spacer(Modifier.height(12.dp))
         Text(
             text = state.firstName?.let { stringResource(R.string.client_home_greeting, it) }
                 ?: stringResource(R.string.client_home_greeting_plain),

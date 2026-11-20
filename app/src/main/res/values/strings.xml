@@ -484,4 +484,19 @@
     <string name="incoming_reason_service">No hago ese tipo de trabajo</string>
     <string name="incoming_reason_other">Otro motivo</string>
     <string name="incoming_reject_confirm">Rechazar solicitud</string>
+
+    <!-- Centro de notificaciones (ANDROID-14) -->
+    <string name="notifications_title">Notificaciones</string>
+    <string name="notifications_mark_all">Marcar todas como leídas</string>
+    <string name="notifications_unread">Sin leer</string>
+    <string name="notifications_empty_title">No tienes notificaciones</string>
+    <string name="notifications_empty">Aquí verás los avisos de tus solicitudes, servicios y cuenta.</string>
+    <string name="notifications_when_now">Ahora</string>
+    <string name="notifications_when_minutes">Hace %1$d min</string>
+    <string name="notifications_when_hours">Hace %1$d h</string>
+    <string name="notifications_when_yesterday">Ayer</string>
+    <plurals name="notifications_bell_unread">
+        <item quantity="one">Notificaciones, %d sin leer</item>
+        <item quantity="other">Notificaciones, %d sin leer</item>
+    </plurals>
 </resources>

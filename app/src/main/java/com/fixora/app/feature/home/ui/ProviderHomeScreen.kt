@@ -32,6 +32,7 @@ enum class ProviderTab(val item: BottomBarItem) {
  */
 @Composable
 fun ProviderHomeScreen(
+    onOpenNotifications: () -> Unit,
     onOpenPhoto: () -> Unit,
     onOpenVehicle: () -> Unit,
     onOpenPortfolio: () -> Unit,
@@ -45,7 +46,7 @@ fun ProviderHomeScreen(
     ProviderHomeContent(
         tab = tab,
         onSelectTab = { tab = it },
-        homeTab = { ProviderHomeTab() },
+        homeTab = { ProviderHomeTab(onOpenNotifications = onOpenNotifications) },
         profileTab = {
             ProviderProfileTab(
                 onOpenPhoto = onOpenPhoto,
