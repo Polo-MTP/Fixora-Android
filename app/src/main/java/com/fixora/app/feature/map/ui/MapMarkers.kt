@@ -15,20 +15,31 @@ import com.fixora.app.core.designsystem.theme.Orange500
 import com.fixora.app.core.designsystem.theme.White
 import com.fixora.app.feature.map.domain.MapProvider
 import com.fixora.app.feature.map.domain.ServiceCategory
+import com.fixora.app.feature.map.domain.normalized
 
 /** Ícono de cada servicio por su slug; los que no tienen uno propio usan la llave inglesa. */
 @DrawableRes
-fun ServiceCategory.iconRes(): Int = when (slug) {
-    "plomeria" -> R.drawable.ic_service_plumbing
-    "electricidad" -> R.drawable.ic_service_electric
-    "cerrajeria" -> R.drawable.ic_service_locksmith
-    "climatizacion" -> R.drawable.ic_service_climate
-    "pintura-impermeabilizacion" -> R.drawable.ic_service_paint
-    "albanileria" -> R.drawable.ic_service_masonry
-    "electrodomesticos" -> R.drawable.ic_service_appliances
-    "jardineria" -> R.drawable.ic_service_gardening
-    "limpieza-desinfeccion" -> R.drawable.ic_service_cleaning
-    else -> R.drawable.ic_service_general
+fun ServiceCategory.iconRes(): Int = serviceIcon(slug)
+
+/**
+ * Ícono de un servicio. La ficha pública solo trae el nombre, así que si no hay slug se arma uno
+ * con el nombre («Plomería» → «plomeria»).
+ */
+@DrawableRes
+fun serviceIcon(slug: String, name: String = ""): Int {
+    val key = slug.ifBlank { name.normalized().replace(Regex("[^a-z]+"), "-") }
+    return when {
+        key.startsWith("plomeria") -> R.drawable.ic_service_plumbing
+        key.startsWith("electrodomestico") -> R.drawable.ic_service_appliances
+        key.startsWith("electricidad") -> R.drawable.ic_service_electric
+        key.startsWith("cerrajeria") -> R.drawable.ic_service_locksmith
+        key.startsWith("climatizacion") -> R.drawable.ic_service_climate
+        key.startsWith("pintura") -> R.drawable.ic_service_paint
+        key.startsWith("albanileria") -> R.drawable.ic_service_masonry
+        key.startsWith("jardineria") -> R.drawable.ic_service_gardening
+        key.startsWith("limpieza") -> R.drawable.ic_service_cleaning
+        else -> R.drawable.ic_service_general
+    }
 }
 
 /**

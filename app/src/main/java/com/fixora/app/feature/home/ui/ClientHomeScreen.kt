@@ -31,6 +31,7 @@ enum class ClientTab(val item: BottomBarItem) {
  */
 @Composable
 fun ClientHomeScreen(
+    onOpenProvider: (branchId: String, distanceKm: String, categoryId: String?) -> Unit,
     onOpenPhoto: () -> Unit,
     onOpenPersonalData: () -> Unit,
     onOpenAddresses: () -> Unit,
@@ -42,7 +43,7 @@ fun ClientHomeScreen(
     ClientHomeContent(
         tab = tab,
         onSelectTab = { tab = it },
-        mapTab = { MapTab() },
+        mapTab = { MapTab(onOpenProvider = onOpenProvider) },
         accountTab = {
             AccountTab(
                 onOpenPhoto = onOpenPhoto,

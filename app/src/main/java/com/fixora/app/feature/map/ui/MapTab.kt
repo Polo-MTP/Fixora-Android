@@ -90,7 +90,10 @@ import java.util.Locale
 
 /** Pestaña Mapa del cliente (ANDROID-10, Figma «Fixora - Mapa»). */
 @Composable
-fun MapTab(viewModel: MapViewModel = hiltViewModel()) {
+fun MapTab(
+    onOpenProvider: (branchId: String, distanceKm: String, categoryId: String?) -> Unit,
+    viewModel: MapViewModel = hiltViewModel(),
+) {
     val state by viewModel.uiState.collectAsState()
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
@@ -122,6 +125,7 @@ fun MapTab(viewModel: MapViewModel = hiltViewModel()) {
             onSearchHere = viewModel::onSearchHere,
             onMyLocation = viewModel::onMyLocation,
             onCloseProvider = { viewModel.onProviderSelected(null) },
+            onOpenProvider = { onOpenProvider(it.id, formatDecimal(it.distanceKm), state.selectedCategoryId) },
             onRetry = viewModel::retry,
             onBottomPanelHeight = { bottomPanelHeight = it },
         )
@@ -139,6 +143,7 @@ private fun MapOverlay(
     onSearchHere: () -> Unit,
     onMyLocation: () -> Unit,
     onCloseProvider: () -> Unit,
+    onOpenProvider: (MapProvider) -> Unit,
     onRetry: () -> Unit,
     onBottomPanelHeight: (Int) -> Unit,
 ) {
@@ -180,6 +185,7 @@ private fun MapOverlay(
             BottomPanel(
                 state = state,
                 onClose = onCloseProvider,
+                onOpenProvider = onOpenProvider,
                 onRetry = onRetry,
                 onEnableLocation = onMyLocation,
                 modifier = Modifier.onSizeChanged { onBottomPanelHeight(it.height) },
@@ -351,6 +357,7 @@ private fun RoundMapButton(@DrawableRes icon: Int, description: String, onClick:
 private fun BottomPanel(
     state: MapUiState,
     onClose: () -> Unit,
+    onOpenProvider: (MapProvider) -> Unit,
     onRetry: () -> Unit,
     onEnableLocation: () -> Unit,
     modifier: Modifier = Modifier,
@@ -372,7 +379,14 @@ private fun BottomPanel(
         )
         val selected = state.selectedProvider
         when {
-            selected != null -> ProviderSummary(selected, state.selectedCategory, onClose)
+            selected != null -> {
+                ProviderSummary(selected, state.selectedCategory, onClose)
+                FixoraPrimaryButton(
+                    text = stringResource(R.string.map_provider_open_profile),
+                    onClick = { onOpenProvider(selected) },
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+            }
             state.error != null && state.providers.isEmpty() -> LoadErrorNotice(state.error, onRetry = onRetry)
             state.isLoading && state.providers.isEmpty() -> Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -608,7 +622,8 @@ private fun MapOverlayPreview() {
                     selectedProviderId = "1",
                 ),
                 onQueryChange = {}, onQuerySubmit = {}, onCategorySelected = {}, onFiltersApplied = {},
-                onSearchHere = {}, onMyLocation = {}, onCloseProvider = {}, onRetry = {}, onBottomPanelHeight = {},
+                onSearchHere = {}, onMyLocation = {}, onCloseProvider = {}, onOpenProvider = {}, onRetry = {},
+                onBottomPanelHeight = {},
             )
         }
     }
