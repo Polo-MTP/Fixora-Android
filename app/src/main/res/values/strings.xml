@@ -125,7 +125,6 @@
     <!-- Inicios por rol: contenido provisional -->
     <string name="home_greeting">¡Hola!</string>
     <string name="home_logout">Cerrar sesión</string>
-    <string name="client_home_soon">Muy pronto podrás buscar técnicos verificados y pedir ayuda desde aquí.</string>
     <string name="client_activity_soon">Aquí aparecerán tus servicios en curso y tu historial.</string>
     <string name="provider_home_soon">Pronto verás aquí tus solicitudes, ingresos y calificación del día.</string>
     <string name="provider_services_soon">Aquí aparecerán los servicios que aceptes y su estado.</string>
@@ -400,4 +399,15 @@
     <string name="schedule_day_range">%1$s a %2$s</string>
     <string name="schedule_hours">%1$s, %2$s a %3$s</string>
     <string name="schedule_all_day">%1$s, 24 horas</string>
+
+    <!-- Inicio del cliente (ANDROID-12) -->
+    <string name="client_home_greeting">Hola, %1$s</string>
+    <string name="client_home_greeting_plain">Hola</string>
+    <string name="client_home_question">¿Qué necesitas arreglar hoy?</string>
+    <string name="client_home_search_hint">Busca un servicio o negocio</string>
+    <string name="client_home_services">Servicios</string>
+    <string name="client_home_see_all">Ver todos</string>
+    <string name="client_home_see_less">Ver menos</string>
+    <string name="client_home_nearby">Cerca de ti</string>
+    <string name="client_home_map_title">Ver técnicos en el mapa</string>
 </resources>

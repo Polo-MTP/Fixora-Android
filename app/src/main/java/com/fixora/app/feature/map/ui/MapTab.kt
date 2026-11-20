@@ -91,10 +91,18 @@ import java.util.Locale
 /** Pestaña Mapa del cliente (ANDROID-10, Figma «Fixora - Mapa»). */
 @Composable
 fun MapTab(
+    launch: MapLaunch?,
+    onLaunchHandled: () -> Unit,
     onOpenProvider: (branchId: String, distanceKm: String, categoryId: String?) -> Unit,
     viewModel: MapViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
+    LaunchedEffect(launch?.id) {
+        if (launch != null) {
+            viewModel.onLaunch(launch)
+            onLaunchHandled()
+        }
+    }
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
     ) { results -> viewModel.onPermissionResult(results.values.any { it }) }

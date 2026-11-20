@@ -23,6 +23,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * Abrir el mapa ya filtrado desde el Inicio (ANDROID-12): por un servicio o por lo que se escribió
+ * en el buscador. [id] cambia en cada pedido para repetirlo aunque sea igual al anterior.
+ */
+data class MapLaunch(val categoryId: String? = null, val query: String = "", val id: Long = System.nanoTime())
+
 /** Pedido de mover la cámara; [id] cambia en cada pedido para repetirlo aunque el punto sea el mismo. */
 data class CameraRequest(val center: Coordinates, val zoom: Double, val id: Int)
 
@@ -103,6 +109,24 @@ class MapViewModel @Inject constructor(
         val state = _uiState.value
         val category = state.categories.firstOrNull { it.matches(state.query) } ?: return
         _uiState.update { it.copy(query = "", selectedCategoryId = category.id) }
+        search()
+    }
+
+    /**
+     * Llega desde el Inicio. Un texto que coincide con un servicio elige ese servicio; si no, se
+     * queda como filtro por nombre del negocio sobre todos los servicios.
+     */
+    fun onLaunch(launch: MapLaunch) {
+        val query = launch.query.trim()
+        val state = _uiState.value
+        val category = launch.categoryId ?: state.categories.firstOrNull { it.matches(query) }?.id
+        _uiState.update {
+            it.copy(
+                selectedCategoryId = category,
+                query = if (category != null && launch.categoryId == null) "" else query,
+                selectedProviderId = null,
+            )
+        }
         search()
     }
 

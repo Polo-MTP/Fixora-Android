@@ -148,6 +148,34 @@ class MapViewModelTest {
     }
 
     @Test
+    fun launchFromHomeWithAServiceSearchesWithIt() {
+        create()
+
+        viewModel.onLaunch(MapLaunch(categoryId = "1"))
+
+        assertEquals("1", state.selectedCategoryId)
+        assertEquals("1", repository.searches.last().categoryId)
+    }
+
+    @Test
+    fun launchFromHomeWithTextMatchesAServiceOrFiltersByName() {
+        create()
+
+        viewModel.onLaunch(MapLaunch(query = "electri"))
+        assertEquals("2", state.selectedCategoryId)
+        assertEquals("", state.query)
+
+        viewModel.onLaunch(MapLaunch(query = "centro"))
+        assertNull(state.selectedCategoryId)
+        assertEquals("centro", state.query)
+        assertEquals(listOf("1"), state.visibleProviders.map { it.id })
+
+        viewModel.onLaunch(MapLaunch())
+        assertNull(state.selectedCategoryId)
+        assertEquals("", state.query)
+    }
+
+    @Test
     fun widerRadiusMovesTheCameraAndSearchesAgain() {
         create()
         val firstCamera = checkNotNull(state.camera)
