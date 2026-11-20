@@ -2,6 +2,7 @@ package com.fixora.app.feature.servicerequest.data
 
 import com.fixora.app.core.network.ApiResult
 import com.fixora.app.core.network.safeApiCall
+import com.fixora.app.feature.availability.location.Coordinates
 import com.fixora.app.feature.servicerequest.domain.RequestStatus
 import com.fixora.app.feature.servicerequest.domain.ServiceRequest
 import com.fixora.app.feature.servicerequest.domain.parseApiInstant
@@ -35,6 +36,7 @@ class RemoteServiceRequestRepository(
         clientName = client.name.trim(),
         clientRating = client.ratingAvg,
         zone = address?.let { listOf(it.colony, it.municipality).filter(String::isNotBlank).joinToString(", ") }.orEmpty(),
+        position = location?.toCoordinates() ?: address?.let { PositionDto(it.latitude, it.longitude) }?.toCoordinates(),
         basePrice = basePrice,
         photoUrls = attachments.map { it.url }.filter { it.isNotBlank() },
         createdAt = parseApiInstant(createdAt),
@@ -42,6 +44,9 @@ class RemoteServiceRequestRepository(
         scheduledAt = parseApiInstant(scheduledAt),
         technicianName = technician?.name?.takeIf { it.isNotBlank() },
     )
+
+    private fun PositionDto.toCoordinates(): Coordinates? =
+        latitude?.let { lat -> longitude?.let { lng -> Coordinates(lat, lng) } }
 }
 
 @Module

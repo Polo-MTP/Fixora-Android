@@ -121,7 +121,7 @@ class PushNotifier @Inject constructor(
     }
 
     companion object {
-        const val KEY_IS_ALARM = "is_alarm"
+        const val KEY_IS_ALARM = PushMessage.KEY_IS_ALARM
 
         /** Extra con el id de la alarma que abrió la app, para quitarla y mostrar sobre el bloqueo. */
         const val EXTRA_ALARM_NOTIFICATION_ID = "alarm_notification_id"

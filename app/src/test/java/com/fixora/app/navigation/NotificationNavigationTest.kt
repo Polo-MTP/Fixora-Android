@@ -2,6 +2,7 @@ package com.fixora.app.navigation
 
 import com.fixora.app.core.notifications.PushMessage
 import com.fixora.app.core.notifications.PushNotifier
+import com.fixora.app.feature.servicerequest.navigation.IncomingRequestRoute
 import com.fixora.app.feature.servicerequest.navigation.ServiceRequestRoute
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -11,10 +12,10 @@ import org.junit.Test
 class NotificationNavigationTest {
 
     @Test
-    fun incomingRequestAlarmOpensThatRequest() {
-        val message = PushMessage(type = "nueva_solicitud", entityType = "service_request", entityId = "15")
+    fun incomingRequestAlarmOpensTheAlarmScreen() {
+        val message = PushMessage(type = "nueva_solicitud", entityType = "service_request", entityId = "15", isAlarm = true)
 
-        assertEquals(ServiceRequestRoute("15"), notificationRoute(message))
+        assertEquals(IncomingRequestRoute("15"), notificationRoute(message))
     }
 
     @Test
@@ -50,6 +51,6 @@ class NotificationNavigationTest {
             ),
         )
 
-        assertEquals(PushMessage("nueva_solicitud", "service_request", "15"), message)
+        assertEquals(PushMessage("nueva_solicitud", "service_request", "15", isAlarm = true), message)
     }
 }

@@ -1,5 +1,6 @@
 package com.fixora.app.feature.servicerequest.domain
 
+import com.fixora.app.feature.availability.location.Coordinates
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -34,6 +35,8 @@ data class ServiceRequest(
     val clientRating: Double,
     /** Colonia y municipio; la dirección exacta se ve hasta aceptarla. */
     val zone: String,
+    /** Dónde es el servicio (la ubicación de la solicitud o, si no, la de su dirección). */
+    val position: Coordinates? = null,
     val basePrice: String?,
     val photoUrls: List<String>,
     val createdAt: Instant?,

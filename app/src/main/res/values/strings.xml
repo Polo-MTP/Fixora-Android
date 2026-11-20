@@ -459,4 +459,29 @@
     <string name="alerts_setup_notifications">Las notificaciones están apagadas: no te llegarán las solicitudes nuevas.</string>
     <string name="alerts_setup_full_screen">Permite que Fixora muestre las solicitudes a pantalla completa, aunque tu celular esté bloqueado.</string>
     <string name="alerts_setup_action">Activar</string>
+
+    <!-- Pantalla de alarma de solicitud entrante (ANDROID-13) -->
+    <string name="incoming_kind_emergency">EMERGENCIA</string>
+    <string name="incoming_kind_request">NUEVA SOLICITUD</string>
+    <string name="incoming_to_answer">para responder</string>
+    <string name="incoming_time_left_description">Quedan %1$s para responder</string>
+    <string name="incoming_eta">~%1$d min</string>
+    <string name="incoming_client">Cliente</string>
+    <string name="incoming_client_rating">%1$s como cliente</string>
+    <string name="incoming_client_new">Cliente nuevo, sin calificaciones</string>
+    <string name="incoming_no_details_emergency">Emergencia sin detalles</string>
+    <string name="incoming_no_details">Sin descripción</string>
+    <string name="incoming_accept_for">Aceptar por $%1$s</string>
+    <string name="incoming_accept">Aceptar</string>
+    <string name="incoming_reject">Rechazar</string>
+    <string name="incoming_close">Cerrar</string>
+    <string name="incoming_closed_expired">Esta solicitud ya venció.</string>
+    <string name="incoming_closed_canceled">El cliente canceló esta solicitud.</string>
+    <string name="incoming_closed_taken">Esta solicitud ya no está disponible.</string>
+    <string name="incoming_reason_title">¿Por qué la rechazas?</string>
+    <string name="incoming_reason_busy">Estoy ocupado en otro servicio</string>
+    <string name="incoming_reason_far">Me queda muy lejos</string>
+    <string name="incoming_reason_service">No hago ese tipo de trabajo</string>
+    <string name="incoming_reason_other">Otro motivo</string>
+    <string name="incoming_reject_confirm">Rechazar solicitud</string>
 </resources>

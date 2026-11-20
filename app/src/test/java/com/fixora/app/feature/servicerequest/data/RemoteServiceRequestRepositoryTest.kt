@@ -3,6 +3,7 @@ package com.fixora.app.feature.servicerequest.data
 import com.fixora.app.core.network.ApiError
 import com.fixora.app.core.network.ApiResult
 import com.fixora.app.core.network.NetworkModule
+import com.fixora.app.feature.availability.location.Coordinates
 import com.fixora.app.feature.servicerequest.domain.RequestStatus
 import com.fixora.app.feature.servicerequest.domain.parseApiInstant
 import kotlinx.coroutines.runBlocking
@@ -53,7 +54,7 @@ class RemoteServiceRequestRepositoryTest {
             "description":"  Fuga en el baño  ","category":{"id":"1","name":"Plomería"},
             "branch":{"id":"2","name":"Matriz","phone":null},"technician":null,
             "client":{"name":"Roberto Martínez","rating_avg":4.5},
-            "address":{"id":"9","alias":"Casa","street":"Calle","colony":"Juárez","municipality":"Cuauhtémoc"},
+            "address":{"id":"9","alias":"Casa","street":"Calle","colony":"Juárez","municipality":"Cuauhtémoc","latitude":19.43,"longitude":-99.13},
             "location":null,"base_price":"350.00","agreed_price":null,
             "attachments":[{"file_key":"photos/1/a.jpg","url":"https://f/a"},{"file_key":"x","url":""}],
             "created_at":"2026-11-20T18:30:00.000Z","expires_at":"2026-11-20T18:35:00.000Z","scheduled_at":null}}""",
@@ -67,6 +68,8 @@ class RemoteServiceRequestRepositoryTest {
         assertEquals("Fuga en el baño", request.description)
         assertEquals("Plomería", request.categoryName)
         assertEquals("Juárez, Cuauhtémoc", request.zone)
+        // Sin ubicación propia de la solicitud se usa la de su dirección.
+        assertEquals(Coordinates(19.43, -99.13), request.position)
         assertEquals(listOf("https://f/a"), request.photoUrls)
         assertEquals(Instant.parse("2026-11-20T18:35:00Z"), request.expiresAt)
         assertNull(request.scheduledAt)
