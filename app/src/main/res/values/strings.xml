@@ -410,4 +410,16 @@
     <string name="client_home_see_less">Ver menos</string>
     <string name="client_home_nearby">Cerca de ti</string>
     <string name="client_home_map_title">Ver técnicos en el mapa</string>
+
+    <!-- Proveedor con la solicitud en revisión (ANDROID-4) -->
+    <string name="provider_review_title">Tu cuenta está en revisión</string>
+    <string name="provider_review_subtitle">La app es para proveedores aprobados. Tu solicitud todavía no termina de revisarse.</string>
+    <string name="provider_review_step_review_title">Revisamos tus documentos</string>
+    <string name="provider_review_step_review">El equipo de Fixora valida tu identificación y los documentos de tu negocio.</string>
+    <string name="provider_review_step_notice_title">Te avisamos por correo</string>
+    <string name="provider_review_step_notice">Cuando tu cuenta quede aprobada podrás entrar aquí con el mismo correo y contraseña.</string>
+    <string name="provider_review_step_documents_title">Si falta algo, corrígelo en el portal</string>
+    <string name="provider_review_step_documents">Si observamos algún documento, súbelo de nuevo desde el portal de proveedores.</string>
+    <string name="provider_review_ok">Entendido</string>
+    <string name="provider_review_portal">Ir al portal de proveedores</string>
 </resources>

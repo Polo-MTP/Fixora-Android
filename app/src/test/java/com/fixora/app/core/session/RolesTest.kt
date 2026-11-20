@@ -1,7 +1,9 @@
 package com.fixora.app.core.session
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class RolesTest {
@@ -28,5 +30,20 @@ class RolesTest {
     @Test
     fun ignoresCaseAndSpaces() {
         assertEquals(HomeArea.Client, Roles.homeArea(" Cliente "))
+    }
+
+    @Test
+    fun providerUnderReview_cannotUseTheApp() {
+        assertTrue(Roles.isInReview("proveedor", "por_aprobar"))
+        assertTrue(Roles.isInReview("gerente", "por_verificar"))
+        assertFalse(Roles.isInReview("proveedor", "activo"))
+        assertFalse(Roles.isInReview("empleado", " Activo "))
+    }
+
+    @Test
+    fun clientStatusIsNotAProviderReview() {
+        // El cliente sin verificar lo detiene la API al iniciar sesión, no esta regla.
+        assertFalse(Roles.isInReview("cliente", "por_verificar"))
+        assertFalse(Roles.isInReview("administrador", "por_aprobar"))
     }
 }

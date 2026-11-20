@@ -96,6 +96,7 @@ fun FixoraNavHost(
             onBack = navController::popBackStack,
             onForgotPassword = { navController.navigate(ForgotPasswordRoute) },
             onRegister = { navController.navigate(RegisterRoute) },
+            onOpenProviderPortal = { uriHandler.openIfConfigured(BuildConfig.PROVIDER_SIGNUP_URL) },
         )
         forgotPasswordScreen(
             onBack = navController::popBackStack,

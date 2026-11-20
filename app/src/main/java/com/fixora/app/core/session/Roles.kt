@@ -19,4 +19,14 @@ object Roles {
         PROVIDER, MANAGER, EMPLOYEE -> HomeArea.Provider
         else -> null
     }
+
+    /** Estado de una cuenta que ya puede usar la app (`user.status` de la API). */
+    const val ACTIVE_STATUS = "activo"
+
+    /**
+     * Proveedor (o su personal) cuya cuenta todavía no está activa: su solicitud sigue en revisión.
+     * La API le deja entrar con una sesión limitada a su solicitud, pero la app no es para él aún.
+     */
+    fun isInReview(role: String, status: String): Boolean =
+        homeArea(role) == HomeArea.Provider && status.trim().lowercase() != ACTIVE_STATUS
 }

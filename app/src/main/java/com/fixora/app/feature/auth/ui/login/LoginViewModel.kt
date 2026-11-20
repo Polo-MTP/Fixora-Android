@@ -23,6 +23,8 @@ data class LoginUiState(
     val submitted: Boolean = false,
     val isLoading: Boolean = false,
     val error: ApiError? = null,
+    /** Es un proveedor con la solicitud en revisión: se muestra el aviso en lugar del formulario. */
+    val inReview: Boolean = false,
 ) {
     val emailError get() = AuthValidator.email(email.value).visibleIf(email.touched || submitted)
     val passwordError get() = AuthValidator.required(password.value).visibleIf(password.touched || submitted)
@@ -42,6 +44,9 @@ class LoginViewModel @Inject constructor(
     fun onPasswordChange(value: String) = _uiState.update { it.copy(password = it.password.onChange(value), error = null) }
     fun onPasswordBlur() = _uiState.update { it.copy(password = it.password.onBlur()) }
 
+    /** Cierra el aviso de cuenta en revisión y regresa al formulario. */
+    fun dismissReview() = _uiState.update { it.copy(inReview = false) }
+
     /**
      * Valida el formulario y, si está completo, inicia sesión con la API. Al guardarse la sesión,
      * FixoraNavHost lleva al inicio; mientras tanto el botón sigue cargando.
@@ -53,7 +58,12 @@ class LoginViewModel @Inject constructor(
         _uiState.update { it.copy(isLoading = true, error = null) }
         viewModelScope.launch {
             val result = authRepository.login(state.email.value, state.password.value)
-            if (result is ApiResult.Failure) _uiState.update { it.copy(isLoading = false, error = result.error) }
+            if (result is ApiResult.Failure) {
+                val inReview = (result.error as? ApiError.Http)?.code == AuthRepository.PROVIDER_IN_REVIEW
+                _uiState.update {
+                    it.copy(isLoading = false, error = result.error.takeUnless { inReview }, inReview = inReview)
+                }
+            }
         }
     }
 }
