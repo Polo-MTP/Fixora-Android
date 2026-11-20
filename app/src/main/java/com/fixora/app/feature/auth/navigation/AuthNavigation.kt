@@ -36,12 +36,14 @@ fun NavGraphBuilder.loginScreen(
     onBack: () -> Unit,
     onForgotPassword: () -> Unit,
     onRegister: () -> Unit,
+    onOpenProviderPortal: () -> Unit,
 ) {
     composable<LoginRoute> {
         LoginScreen(
             onBack = onBack,
             onForgotPassword = onForgotPassword,
             onRegister = onRegister,
+            onOpenProviderPortal = onOpenProviderPortal,
         )
     }
 }

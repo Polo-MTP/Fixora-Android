@@ -188,6 +188,18 @@ class MapViewModelTest {
     }
 
     @Test
+    fun ratingAndPriceSearchAgainWithoutMovingTheCamera() {
+        create()
+        val camera = checkNotNull(state.camera)
+
+        viewModel.onFiltersApplied(MapFilters(minRating = 4.0, maxPrice = 500))
+
+        assertEquals(MapFilters(minRating = 4.0, maxPrice = 500), repository.searches.last().filters)
+        assertEquals(camera, state.camera)
+        assertEquals(2, repository.searches.size)
+    }
+
+    @Test
     fun movingTheMapFarOffersToSearchThere() {
         create()
 

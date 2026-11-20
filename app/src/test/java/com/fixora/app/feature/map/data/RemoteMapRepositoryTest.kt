@@ -59,7 +59,11 @@ class RemoteMapRepositoryTest {
             "reviews_count":3,"base_price":"250.00","open_now":true}]}""",
         )
 
-        val result = (repository.search(center, MapFilters(radiusKm = 5, availableNow = true), categoryId = "1") as ApiResult.Success).data
+        val result = (repository.search(
+            center,
+            MapFilters(radiusKm = 5, availableNow = true, minRating = 4.5, maxPrice = 500),
+            categoryId = "1",
+        ) as ApiResult.Success).data
 
         val url = take().url
         assertEquals("/api/search/branches", url.encodedPath)
@@ -68,6 +72,8 @@ class RemoteMapRepositoryTest {
         assertEquals("5", url.queryParameter("radius_km"))
         assertEquals("1", url.queryParameter("category_id"))
         assertEquals("true", url.queryParameter("available_now"))
+        assertEquals("4.5", url.queryParameter("min_rating"))
+        assertEquals("500", url.queryParameter("max_price"))
         assertEquals("distancia", url.queryParameter("sort"))
         assertEquals("50", url.queryParameter("limit"))
         assertEquals(72, result.total)
@@ -87,6 +93,8 @@ class RemoteMapRepositoryTest {
         val url = take().url
         assertNull(url.queryParameter("category_id"))
         assertNull(url.queryParameter("available_now"))
+        assertNull(url.queryParameter("min_rating"))
+        assertNull(url.queryParameter("max_price"))
         assertEquals("10", url.queryParameter("radius_km"))
     }
 

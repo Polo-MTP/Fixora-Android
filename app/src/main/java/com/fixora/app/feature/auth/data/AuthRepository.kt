@@ -33,7 +33,8 @@ class AuthRepository @Inject constructor(
 ) {
     /**
      * Inicia sesión y, si la API acepta, guarda la sesión cifrada en el celular. Los roles que no
-     * usan la app (administrador, soporte) reciben [WEB_ONLY_ROLE] y su sesión se revoca.
+     * usan la app (administrador, soporte) reciben [WEB_ONLY_ROLE] y el proveedor que aún no es
+     * aprobado recibe [PROVIDER_IN_REVIEW]; en los dos casos su sesión se revoca.
      */
     suspend fun login(email: String, password: String): ApiResult<Unit> {
         val result = signIn(email, password)
@@ -54,6 +55,11 @@ class AuthRepository @Inject constructor(
         if (Roles.homeArea(user.role) == null) {
             safeApiCall(json) { sessionApi.logout(RefreshTokenRequest(tokens.refreshToken)) }
             return ApiResult.Failure(ApiError.Http(status = 403, code = WEB_ONLY_ROLE, message = null))
+        }
+        // El proveedor entra solo si ya fue aprobado (ANDROID-4).
+        if (Roles.isInReview(user.role, user.status)) {
+            safeApiCall(json) { sessionApi.logout(RefreshTokenRequest(tokens.refreshToken)) }
+            return ApiResult.Failure(ApiError.Http(status = 403, code = PROVIDER_IN_REVIEW, message = null))
         }
         return ApiResult.Success(
             Session(
@@ -101,6 +107,9 @@ class AuthRepository @Inject constructor(
     companion object {
         /** Código propio de la app (no de la API) para las cuentas del panel web. */
         const val WEB_ONLY_ROLE = "WEB_ONLY_ROLE"
+
+        /** Proveedor con la solicitud todavía en revisión: aún no puede usar la app. */
+        const val PROVIDER_IN_REVIEW = "PROVIDER_IN_REVIEW"
 
         // Códigos de error de la API que el registro maneja aparte.
         const val EMAIL_ALREADY_REGISTERED = "EMAIL_ALREADY_REGISTERED"

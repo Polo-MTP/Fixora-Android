@@ -23,6 +23,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -543,12 +545,14 @@ private fun ProviderAvatar(provider: MapProvider) {
     }
 }
 
-/** Filtros que entiende la API: distancia y solo los abiertos en este momento. */
+/** Filtros que entiende la API: distancia, abiertos ahora, calificación mínima y precio máximo. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FiltersSheet(current: MapFilters, onDismiss: () -> Unit, onApply: (MapFilters) -> Unit) {
     var radius by rememberSaveable { mutableIntStateOf(current.radiusKm) }
     var availableNow by rememberSaveable { mutableStateOf(current.availableNow) }
+    var minRating by rememberSaveable { mutableStateOf(current.minRating) }
+    var maxPrice by rememberSaveable { mutableStateOf(current.maxPrice) }
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
@@ -556,7 +560,9 @@ private fun FiltersSheet(current: MapFilters, onDismiss: () -> Unit, onApply: (M
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 24.dp),
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(start = 24.dp, end = 24.dp, bottom = 24.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -568,28 +574,43 @@ private fun FiltersSheet(current: MapFilters, onDismiss: () -> Unit, onApply: (M
                 TextButton(onClick = {
                     radius = MapRules.DEFAULT_RADIUS_KM
                     availableNow = false
+                    minRating = null
+                    maxPrice = null
                 }) { Text(stringResource(R.string.map_filters_reset), color = Navy800) }
             }
-            Text(stringResource(R.string.map_filters_distance), style = MaterialTheme.typography.titleSmall, color = Navy900)
+
+            FilterTitle(stringResource(R.string.map_filters_distance))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 MapRules.RADIUS_OPTIONS_KM.forEach { option ->
-                    val selected = option == radius
-                    Text(
-                        text = stringResource(R.string.map_filters_distance_value, option),
-                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                        color = if (selected) White else Navy900,
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .background(if (selected) Navy900 else Mist50)
-                            .clickable(role = Role.RadioButton) { radius = option }
-                            .padding(horizontal = 16.dp, vertical = 10.dp),
-                    )
+                    FilterOption(stringResource(R.string.map_filters_distance_value, option), option == radius) { radius = option }
                 }
             }
+
+            FilterTitle(stringResource(R.string.map_filters_rating))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilterOption(stringResource(R.string.map_filters_any), minRating == null) { minRating = null }
+                MapRules.RATING_OPTIONS.forEach { option ->
+                    FilterOption(
+                        stringResource(R.string.map_filters_rating_value, formatRating(option)),
+                        option == minRating,
+                        star = true,
+                    ) { minRating = option }
+                }
+            }
+
+            FilterTitle(stringResource(R.string.map_filters_price), stringResource(R.string.map_filters_price_hint))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilterOption(stringResource(R.string.map_filters_any), maxPrice == null) { maxPrice = null }
+                MapRules.MAX_PRICE_OPTIONS.forEach { option ->
+                    FilterOption(stringResource(R.string.map_filters_price_value, formatPesos(option)), option == maxPrice) {
+                        maxPrice = option
+                    }
+                }
+            }
+
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(stringResource(R.string.map_filters_available), style = MaterialTheme.typography.titleSmall, color = Navy900)
-                    Text(stringResource(R.string.map_filters_available_hint), style = MaterialTheme.typography.bodySmall, color = Slate500)
+                    FilterTitle(stringResource(R.string.map_filters_available), stringResource(R.string.map_filters_available_hint))
                 }
                 Spacer(Modifier.width(12.dp))
                 Switch(
@@ -600,11 +621,56 @@ private fun FiltersSheet(current: MapFilters, onDismiss: () -> Unit, onApply: (M
             }
             FixoraPrimaryButton(
                 text = stringResource(R.string.map_filters_apply),
-                onClick = { onApply(MapFilters(radiusKm = radius, availableNow = availableNow)) },
+                onClick = {
+                    onApply(MapFilters(radiusKm = radius, availableNow = availableNow, minRating = minRating, maxPrice = maxPrice))
+                },
             )
         }
     }
 }
+
+@Composable
+private fun FilterTitle(title: String, hint: String? = null) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(title, style = MaterialTheme.typography.titleSmall, color = Navy900)
+        if (hint != null) Text(hint, style = MaterialTheme.typography.bodySmall, color = Slate500)
+    }
+}
+
+/** Opción de un filtro; la elegida va rellena de azul marino. */
+@Composable
+private fun FilterOption(text: String, selected: Boolean, star: Boolean = false, onClick: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = Modifier
+            .clip(CircleShape)
+            .background(if (selected) Navy900 else Mist50)
+            .clickable(role = Role.RadioButton, onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+    ) {
+        if (star) {
+            Icon(
+                painterResource(R.drawable.ic_star),
+                contentDescription = null,
+                tint = if (selected) White else Orange500,
+                modifier = Modifier.size(14.dp),
+            )
+        }
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+            color = if (selected) White else Navy900,
+        )
+    }
+}
+
+/** «4.5», y «4» en lugar de «4.0». */
+private fun formatRating(value: Double): String =
+    if (value % 1.0 == 0.0) value.toInt().toString() else String.format(Locale.US, "%.1f", value)
+
+/** «1,200» con separador de miles, como se escriben los precios en México. */
+private fun formatPesos(value: Int): String = String.format(Locale.US, "%,d", value)
 
 /** Un decimal, con punto: «4.8», «1.2». */
 private fun formatDecimal(value: Double): String = String.format(Locale.US, "%.1f", value)

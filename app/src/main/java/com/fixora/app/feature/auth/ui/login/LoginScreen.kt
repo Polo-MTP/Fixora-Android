@@ -3,6 +3,7 @@ package com.fixora.app.feature.auth.ui.login
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -36,9 +37,16 @@ fun LoginScreen(
     onBack: () -> Unit,
     onForgotPassword: () -> Unit,
     onRegister: () -> Unit,
+    onOpenProviderPortal: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
+
+    if (state.inReview) {
+        BackHandler(onBack = viewModel::dismissReview)
+        ProviderInReviewContent(onBack = viewModel::dismissReview, onOpenPortal = onOpenProviderPortal)
+        return
+    }
 
     LoginContent(
         state = state,

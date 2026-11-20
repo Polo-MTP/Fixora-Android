@@ -28,11 +28,16 @@ class AppViewModel @Inject constructor(
     connectivityObserver: ConnectivityObserver,
 ) : ViewModel() {
 
-    // Una sesión de un rol sin app (administrador, soporte) cuenta como sin sesión; el login ya
-    // no las guarda, pero así una guardada antes no deja la app en un estado sin pantalla.
+    // Una sesión de un rol sin app (administrador, soporte) o de un proveedor en revisión cuenta
+    // como sin sesión; el login ya no las guarda, pero así una guardada antes no deja la app en
+    // un estado sin pantalla.
     val sessionState: StateFlow<SessionState> = sessionRepository.session
         .map { session ->
-            session?.let { Roles.homeArea(it.role) }?.let(SessionState::LoggedIn) ?: SessionState.LoggedOut
+            session
+                ?.takeUnless { Roles.isInReview(it.role, it.status) }
+                ?.let { Roles.homeArea(it.role) }
+                ?.let(SessionState::LoggedIn)
+                ?: SessionState.LoggedOut
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, SessionState.Loading)
 
