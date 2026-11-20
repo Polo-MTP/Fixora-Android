@@ -14,6 +14,7 @@ import com.fixora.app.core.designsystem.theme.FixoraTheme
 import com.fixora.app.feature.account.ui.AccountTab
 import com.fixora.app.feature.home.ui.components.ComingSoonTab
 import com.fixora.app.feature.home.ui.components.HomeTabsScaffold
+import com.fixora.app.feature.map.ui.MapTab
 
 /** Pestañas del cliente, en el orden del Figma «Fixora - Inicio». */
 enum class ClientTab(val item: BottomBarItem) {
@@ -24,9 +25,9 @@ enum class ClientTab(val item: BottomBarItem) {
 }
 
 /**
- * Inicio del cliente (ANDROID-4). La pestaña Cuenta es Mi cuenta (ANDROID-5); Inicio, Mapa y
- * Actividad son provisionales hasta que se construyan esos módulos. «Atrás» desde otra pestaña
- * regresa a Inicio antes de salir.
+ * Inicio del cliente (ANDROID-4). Mapa muestra a los proveedores cercanos (ANDROID-10) y Cuenta es
+ * Mi cuenta (ANDROID-5); Inicio y Actividad son provisionales hasta que se construyan esos módulos.
+ * «Atrás» desde otra pestaña regresa a Inicio antes de salir.
  */
 @Composable
 fun ClientHomeScreen(
@@ -41,6 +42,7 @@ fun ClientHomeScreen(
     ClientHomeContent(
         tab = tab,
         onSelectTab = { tab = it },
+        mapTab = { MapTab() },
         accountTab = {
             AccountTab(
                 onOpenPhoto = onOpenPhoto,
@@ -56,6 +58,7 @@ fun ClientHomeScreen(
 private fun ClientHomeContent(
     tab: ClientTab,
     onSelectTab: (ClientTab) -> Unit,
+    mapTab: @Composable () -> Unit,
     accountTab: @Composable () -> Unit,
 ) {
     HomeTabsScaffold(
@@ -69,11 +72,7 @@ private fun ClientHomeContent(
                 message = stringResource(R.string.client_home_soon),
                 icon = R.drawable.ic_nav_home,
             )
-            ClientTab.Map -> ComingSoonTab(
-                title = stringResource(R.string.tab_map),
-                message = stringResource(R.string.client_map_soon),
-                icon = R.drawable.ic_nav_map,
-            )
+            ClientTab.Map -> mapTab()
             ClientTab.Activity -> ComingSoonTab(
                 title = stringResource(R.string.tab_activity),
                 message = stringResource(R.string.client_activity_soon),
@@ -88,6 +87,6 @@ private fun ClientHomeContent(
 @Composable
 private fun ClientHomePreview() {
     FixoraTheme {
-        ClientHomeContent(ClientTab.Home, {}, {})
+        ClientHomeContent(ClientTab.Home, {}, {}, {})
     }
 }
