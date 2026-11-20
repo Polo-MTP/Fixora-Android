@@ -95,17 +95,10 @@ private val PanelOverlap = 28.dp
 @Composable
 fun ProviderProfileScreen(
     onBack: () -> Unit,
+    onRequestService: (branchId: String, categoryId: String?, distanceKm: String?) -> Unit,
     viewModel: ProviderProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
-    val context = LocalContext.current
-    val soonMessage = stringResource(R.string.provider_profile_request_soon)
-    LaunchedEffect(state.requestSoonShown) {
-        if (state.requestSoonShown) {
-            Toast.makeText(context, soonMessage, Toast.LENGTH_SHORT).show()
-            viewModel.onRequestSoonShown()
-        }
-    }
 
     SystemBarsAppearance(lightIcons = false)
     val profile = state.profile
@@ -139,7 +132,7 @@ fun ProviderProfileScreen(
                 state = state,
                 profile = profile,
                 onTabSelected = viewModel::onTabSelected,
-                onRequestService = viewModel::onRequestService,
+                onRequestService = { onRequestService(profile.id, state.categoryId, state.distanceKm) },
                 modifier = Modifier.padding(top = if (position != null) MapHeight else 72.dp),
             )
             error != null -> Box(
