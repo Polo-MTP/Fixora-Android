@@ -14,6 +14,7 @@ data object ProviderHomeRoute
 
 fun NavGraphBuilder.clientHomeScreen(
     onOpenNotifications: () -> Unit,
+    onEmergency: () -> Unit,
     onOpenProvider: (branchId: String, distanceKm: String, categoryId: String?) -> Unit,
     onOpenPhoto: () -> Unit,
     onOpenPersonalData: () -> Unit,
@@ -23,6 +24,7 @@ fun NavGraphBuilder.clientHomeScreen(
     composable<ClientHomeRoute> {
         ClientHomeScreen(
             onOpenNotifications = onOpenNotifications,
+            onEmergency = onEmergency,
             onOpenProvider = onOpenProvider,
             onOpenPhoto = onOpenPhoto,
             onOpenPersonalData = onOpenPersonalData,
