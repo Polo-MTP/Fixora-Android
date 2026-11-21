@@ -51,6 +51,8 @@ import com.fixora.app.feature.providerprofile.navigation.ProviderProfileRoute
 import com.fixora.app.feature.providerprofile.navigation.providerProfileScreen
 import com.fixora.app.feature.requestform.navigation.RequestServiceRoute
 import com.fixora.app.feature.requestform.navigation.requestFormScreen
+import com.fixora.app.feature.home.navigation.MAP_CATEGORY_KEY
+import com.fixora.app.feature.servicerequest.navigation.ClientRequestRoute
 import com.fixora.app.feature.servicerequest.navigation.IncomingRequestRoute
 import com.fixora.app.feature.servicerequest.navigation.ServiceRequestRoute
 import com.fixora.app.feature.servicerequest.navigation.serviceRequestScreen
@@ -88,7 +90,7 @@ fun FixoraNavHost(
     LaunchedEffect(openedNotification, homeArea) {
         val message = openedNotification ?: return@LaunchedEffect
         // Sin sesión no hay a dónde llevar: se queda en la landing.
-        if (homeArea != null) notificationRoute(message)?.let { navController.navigate(it) }
+        if (homeArea != null) notificationRoute(message)?.let { navController.navigate(it.forArea(homeArea)) }
         onNotificationHandled()
     }
 
@@ -169,8 +171,8 @@ fun FixoraNavHost(
         requestFormScreen(
             onBack = navController::popBackStack,
             onSent = { requestId ->
-                // Enviada: se ve la solicitud y «atrás» ya no regresa al formulario.
-                navController.navigate(ServiceRequestRoute(requestId)) {
+                // Enviada: se espera la respuesta y «atrás» ya no regresa al formulario.
+                navController.navigate(ClientRequestRoute(requestId)) {
                     popUpTo<RequestServiceRoute> { inclusive = true }
                 }
             },
@@ -179,14 +181,14 @@ fun FixoraNavHost(
         emergencyScreen(
             onCancel = navController::popBackStack,
             onSent = { requestId ->
-                navController.navigate(ServiceRequestRoute(requestId)) {
+                navController.navigate(ClientRequestRoute(requestId)) {
                     popUpTo<EmergencyRoute> { inclusive = true }
                 }
             },
         )
         notificationsScreen(
             onBack = navController::popBackStack,
-            onOpen = { route -> navController.navigate(route) },
+            onOpen = { route -> navController.navigate(route.forArea(homeArea)) },
         )
         serviceRequestScreen(
             onBack = navController::popBackStack,
@@ -195,6 +197,18 @@ fun FixoraNavHost(
                 navController.navigate(ServiceRequestRoute(requestId)) {
                     popUpTo<IncomingRequestRoute> { inclusive = true }
                 }
+            },
+            onClientHome = { navController.popBackStack<ClientHomeRoute>(inclusive = false) },
+            onClientResent = { requestId ->
+                navController.navigate(ClientRequestRoute(requestId)) {
+                    popUpTo<ClientRequestRoute> { inclusive = true }
+                }
+            },
+            onChooseAnother = { categoryId ->
+                // Regresa al inicio con el mapa filtrado por ese servicio (lo lee ClientHomeScreen).
+                runCatching { navController.getBackStackEntry<ClientHomeRoute>() }.getOrNull()
+                    ?.savedStateHandle?.set(MAP_CATEGORY_KEY, categoryId ?: "")
+                navController.popBackStack<ClientHomeRoute>(inclusive = false)
             },
         )
     }
@@ -211,3 +225,7 @@ private fun homeRoute(area: HomeArea?): Any = when (area) {
     HomeArea.Provider -> ProviderHomeRoute
     null -> LandingRoute
 }
+
+/** El cliente ve sus solicitudes en la pantalla de espera; el proveedor, en el detalle. */
+private fun Any.forArea(area: HomeArea?): Any =
+    if (area == HomeArea.Client && this is ServiceRequestRoute) ClientRequestRoute(requestId) else this

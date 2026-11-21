@@ -554,4 +554,45 @@
     <string name="emergency_cancel">Cancelar</string>
     <string name="emergency_sent">Emergencia enviada</string>
     <string name="emergency_no_technicians">Ahora no hay técnicos de ese servicio disponibles cerca. Intenta en unos minutos o busca un negocio en el mapa.</string>
+
+    <!-- Pantalla de espera del cliente (ANDROID-17) -->
+    <string name="client_request_kind_waiting">ESPERANDO RESPUESTA</string>
+    <string name="client_request_kind_emergency">BUSCANDO TÉCNICO</string>
+    <string name="client_request_to_accept">para que acepten</string>
+    <string name="client_request_time_left">Quedan %1$s para que acepten</string>
+    <string name="client_request_sent_to">Le enviamos tu solicitud a %1$s.</string>
+    <string name="client_request_the_provider">el proveedor</string>
+    <plurals name="client_request_notified">
+        <item quantity="one">Avisamos a %d técnico cerca de ti.</item>
+        <item quantity="other">Avisamos a %d técnicos cerca de ti.</item>
+    </plurals>
+    <string name="client_request_cancel">Cancelar solicitud</string>
+    <string name="client_request_cancel_title">¿Cancelar la solicitud?</string>
+    <string name="client_request_cancel_message">Nadie la ha aceptado todavía, así que no tiene costo.</string>
+    <string name="client_request_cancel_confirm">Cancelar</string>
+    <string name="client_request_keep_waiting">Seguir esperando</string>
+    <string name="client_request_rejected_title">No pudieron atenderte</string>
+    <string name="client_request_rejected_hint">%1$s no puede tomar tu solicitud ahora. Puedes enviarla de nuevo o elegir otro proveedor.</string>
+    <string name="client_request_rejected_emergency">Los técnicos cercanos no pueden atenderte ahora. Puedes enviarla de nuevo o buscar un negocio en el mapa.</string>
+    <string name="client_request_expired_title">Nadie respondió a tiempo</string>
+    <string name="client_request_expired_hint">Pasaron los 5 minutos sin respuesta. Puedes enviarla de nuevo o elegir otro proveedor.</string>
+    <string name="client_request_canceled_title">Solicitud cancelada</string>
+    <string name="client_request_canceled_hint">Ya no se le avisará a nadie.</string>
+    <string name="client_request_resend">Enviar de nuevo</string>
+    <string name="client_request_choose_another">Elegir otro proveedor</string>
+    <string name="client_request_accepted_title">¡Aceptaron tu solicitud!</string>
+    <string name="client_request_completed_title">Servicio terminado</string>
+    <string name="client_request_completed_hint">Gracias por usar Fixora.</string>
+    <string name="client_request_your_technician">Tu técnico</string>
+    <string name="client_request_technician_pending">Por asignar</string>
+    <string name="client_request_step_accepted">Aceptada</string>
+    <string name="client_request_step_on_the_way">En camino</string>
+    <string name="client_request_step_arrived">Llegó a tu domicilio</string>
+    <string name="client_request_step_completed">Terminado</string>
+    <string name="client_request_step_accepted_now">El técnico se prepara para salir.</string>
+    <string name="client_request_step_on_the_way_now">El técnico va en camino.</string>
+    <string name="client_request_step_arrived_now">El técnico llegó a tu domicilio.</string>
+    <string name="client_request_step_scheduled_now">Tu cita quedó agendada.</string>
+    <string name="client_request_call">Llamar al negocio</string>
+    <string name="client_request_home">Volver al inicio</string>
 </resources>

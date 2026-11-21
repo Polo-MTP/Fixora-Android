@@ -43,7 +43,27 @@ data class ServiceRequest(
     val expiresAt: Instant?,
     val scheduledAt: Instant?,
     val technicianName: String?,
-)
+    val categoryId: String? = null,
+    val branchId: String? = null,
+    val branchName: String? = null,
+    val branchPhone: String? = null,
+    val technicianPhotoUrl: String? = null,
+    /** Para reenviarla igual: la dirección guardada y las llaves de sus fotos. */
+    val addressId: String? = null,
+    val photoKeys: List<String> = emptyList(),
+    val agreedPrice: String? = null,
+    val acceptedAt: Instant? = null,
+    val dispatchesSent: Int = 0,
+    val dispatchesRejected: Int = 0,
+) {
+    /**
+     * El proveedor ya dijo que no. Una normal va a un solo negocio: con un rechazo se acabó. Una
+     * emergencia sigue abierta mientras quede algún técnico avisado sin responder.
+     */
+    val wasRejected: Boolean
+        get() = status == RequestStatus.Pending && dispatchesRejected > 0 &&
+            (!isEmergency || dispatchesRejected >= dispatchesSent)
+}
 
 /**
  * Las fechas llegan como ISO 8601 («2026-11-20T13:27:28.626Z»); algunas sin zona, que la API

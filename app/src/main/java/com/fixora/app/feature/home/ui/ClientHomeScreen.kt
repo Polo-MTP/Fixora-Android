@@ -2,6 +2,7 @@ package com.fixora.app.feature.home.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +35,8 @@ enum class ClientTab(val item: BottomBarItem) {
  */
 @Composable
 fun ClientHomeScreen(
+    openMapCategory: String?,
+    onMapCategoryHandled: () -> Unit,
     onOpenNotifications: () -> Unit,
     onEmergency: () -> Unit,
     onOpenProvider: (branchId: String, distanceKm: String, categoryId: String?) -> Unit,
@@ -46,6 +49,13 @@ fun ClientHomeScreen(
     // Filtro que el Inicio le pasa al mapa; el mapa lo aplica una vez y avisa para limpiarlo.
     var mapLaunch by remember { mutableStateOf<MapLaunch?>(null) }
     BackHandler(enabled = tab != ClientTab.Home) { tab = ClientTab.Home }
+    // Al regresar de una solicitud rechazada o vencida: el mapa con ese servicio para elegir otro.
+    LaunchedEffect(openMapCategory) {
+        val category = openMapCategory ?: return@LaunchedEffect
+        mapLaunch = MapLaunch(categoryId = category.ifBlank { null })
+        tab = ClientTab.Map
+        onMapCategoryHandled()
+    }
 
     ClientHomeContent(
         tab = tab,

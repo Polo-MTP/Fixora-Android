@@ -20,7 +20,14 @@ interface ServiceRequestApi {
 
     @POST("service-requests/{id}/reject")
     suspend fun reject(@Path("id") id: String, @Body body: RejectRequest)
+
+    /** El cliente cancela mientras nadie la acepta (sin motivo). */
+    @POST("service-requests/{id}/cancel")
+    suspend fun cancel(@Path("id") id: String, @Body body: CancelRequest = CancelRequest())
 }
+
+@Serializable
+data class CancelRequest(val reason: String? = null)
 
 @Serializable
 data class AcceptRequest(@SerialName("employee_id") val employeeId: String)
@@ -35,13 +42,16 @@ data class ServiceRequestDto(
     @SerialName("is_emergency") val isEmergency: Boolean = false,
     val description: String = "",
     val category: NamedDto? = null,
-    val branch: NamedDto? = null,
+    val branch: BranchDto? = null,
     val technician: TechnicianDto? = null,
     val client: ClientDto = ClientDto(),
     val address: AddressDto? = null,
     val location: PositionDto? = null,
     @SerialName("base_price") val basePrice: String? = null,
     val attachments: List<AttachmentDto> = emptyList(),
+    @SerialName("agreed_price") val agreedPrice: String? = null,
+    @SerialName("accepted_at") val acceptedAt: String? = null,
+    val dispatches: DispatchesDto = DispatchesDto(),
     @SerialName("created_at") val createdAt: String? = null,
     @SerialName("expires_at") val expiresAt: String? = null,
     @SerialName("scheduled_at") val scheduledAt: String? = null,
@@ -51,7 +61,17 @@ data class ServiceRequestDto(
 data class NamedDto(val id: String, val name: String = "")
 
 @Serializable
-data class TechnicianDto(val name: String = "")
+data class BranchDto(val id: String, val name: String = "", val phone: String? = null)
+
+@Serializable
+data class TechnicianDto(
+    val name: String = "",
+    @SerialName("photo_url") val photoUrl: String? = null,
+)
+
+/** A cuántos técnicos se avisó y cuántos rechazaron (API-30). */
+@Serializable
+data class DispatchesDto(val sent: Int = 0, val rejected: Int = 0)
 
 @Serializable
 data class ClientDto(
@@ -61,6 +81,7 @@ data class ClientDto(
 
 @Serializable
 data class AddressDto(
+    val id: String? = null,
     val alias: String? = null,
     val colony: String = "",
     val municipality: String = "",
@@ -72,4 +93,7 @@ data class AddressDto(
 data class PositionDto(val latitude: Double? = null, val longitude: Double? = null)
 
 @Serializable
-data class AttachmentDto(val url: String = "")
+data class AttachmentDto(
+    @SerialName("file_key") val fileKey: String = "",
+    val url: String = "",
+)
