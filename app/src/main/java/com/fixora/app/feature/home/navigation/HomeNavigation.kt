@@ -13,6 +13,7 @@ data object ClientHomeRoute
 data object ProviderHomeRoute
 
 fun NavGraphBuilder.clientHomeScreen(
+    onOpenNotifications: () -> Unit,
     onOpenProvider: (branchId: String, distanceKm: String, categoryId: String?) -> Unit,
     onOpenPhoto: () -> Unit,
     onOpenPersonalData: () -> Unit,
@@ -21,6 +22,7 @@ fun NavGraphBuilder.clientHomeScreen(
 ) {
     composable<ClientHomeRoute> {
         ClientHomeScreen(
+            onOpenNotifications = onOpenNotifications,
             onOpenProvider = onOpenProvider,
             onOpenPhoto = onOpenPhoto,
             onOpenPersonalData = onOpenPersonalData,
@@ -31,6 +33,7 @@ fun NavGraphBuilder.clientHomeScreen(
 }
 
 fun NavGraphBuilder.providerHomeScreen(
+    onOpenNotifications: () -> Unit,
     onOpenPhoto: () -> Unit,
     onOpenVehicle: () -> Unit,
     onOpenPortfolio: () -> Unit,
@@ -40,6 +43,7 @@ fun NavGraphBuilder.providerHomeScreen(
 ) {
     composable<ProviderHomeRoute> {
         ProviderHomeScreen(
+            onOpenNotifications = onOpenNotifications,
             onOpenPhoto = onOpenPhoto,
             onOpenVehicle = onOpenVehicle,
             onOpenPortfolio = onOpenPortfolio,

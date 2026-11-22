@@ -46,6 +46,7 @@ import com.fixora.app.feature.availability.data.AvailabilityState
 import com.fixora.app.feature.availability.location.FusedLocationSource
 import com.fixora.app.feature.home.ui.components.ComingSoonCard
 import com.fixora.app.feature.home.ui.components.TabTitle
+import com.fixora.app.feature.notifications.ui.NotificationBell
 
 /**
  * Pestaña Inicio del proveedor: el interruptor En línea / Fuera de línea (ANDROID-9), el aviso si
@@ -53,7 +54,10 @@ import com.fixora.app.feature.home.ui.components.TabTitle
  * (solicitudes, ingresos y calificación del día).
  */
 @Composable
-fun ProviderHomeTab(viewModel: AvailabilityViewModel = hiltViewModel()) {
+fun ProviderHomeTab(
+    onOpenNotifications: () -> Unit,
+    viewModel: AvailabilityViewModel = hiltViewModel(),
+) {
     val state by viewModel.uiState.collectAsState()
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
@@ -63,7 +67,12 @@ fun ProviderHomeTab(viewModel: AvailabilityViewModel = hiltViewModel()) {
         viewModel.requestPermission.collect { permissionLauncher.launch(FusedLocationSource.LOCATION_PERMISSIONS) }
     }
 
-    ProviderHomeContent(state = state, onToggle = viewModel::onToggle, onRetry = viewModel::refresh)
+    ProviderHomeContent(
+        state = state,
+        onToggle = viewModel::onToggle,
+        onRetry = viewModel::refresh,
+        bell = { NotificationBell(onClick = onOpenNotifications) },
+    )
 }
 
 @Composable
@@ -71,6 +80,7 @@ private fun ProviderHomeContent(
     state: AvailabilityUiState,
     onToggle: (Boolean) -> Unit,
     onRetry: () -> Unit,
+    bell: @Composable () -> Unit = {},
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -79,7 +89,10 @@ private fun ProviderHomeContent(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp, vertical = 20.dp),
     ) {
-        TabTitle(stringResource(R.string.home_greeting))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            TabTitle(stringResource(R.string.home_greeting), Modifier.weight(1f))
+            bell()
+        }
         if (state.isVisible) AvailabilityCard(state, onToggle, onRetry)
         AlertsSetupCard()
         ComingSoonCard(message = stringResource(R.string.provider_home_soon), icon = R.drawable.ic_nav_home)

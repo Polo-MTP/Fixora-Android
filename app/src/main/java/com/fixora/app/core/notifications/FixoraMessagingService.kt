@@ -1,5 +1,6 @@
 package com.fixora.app.core.notifications
 
+import com.fixora.app.feature.notifications.data.NotificationsRepository
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.AndroidEntryPoint
@@ -24,6 +25,8 @@ class FixoraMessagingService : FirebaseMessagingService() {
 
     @Inject lateinit var incomingAlarms: IncomingAlarms
 
+    @Inject lateinit var notifications: NotificationsRepository
+
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onNewToken(token: String) {
@@ -31,6 +34,8 @@ class FixoraMessagingService : FirebaseMessagingService() {
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
+        // Cada aviso también queda en el centro de notificaciones: se actualiza la campana.
+        scope.launch { notifications.refreshUnread() }
         // Solicitud entrante (ANDROID-13): la API la manda solo con datos para que llegue aquí
         // aunque la app esté cerrada y se muestre como alarma a pantalla completa.
         if (message.data[PushNotifier.KEY_IS_ALARM] == "true") {
