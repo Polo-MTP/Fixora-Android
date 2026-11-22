@@ -16,6 +16,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.fixora.app.core.notifications.PushMessage
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import com.fixora.app.core.notifications.RequestNotificationPermission
 import com.fixora.app.core.ui.OfflineBanner
 import com.fixora.app.feature.intro.ui.IntroScreen
@@ -33,9 +35,12 @@ fun FixoraApp(
     viewModel: AppViewModel = hiltViewModel(),
     openedNotification: PushMessage? = null,
     onNotificationHandled: () -> Unit = {},
+    incomingAlarms: Flow<PushMessage> = emptyFlow(),
+    skipIntro: Boolean = false,
 ) {
-    // rememberSaveable: al girar la pantalla la intro no se repite.
-    var showIntro by rememberSaveable { mutableStateOf(true) }
+    // rememberSaveable: al girar la pantalla la intro no se repite. Si la abrió una alarma no se
+    // muestra: hay que ver la solicitud cuanto antes.
+    var showIntro by rememberSaveable { mutableStateOf(!skipIntro) }
     val sessionState by viewModel.sessionState.collectAsState()
     val isOnline by viewModel.isOnline.collectAsState()
 
@@ -50,6 +55,7 @@ fun FixoraApp(
                 homeArea = (sessionState as? SessionState.LoggedIn)?.area,
                 openedNotification = openedNotification,
                 onNotificationHandled = onNotificationHandled,
+                incomingAlarms = incomingAlarms,
             )
         }
         AnimatedVisibility(

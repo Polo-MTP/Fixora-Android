@@ -28,8 +28,8 @@ class PushMessageTest {
     }
 
     @Test
-    fun forNowEveryNotificationStaysOnHome() {
-        assertNull(notificationRoute(PushMessage("solicitud_aceptada", "service_request", "15")))
+    fun onlyServiceRequestsLeaveHome() {
+        // Las de una solicitud abren esa solicitud (ANDROID-13; ver NotificationNavigationTest).
         assertNull(notificationRoute(PushMessage("revision_documento_proveedor")))
     }
 }

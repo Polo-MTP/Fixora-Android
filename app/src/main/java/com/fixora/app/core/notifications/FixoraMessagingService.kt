@@ -22,6 +22,8 @@ class FixoraMessagingService : FirebaseMessagingService() {
 
     @Inject lateinit var notifier: PushNotifier
 
+    @Inject lateinit var incomingAlarms: IncomingAlarms
+
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onNewToken(token: String) {
@@ -29,6 +31,16 @@ class FixoraMessagingService : FirebaseMessagingService() {
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
+        // Solicitud entrante (ANDROID-13): la API la manda solo con datos para que llegue aquí
+        // aunque la app esté cerrada y se muestre como alarma a pantalla completa.
+        if (message.data[PushNotifier.KEY_IS_ALARM] == "true") {
+            // Con la app a la vista se abre la pantalla de alarma directamente.
+            val push = PushMessage.fromData(message.data)
+            if (push != null && incomingAlarms.offer(push)) return
+            val title = message.data["title"] ?: return
+            notifier.showAlarm(title, message.data["body"].orEmpty(), message.data)
+            return
+        }
         // Los mensajes solo de datos (sin título) no muestran nada por ahora.
         val notification = message.notification
         val title = notification?.title ?: message.data["title"] ?: return

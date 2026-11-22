@@ -10,6 +10,7 @@ import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.fixora.app.BuildConfig
 import com.fixora.app.core.notifications.PushMessage
 import com.fixora.app.core.session.HomeArea
@@ -40,10 +41,15 @@ import com.fixora.app.feature.portfolio.navigation.CertificatesRoute
 import com.fixora.app.feature.portfolio.navigation.PortfolioRoute
 import com.fixora.app.feature.portfolio.navigation.portfolioScreens
 import com.fixora.app.feature.profile.navigation.TechnicianPhotoRoute
-import com.fixora.app.feature.providerprofile.navigation.ProviderProfileRoute
-import com.fixora.app.feature.providerprofile.navigation.providerProfileScreen
 import com.fixora.app.feature.profile.navigation.VehicleRoute
 import com.fixora.app.feature.profile.navigation.profileScreens
+import com.fixora.app.feature.providerprofile.navigation.ProviderProfileRoute
+import com.fixora.app.feature.providerprofile.navigation.providerProfileScreen
+import com.fixora.app.feature.servicerequest.navigation.IncomingRequestRoute
+import com.fixora.app.feature.servicerequest.navigation.ServiceRequestRoute
+import com.fixora.app.feature.servicerequest.navigation.serviceRequestScreen
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 
 /**
  * @param homeArea inicio que le toca a la sesión según el rol (null = sin sesión). Decide la
@@ -59,6 +65,7 @@ fun FixoraNavHost(
     modifier: Modifier = Modifier,
     openedNotification: PushMessage? = null,
     onNotificationHandled: () -> Unit = {},
+    incomingAlarms: Flow<PushMessage> = emptyFlow(),
     navController: NavHostController = rememberNavController(),
 ) {
     val uriHandler = LocalUriHandler.current
@@ -77,6 +84,17 @@ fun FixoraNavHost(
         // Sin sesión no hay a dónde llevar: se queda en la landing.
         if (homeArea != null) notificationRoute(message)?.let { navController.navigate(it) }
         onNotificationHandled()
+    }
+
+    // Solicitud entrante con la app a la vista (ANDROID-13): se abre la alarma directamente.
+    LaunchedEffect(incomingAlarms, homeArea) {
+        if (homeArea != HomeArea.Provider) return@LaunchedEffect
+        incomingAlarms.collect { message ->
+            val route = notificationRoute(message) as? IncomingRequestRoute ?: return@collect
+            val showing = navController.currentBackStackEntry?.takeIf { it.destination.hasRoute(IncomingRequestRoute::class) }
+                ?.toRoute<IncomingRequestRoute>()
+            if (showing != route) navController.navigate(route)
+        }
     }
 
     NavHost(
@@ -134,6 +152,15 @@ fun FixoraNavHost(
             onAddWork = { navController.navigate(AddWorkRoute) },
         )
         providerProfileScreen(onBack = navController::popBackStack)
+        serviceRequestScreen(
+            onBack = navController::popBackStack,
+            onAccepted = { requestId ->
+                // Aceptada: el detalle reemplaza a la alarma para que «atrás» no regrese a ella.
+                navController.navigate(ServiceRequestRoute(requestId)) {
+                    popUpTo<IncomingRequestRoute> { inclusive = true }
+                }
+            },
+        )
     }
 }
 
