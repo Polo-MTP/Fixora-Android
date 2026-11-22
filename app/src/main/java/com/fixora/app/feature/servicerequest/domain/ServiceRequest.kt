@@ -53,6 +53,12 @@ data class ServiceRequest(
     val photoKeys: List<String> = emptyList(),
     val agreedPrice: String? = null,
     val acceptedAt: Instant? = null,
+    val arrivedAt: Instant? = null,
+    val completedAt: Instant? = null,
+    /** Calle y número; la API la manda ya aceptada. */
+    val street: String? = null,
+    /** Cómo encontrar el domicilio («portón negro», «frente a la farmacia»). */
+    val addressReference: String? = null,
     val dispatchesSent: Int = 0,
     val dispatchesRejected: Int = 0,
 ) {

@@ -605,8 +605,41 @@
     <string name="trip_notification_title">Vas en camino</string>
     <string name="trip_notification_text">El cliente ve tu ubicación hasta que llegues.</string>
     <string name="trip_location_title">Comparte tu ubicación</string>
-    <string name="trip_location_text">Vas en camino, pero el cliente no puede verte llegar. Permite la ubicación para compartirla hasta que llegues.</string>
+    <string name="trip_location_text">Para salir y que el cliente te vea llegar, Fixora necesita tu ubicación mientras vas en camino.</string>
     <string name="trip_location_denied">La ubicación está desactivada para Fixora. Actívala en los ajustes, en Permisos, para que el cliente te vea llegar.</string>
     <string name="trip_location_enable">Permitir ubicación</string>
     <string name="trip_location_settings">Abrir ajustes</string>
+
+    <!-- Traslado: mapa de ruta y botones (ANDROID-20) -->
+    <string name="trip_destination">Domicilio del cliente</string>
+    <string name="trip_heading_to">Vas hacia</string>
+    <string name="trip_at">Estás en</string>
+    <string name="trip_emergency">Emergencia</string>
+    <string name="trip_minutes">%1$d min</string>
+    <string name="trip_km">%1$s km</string>
+    <string name="trip_km_arrival">%1$s km · Llegada %2$s</string>
+    <string name="trip_calculating">Calculando la ruta…</string>
+    <string name="trip_ready_title">Listo para salir</string>
+    <string name="trip_estimate">A %1$s km · unos %2$d min en llegar</string>
+    <string name="trip_scheduled_for">Agendada para el %1$s</string>
+    <string name="trip_arrived_title">Llegaste</string>
+    <string name="trip_arrived_text">Cuando termines el trabajo, finaliza el servicio.</string>
+    <string name="trip_reference">Referencia: %1$s</string>
+    <string name="trip_other_app">Abrir en otra app de mapas</string>
+    <string name="trip_no_position">No pudimos leer tu ubicación. Revisa que el GPS esté encendido e inténtalo de nuevo.</string>
+    <string name="trip_start">Iniciar traslado</string>
+    <string name="trip_arrived">Llegué</string>
+    <string name="trip_finish">Finalizar servicio</string>
+    <string name="trip_finish_title">¿Terminaste el trabajo?</string>
+    <string name="trip_finish_text">Al finalizar, el cliente verá el servicio como terminado.</string>
+    <string name="trip_finish_confirm">Finalizar</string>
+    <string name="trip_finish_cancel">Todavía no</string>
+    <string name="trip_summary_title">Servicio finalizado</string>
+    <string name="trip_summary_subtitle">Solicitud #%1$s</string>
+    <string name="trip_summary_address">Domicilio</string>
+    <string name="trip_summary_accepted">Aceptada</string>
+    <string name="trip_summary_arrived">Llegada</string>
+    <string name="trip_summary_finished">Terminado</string>
+    <string name="trip_summary_on_site">Tiempo en el domicilio</string>
+    <string name="trip_summary_done">Listo</string>
 </resources>

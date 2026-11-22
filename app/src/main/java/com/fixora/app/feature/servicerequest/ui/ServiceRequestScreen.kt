@@ -1,10 +1,5 @@
 package com.fixora.app.feature.servicerequest.ui
 
-import android.content.Intent
-import android.net.Uri
-import android.provider.Settings
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
@@ -39,7 +34,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -47,7 +41,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.compose.LifecycleResumeEffect
 import coil3.compose.AsyncImage
 import com.fixora.app.R
 import com.fixora.app.core.designsystem.component.FixoraPrimaryButton
@@ -64,11 +57,11 @@ import com.fixora.app.core.ui.PhotoViewer
 import com.fixora.app.core.ui.message
 import com.fixora.app.feature.account.ui.components.AccountScaffold
 import com.fixora.app.feature.account.ui.components.LoadErrorNotice
-import com.fixora.app.feature.availability.location.FusedLocationSource
 import com.fixora.app.feature.map.ui.serviceIcon
 import com.fixora.app.feature.servicerequest.domain.RequestStatus
 import com.fixora.app.feature.servicerequest.domain.ServiceRequest
 import com.fixora.app.feature.servicerequest.ui.incoming.IncomingRequestViewModel
+import com.fixora.app.feature.servicerequest.ui.trip.TripScreen
 import com.fixora.app.feature.servicerequest.ui.incoming.RejectReasonSheet
 import java.time.Instant
 import java.time.ZoneId
@@ -79,6 +72,15 @@ import java.util.Locale
  * Detalle de una solicitud para el técnico (ANDROID-13 y ANDROID-18): qué se pide, dónde, a qué
  * distancia y, mientras sigue pendiente, la cuenta regresiva con aceptar o rechazar.
  */
+/** Estados en los que el técnico ya va (o fue) al domicilio. */
+private val TRIP_STATUSES = setOf(
+    RequestStatus.Accepted,
+    RequestStatus.Scheduled,
+    RequestStatus.OnTheWay,
+    RequestStatus.Arrived,
+    RequestStatus.Completed,
+)
+
 @Composable
 fun ServiceRequestScreen(
     onBack: () -> Unit,
@@ -87,13 +89,10 @@ fun ServiceRequestScreen(
     val state by viewModel.uiState.collectAsState()
     val request = state.request
     var choosingReason by rememberSaveable { mutableStateOf(false) }
-    val context = LocalContext.current
-    val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions(),
-    ) { results -> viewModel.onLocationPermissionResult(results.values.any { it }) }
-    LifecycleResumeEffect(Unit) {
-        viewModel.onResume()
-        onPauseOrDispose { }
+    // Ya aceptada: el traslado con su mapa y los botones para avanzar (ANDROID-20).
+    if (request != null && request.status in TRIP_STATUSES) {
+        TripScreen(onBack = onBack)
+        return
     }
     LaunchedEffect(state.rejected) { if (state.rejected) onBack() }
     AccountScaffold(
@@ -132,20 +131,7 @@ fun ServiceRequestScreen(
     ) {
         val error = state.error
         when {
-            request != null -> {
-                if (state.needsLocationForTrip) {
-                    TripLocationNotice(
-                        denied = state.locationDenied,
-                        onEnable = { permissionLauncher.launch(FusedLocationSource.LOCATION_PERMISSIONS) },
-                        onOpenSettings = {
-                            context.startActivity(
-                                Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null)),
-                            )
-                        },
-                    )
-                }
-                RequestContent(request, state)
-            }
+            request != null -> RequestContent(request, state)
             error != null -> LoadErrorNotice(error, onRetry = viewModel::retry)
             else -> CircularProgressIndicator(color = Navy800, strokeWidth = 2.dp, modifier = Modifier.size(24.dp))
         }
@@ -220,32 +206,6 @@ private fun RequestContent(request: ServiceRequest, state: ServiceRequestUiState
             request.expiresAt?.let { Info(R.drawable.ic_schedule, R.string.request_answer_before, formatTime(it)) }
         }
         request.technicianName?.let { Info(R.drawable.ic_vehicle, R.string.request_technician, it) }
-    }
-}
-
-/** Va en camino sin permiso de ubicación: el cliente no lo ve llegar hasta que lo active. */
-@Composable
-private fun TripLocationNotice(denied: Boolean, onEnable: () -> Unit, onOpenSettings: () -> Unit) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, Orange500, RoundedCornerShape(16.dp))
-            .padding(16.dp),
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Icon(painterResource(R.drawable.ic_my_location), contentDescription = null, tint = Orange500, modifier = Modifier.size(22.dp))
-            Text(stringResource(R.string.trip_location_title), style = MaterialTheme.typography.titleMedium, color = Navy900)
-        }
-        Text(
-            stringResource(if (denied) R.string.trip_location_denied else R.string.trip_location_text),
-            style = MaterialTheme.typography.bodyMedium,
-            color = Navy900,
-        )
-        FixoraPrimaryButton(
-            text = stringResource(if (denied) R.string.trip_location_settings else R.string.trip_location_enable),
-            onClick = if (denied) onOpenSettings else onEnable,
-        )
     }
 }
 

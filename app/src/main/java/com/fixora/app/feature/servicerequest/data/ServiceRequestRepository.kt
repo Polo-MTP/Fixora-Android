@@ -52,9 +52,23 @@ class RemoteServiceRequestRepository(
         photoKeys = attachments.map { it.fileKey }.filter { it.isNotBlank() },
         agreedPrice = agreedPrice,
         acceptedAt = parseApiInstant(acceptedAt),
+        arrivedAt = parseApiInstant(arrivedAt),
+        completedAt = parseApiInstant(completedAt),
+        street = address?.streetLine(),
+        addressReference = address?.reference?.trim()?.takeIf { it.isNotEmpty() },
         dispatchesSent = dispatches.sent,
         dispatchesRejected = dispatches.rejected,
     )
+
+    private fun AddressDto.streetLine(): String? {
+        val street = street?.trim().orEmpty()
+        if (street.isEmpty()) return null
+        val number = listOfNotNull(
+            numExt?.trim()?.takeIf { it.isNotEmpty() },
+            numInt?.trim()?.takeIf { it.isNotEmpty() }?.let { "int. $it" },
+        ).joinToString(" ")
+        return listOf(street, number).filter { it.isNotEmpty() }.joinToString(" ")
+    }
 
     private fun PositionDto.toCoordinates(): Coordinates? =
         latitude?.let { lat -> longitude?.let { lng -> Coordinates(lat, lng) } }

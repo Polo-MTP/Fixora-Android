@@ -8,7 +8,6 @@ import com.fixora.app.feature.availability.location.LocationSource
 import com.fixora.app.feature.servicerequest.data.IncomingRequestRepository
 import com.fixora.app.feature.servicerequest.domain.RequestStatus
 import com.fixora.app.feature.servicerequest.domain.ServiceRequest
-import com.fixora.app.feature.tracking.service.TripTrackingController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -65,15 +64,6 @@ class ServiceRequestViewModelTest {
         scheduledAt = if (scheduled) start.plusSeconds(86_400) else null, technicianName = null,
     )
 
-    private class FakeTrip : TripTrackingController {
-        val started = mutableListOf<String>()
-        override fun start(requestId: String) {
-            started += requestId
-        }
-        override fun stop() = Unit
-    }
-
-    private val trip = FakeTrip()
     private val location = FakeLocation()
     private lateinit var repository: FakeRepository
     private lateinit var viewModel: ServiceRequestViewModel
@@ -87,7 +77,7 @@ class ServiceRequestViewModelTest {
 
     private fun create(request: ServiceRequest = request()) {
         repository = FakeRepository(request)
-        viewModel = ServiceRequestViewModel(SavedStateHandle(mapOf("requestId" to "15")), repository, location, trip)
+        viewModel = ServiceRequestViewModel(SavedStateHandle(mapOf("requestId" to "15")), repository, location)
         viewModel.now = { start.plusMillis(scheduler.currentTime) }
         scheduler.runCurrent()
     }
@@ -168,36 +158,9 @@ class ServiceRequestViewModelTest {
     }
 
     @Test
-    fun onTheWayStartsSendingTheLocationButOthersDoNot() {
-        create()
-        assertTrue(trip.started.isEmpty())
-
-        create(request(status = RequestStatus.OnTheWay))
-        assertEquals(listOf("15"), trip.started)
-    }
-
-    @Test
-    fun onTheWayWithoutLocationAsksForItAndStartsOnceGranted() {
-        location.allowed = false
-        create(request(status = RequestStatus.OnTheWay))
-        assertTrue(state.needsLocationForTrip)
-        assertTrue(trip.started.isEmpty())
-
-        viewModel.onLocationPermissionResult(false)
-        assertTrue(state.locationDenied)
-
-        // Lo activa en los ajustes y regresa a la pantalla.
-        location.allowed = true
-        viewModel.onResume()
-        assertFalse(state.needsLocationForTrip)
-        assertFalse(state.locationDenied)
-        assertEquals(listOf("15"), trip.started)
-    }
-
-    @Test
     fun loadErrorCanBeRetried() {
         repository = FakeRepository(request()).apply { loadError = ApiError.NoConnection }
-        viewModel = ServiceRequestViewModel(SavedStateHandle(mapOf("requestId" to "15")), repository, location, trip)
+        viewModel = ServiceRequestViewModel(SavedStateHandle(mapOf("requestId" to "15")), repository, location)
         scheduler.runCurrent()
         assertEquals(ApiError.NoConnection, state.error)
 
