@@ -43,6 +43,17 @@ class RemoteServiceRequestRepository(
         expiresAt = parseApiInstant(expiresAt),
         scheduledAt = parseApiInstant(scheduledAt),
         technicianName = technician?.name?.takeIf { it.isNotBlank() },
+        categoryId = category?.id,
+        branchId = branch?.id,
+        branchName = branch?.name?.takeIf { it.isNotBlank() },
+        branchPhone = branch?.phone?.takeIf { it.isNotBlank() },
+        technicianPhotoUrl = technician?.photoUrl,
+        addressId = address?.id,
+        photoKeys = attachments.map { it.fileKey }.filter { it.isNotBlank() },
+        agreedPrice = agreedPrice,
+        acceptedAt = parseApiInstant(acceptedAt),
+        dispatchesSent = dispatches.sent,
+        dispatchesRejected = dispatches.rejected,
     )
 
     private fun PositionDto.toCoordinates(): Coordinates? =
