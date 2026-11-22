@@ -445,6 +445,9 @@
     <string name="request_received">Recibida</string>
     <string name="request_answer_before">Responde antes de las</string>
     <string name="request_technician">Técnico</string>
+    <string name="request_distance">Distancia</string>
+    <string name="request_distance_value">%1$s km · ~%2$d min en llegar</string>
+    <string name="request_answer_in">Tiempo para responder</string>
     <string name="request_status_pending">Esperando respuesta</string>
     <string name="request_status_accepted">Aceptada</string>
     <string name="request_status_scheduled">Agendada</string>

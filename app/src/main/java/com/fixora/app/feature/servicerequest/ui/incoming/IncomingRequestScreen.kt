@@ -467,7 +467,7 @@ private fun SecondaryButton(text: String, onClick: () -> Unit, enabled: Boolean 
 /** La API pide un motivo para rechazar; se elige de una lista corta. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun RejectReasonSheet(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
+internal fun RejectReasonSheet(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
     val reasons = listOf(
         stringResource(R.string.incoming_reason_busy),
         stringResource(R.string.incoming_reason_far),
