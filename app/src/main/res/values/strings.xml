@@ -393,7 +393,6 @@
     <string name="provider_profile_certificate_photo">Foto</string>
     <string name="provider_profile_certificate_no_app">No hay una aplicación para abrir el PDF.</string>
     <string name="provider_profile_request">Solicitar servicio</string>
-    <string name="provider_profile_request_soon">Muy pronto podrás solicitar el servicio desde aquí.</string>
     <string name="provider_profile_not_accepting">Por ahora no está recibiendo solicitudes.</string>
     <string-array name="week_days_short">
         <item>Dom</item>
@@ -499,4 +498,41 @@
         <item quantity="one">Notificaciones, %d sin leer</item>
         <item quantity="other">Notificaciones, %d sin leer</item>
     </plurals>
+
+    <!-- Formulario de solicitud y agendar cita (ANDROID-15) -->
+    <string name="request_form_title">Solicitar servicio</string>
+    <string name="request_form_eta">Llega en ~%1$d min</string>
+    <string name="request_form_service">Servicio</string>
+    <string name="request_form_problem">¿Qué está pasando?</string>
+    <string name="request_form_details_hint">Cuéntale al técnico qué pasa, desde cuándo y cualquier detalle útil.</string>
+    <string name="request_form_photos">Fotos</string>
+    <string name="request_form_optional">Opcional</string>
+    <string name="request_form_add">Agregar</string>
+    <string name="request_form_add_photo">Agregar foto</string>
+    <string name="request_form_remove_photo">Quitar foto</string>
+    <string name="request_form_when">¿Cuándo?</string>
+    <string name="request_form_when_now">Lo antes posible</string>
+    <string name="request_form_when_schedule">Agendar cita</string>
+    <string name="request_form_today">Hoy</string>
+    <string name="request_form_tomorrow">Mañana</string>
+    <string name="request_form_no_slots">No hay horarios libres ese día. Prueba con otro.</string>
+    <string name="request_form_address">Dirección</string>
+    <string name="request_form_address_title">¿A dónde va el técnico?</string>
+    <string name="request_form_current_location">Mi ubicación actual</string>
+    <string name="request_form_current_hint">Usa la dirección donde estás ahora</string>
+    <string name="request_form_current_failed">No pudimos saber tu dirección. Prende la ubicación o elige una guardada.</string>
+    <string name="request_form_locating">Buscando tu dirección…</string>
+    <string name="request_form_no_address">Elige a dónde va el técnico</string>
+    <string name="request_form_add_address">Agregar dirección</string>
+    <string name="request_form_add_address_hint">Se guarda en Mi cuenta para la próxima vez</string>
+    <string name="request_form_change">Cambiar</string>
+    <string name="request_form_choose">Elegir</string>
+    <string name="request_form_price_note">Si el técnico lo ajusta, tú decides si aceptas.</string>
+    <string name="request_form_send">Enviar solicitud</string>
+    <string name="request_form_send_scheduled">Agendar cita</string>
+    <string name="request_form_sent">Solicitud enviada</string>
+    <string name="request_form_missing_service">Elige el servicio que necesitas.</string>
+    <string name="request_form_missing_description">Elige qué está pasando o descríbelo.</string>
+    <string name="request_form_missing_address">Elige a dónde va el técnico.</string>
+    <string name="request_form_missing_slot">Elige un horario para la cita.</string>
 </resources>

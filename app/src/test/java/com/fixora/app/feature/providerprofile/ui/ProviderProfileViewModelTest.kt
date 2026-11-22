@@ -77,13 +77,11 @@ class ProviderProfileViewModelTest {
     }
 
     @Test
-    fun requestButtonOnlyShowsTheSoonMessage() {
-        create()
+    fun requestButtonCarriesTheServiceFromTheMap() {
+        create(categoryId = "2")
 
-        viewModel.onRequestService()
-        assertTrue(state.requestSoonShown)
-        viewModel.onRequestSoonShown()
-        assertFalse(state.requestSoonShown)
+        assertEquals("2", state.categoryId)
+        assertEquals("1.2", state.distanceKm)
 
         viewModel.onTabSelected(ProfileTab.Certificates)
         assertEquals(ProfileTab.Certificates, state.tab)

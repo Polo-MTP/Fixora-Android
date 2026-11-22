@@ -47,6 +47,8 @@ import com.fixora.app.feature.profile.navigation.VehicleRoute
 import com.fixora.app.feature.profile.navigation.profileScreens
 import com.fixora.app.feature.providerprofile.navigation.ProviderProfileRoute
 import com.fixora.app.feature.providerprofile.navigation.providerProfileScreen
+import com.fixora.app.feature.requestform.navigation.RequestServiceRoute
+import com.fixora.app.feature.requestform.navigation.requestFormScreen
 import com.fixora.app.feature.servicerequest.navigation.IncomingRequestRoute
 import com.fixora.app.feature.servicerequest.navigation.ServiceRequestRoute
 import com.fixora.app.feature.servicerequest.navigation.serviceRequestScreen
@@ -155,7 +157,22 @@ fun FixoraNavHost(
             onBack = navController::popBackStack,
             onAddWork = { navController.navigate(AddWorkRoute) },
         )
-        providerProfileScreen(onBack = navController::popBackStack)
+        providerProfileScreen(
+            onBack = navController::popBackStack,
+            onRequestService = { branchId, categoryId, distanceKm ->
+                navController.navigate(RequestServiceRoute(branchId, categoryId, distanceKm))
+            },
+        )
+        requestFormScreen(
+            onBack = navController::popBackStack,
+            onSent = { requestId ->
+                // Enviada: se ve la solicitud y «atrás» ya no regresa al formulario.
+                navController.navigate(ServiceRequestRoute(requestId)) {
+                    popUpTo<RequestServiceRoute> { inclusive = true }
+                }
+            },
+            onAddAddress = { navController.navigate(AddressFormRoute()) },
+        )
         notificationsScreen(
             onBack = navController::popBackStack,
             onOpen = { route -> navController.navigate(route) },

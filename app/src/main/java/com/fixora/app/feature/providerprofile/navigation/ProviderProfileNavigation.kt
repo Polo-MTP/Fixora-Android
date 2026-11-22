@@ -16,6 +16,9 @@ data class ProviderProfileRoute(
     val categoryId: String? = null,
 )
 
-fun NavGraphBuilder.providerProfileScreen(onBack: () -> Unit) {
-    composable<ProviderProfileRoute> { ProviderProfileScreen(onBack = onBack) }
+fun NavGraphBuilder.providerProfileScreen(
+    onBack: () -> Unit,
+    onRequestService: (branchId: String, categoryId: String?, distanceKm: String?) -> Unit,
+) {
+    composable<ProviderProfileRoute> { ProviderProfileScreen(onBack = onBack, onRequestService = onRequestService) }
 }

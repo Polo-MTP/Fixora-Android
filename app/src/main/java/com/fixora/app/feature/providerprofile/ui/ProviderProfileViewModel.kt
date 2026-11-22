@@ -26,8 +26,8 @@ data class ProviderProfileUiState(
     val distanceKm: String? = null,
     val basePrice: BasePrice? = null,
     val tab: ProfileTab = ProfileTab.Info,
-    /** Se tocó «Solicitar servicio»; el formulario llega en el Sprint 4. */
-    val requestSoonShown: Boolean = false,
+    /** Servicio elegido en el mapa; el formulario de solicitud lo trae elegido. */
+    val categoryId: String? = null,
 )
 
 /** Ficha pública del proveedor (ANDROID-11). */
@@ -41,7 +41,9 @@ class ProviderProfileViewModel @Inject constructor(
     private val branchId: String = checkNotNull(savedStateHandle["branchId"])
     private val categoryId: String? = savedStateHandle["categoryId"]
 
-    private val _uiState = MutableStateFlow(ProviderProfileUiState(distanceKm = savedStateHandle["distanceKm"]))
+    private val _uiState = MutableStateFlow(
+        ProviderProfileUiState(distanceKm = savedStateHandle["distanceKm"], categoryId = savedStateHandle["categoryId"]),
+    )
     val uiState: StateFlow<ProviderProfileUiState> = _uiState.asStateFlow()
 
     init {
@@ -51,10 +53,6 @@ class ProviderProfileViewModel @Inject constructor(
     fun retry() = load()
 
     fun onTabSelected(tab: ProfileTab) = _uiState.update { it.copy(tab = tab) }
-
-    fun onRequestService() = _uiState.update { it.copy(requestSoonShown = true) }
-
-    fun onRequestSoonShown() = _uiState.update { it.copy(requestSoonShown = false) }
 
     private fun load() {
         viewModelScope.launch {
