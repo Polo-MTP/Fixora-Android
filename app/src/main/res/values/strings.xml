@@ -413,6 +413,8 @@
     <string name="client_home_greeting_plain">Hola</string>
     <string name="client_home_question">¿Qué necesitas arreglar hoy?</string>
     <string name="client_home_search_hint">Busca un servicio o negocio</string>
+    <string name="client_home_emergency">Emergencia</string>
+    <string name="client_home_emergency_hint">Un técnico en camino, sin formularios</string>
     <string name="client_home_services">Servicios</string>
     <string name="client_home_see_all">Ver todos</string>
     <string name="client_home_see_less">Ver menos</string>
@@ -535,4 +537,21 @@
     <string name="request_form_missing_description">Elige qué está pasando o descríbelo.</string>
     <string name="request_form_missing_address">Elige a dónde va el técnico.</string>
     <string name="request_form_missing_slot">Elige un horario para la cita.</string>
+
+    <!-- Botón de emergencia (ANDROID-16) -->
+    <string name="emergency_title">¿Es una emergencia real?</string>
+    <string name="emergency_subtitle">Tu solicitud llegará marcada como urgente y sin formulario a los técnicos disponibles cerca de ti. La verán primero.</string>
+    <string name="emergency_which_service">¿Qué servicio necesitas?</string>
+    <string name="emergency_no_service">Elige un servicio</string>
+    <string name="emergency_nearby">Técnicos disponibles a menos de 10 km</string>
+    <string name="emergency_your_location">Tu ubicación actual</string>
+    <string name="emergency_location_ready">Lista</string>
+    <string name="emergency_location_activate">Activar</string>
+    <string name="emergency_location_no_permission">Fixora necesita tu ubicación para mandarte al técnico más cercano.</string>
+    <string name="emergency_location_off">No pudimos obtener tu ubicación. Revisa que esté prendida en tu celular.</string>
+    <string name="emergency_warning">Usar este botón sin una emergencia real afecta tu calificación como cliente.</string>
+    <string name="emergency_send">Enviar emergencia</string>
+    <string name="emergency_cancel">Cancelar</string>
+    <string name="emergency_sent">Emergencia enviada</string>
+    <string name="emergency_no_technicians">Ahora no hay técnicos de ese servicio disponibles cerca. Intenta en unos minutos o busca un negocio en el mapa.</string>
 </resources>

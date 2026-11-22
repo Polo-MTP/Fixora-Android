@@ -66,6 +66,7 @@ import com.fixora.app.feature.map.ui.iconRes
 import com.fixora.app.feature.notifications.ui.NotificationBell
 
 private const val SERVICE_COLUMNS = 4
+private val EmergencyRed = Color(0xFFD32F2F)
 private val MapGround = Color(0xFFE9EEF3)
 private val UserBlue = Color(0xFF2563EB)
 
@@ -77,6 +78,7 @@ private const val COLLAPSED_SERVICES = 8
 fun ClientHomeTab(
     onOpenMap: (MapLaunch) -> Unit,
     onOpenNotifications: () -> Unit,
+    onEmergency: () -> Unit,
     viewModel: ClientHomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -88,6 +90,7 @@ fun ClientHomeTab(
         onNearby = { onOpenMap(MapLaunch()) },
         onRetry = viewModel::retry,
         bell = { NotificationBell(onClick = onOpenNotifications) },
+        onEmergency = onEmergency,
     )
 }
 
@@ -100,6 +103,7 @@ private fun ClientHomeContent(
     onNearby: () -> Unit,
     onRetry: () -> Unit,
     bell: @Composable () -> Unit = {},
+    onEmergency: () -> Unit = {},
 ) {
     Column(
         modifier = Modifier
@@ -130,6 +134,8 @@ private fun ClientHomeContent(
         )
         Spacer(Modifier.height(16.dp))
         HomeSearchField(state.query, onQueryChange, onSearch)
+        Spacer(Modifier.height(12.dp))
+        EmergencyCard(onClick = onEmergency)
 
         Spacer(Modifier.height(28.dp))
         ServicesSection(state, onCategory, onRetry)
@@ -138,6 +144,39 @@ private fun ClientHomeContent(
         SectionTitle(stringResource(R.string.client_home_nearby))
         Spacer(Modifier.height(12.dp))
         NearbyMapCard(onClick = onNearby)
+    }
+}
+
+/** Siempre visible en el inicio (ANDROID-16): un técnico en camino sin llenar el formulario. */
+@Composable
+private fun EmergencyCard(onClick: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .border(1.dp, EmergencyRed.copy(alpha = 0.25f), RoundedCornerShape(16.dp))
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(14.dp),
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(46.dp)
+                .background(EmergencyRed.copy(alpha = 0.1f), CircleShape),
+        ) {
+            Icon(painterResource(R.drawable.ic_siren), contentDescription = null, tint = EmergencyRed, modifier = Modifier.size(24.dp))
+        }
+        Column(Modifier.weight(1f)) {
+            Text(
+                stringResource(R.string.client_home_emergency),
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                color = EmergencyRed,
+            )
+            Text(stringResource(R.string.client_home_emergency_hint), style = MaterialTheme.typography.bodySmall, color = Slate500)
+        }
+        Icon(painterResource(R.drawable.ic_chevron_right), contentDescription = null, tint = Slate500, modifier = Modifier.size(20.dp))
     }
 }
 

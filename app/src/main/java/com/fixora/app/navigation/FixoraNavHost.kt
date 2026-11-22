@@ -32,6 +32,8 @@ import com.fixora.app.feature.auth.navigation.forgotPasswordScreen
 import com.fixora.app.feature.auth.navigation.landingScreen
 import com.fixora.app.feature.auth.navigation.loginScreen
 import com.fixora.app.feature.auth.navigation.registerScreen
+import com.fixora.app.feature.emergency.navigation.EmergencyRoute
+import com.fixora.app.feature.emergency.navigation.emergencyScreen
 import com.fixora.app.feature.home.navigation.ClientHomeRoute
 import com.fixora.app.feature.home.navigation.ProviderHomeRoute
 import com.fixora.app.feature.home.navigation.clientHomeScreen
@@ -130,6 +132,7 @@ fun FixoraNavHost(
         )
         clientHomeScreen(
             onOpenNotifications = { navController.navigate(NotificationsRoute) },
+            onEmergency = { navController.navigate(EmergencyRoute) },
             onOpenProvider = { branchId, distanceKm, categoryId ->
                 navController.navigate(ProviderProfileRoute(branchId, distanceKm, categoryId))
             },
@@ -172,6 +175,14 @@ fun FixoraNavHost(
                 }
             },
             onAddAddress = { navController.navigate(AddressFormRoute()) },
+        )
+        emergencyScreen(
+            onCancel = navController::popBackStack,
+            onSent = { requestId ->
+                navController.navigate(ServiceRequestRoute(requestId)) {
+                    popUpTo<EmergencyRoute> { inclusive = true }
+                }
+            },
         )
         notificationsScreen(
             onBack = navController::popBackStack,
