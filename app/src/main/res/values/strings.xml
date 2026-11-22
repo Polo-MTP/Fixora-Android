@@ -598,4 +598,15 @@
     <string name="client_request_step_scheduled_now">Tu cita quedó agendada.</string>
     <string name="client_request_call">Llamar al negocio</string>
     <string name="client_request_home">Volver al inicio</string>
+
+    <!-- Ubicación durante el traslado (ANDROID-19) -->
+    <string name="trip_channel">Traslado al cliente</string>
+    <string name="trip_channel_description">Aviso fijo mientras el cliente ve tu ubicación camino a su domicilio.</string>
+    <string name="trip_notification_title">Vas en camino</string>
+    <string name="trip_notification_text">El cliente ve tu ubicación hasta que llegues.</string>
+    <string name="trip_location_title">Comparte tu ubicación</string>
+    <string name="trip_location_text">Vas en camino, pero el cliente no puede verte llegar. Permite la ubicación para compartirla hasta que llegues.</string>
+    <string name="trip_location_denied">La ubicación está desactivada para Fixora. Actívala en los ajustes, en Permisos, para que el cliente te vea llegar.</string>
+    <string name="trip_location_enable">Permitir ubicación</string>
+    <string name="trip_location_settings">Abrir ajustes</string>
 </resources>
