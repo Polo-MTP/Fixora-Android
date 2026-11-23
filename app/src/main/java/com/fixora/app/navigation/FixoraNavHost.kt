@@ -25,6 +25,8 @@ import com.fixora.app.feature.account.navigation.ChangePasswordRoute
 import com.fixora.app.feature.account.navigation.PersonalDataRoute
 import com.fixora.app.feature.account.navigation.accountScreens
 import com.fixora.app.feature.auth.navigation.ForgotPasswordRoute
+import com.fixora.app.feature.chat.navigation.ChatRoute
+import com.fixora.app.feature.chat.navigation.chatScreen
 import com.fixora.app.feature.auth.navigation.LandingRoute
 import com.fixora.app.feature.auth.navigation.LoginRoute
 import com.fixora.app.feature.auth.navigation.RegisterRoute
@@ -190,6 +192,7 @@ fun FixoraNavHost(
                 }
             },
         )
+        chatScreen(onBack = navController::popBackStack)
         debtsScreen(
             onBack = navController::popBackStack,
             onOpenRequest = { requestId -> navController.navigate(ServiceRequestRoute(requestId).forArea(homeArea)) },
@@ -218,6 +221,7 @@ fun FixoraNavHost(
                     ?.savedStateHandle?.set(MAP_CATEGORY_KEY, categoryId ?: "")
                 navController.popBackStack<ClientHomeRoute>(inclusive = false)
             },
+            onOpenChat = { requestId -> navController.navigate(ChatRoute(requestId)) },
         )
     }
 }

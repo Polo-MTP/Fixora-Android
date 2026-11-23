@@ -1,6 +1,7 @@
 package com.fixora.app.navigation
 
 import com.fixora.app.core.notifications.PushMessage
+import com.fixora.app.feature.chat.navigation.ChatRoute
 import com.fixora.app.feature.servicerequest.navigation.IncomingRequestRoute
 import com.fixora.app.feature.servicerequest.navigation.ServiceRequestRoute
 
@@ -13,10 +14,16 @@ import com.fixora.app.feature.servicerequest.navigation.ServiceRequestRoute
  */
 internal fun notificationRoute(message: PushMessage): Any? = when (message.entityType) {
     SERVICE_REQUEST -> message.entityId?.let { id ->
-        // La alarma de solicitud entrante abre la pantalla para responderla; las demás, el detalle.
-        if (message.isAlarm) IncomingRequestRoute(id) else ServiceRequestRoute(id)
+        // La alarma de solicitud entrante abre la pantalla para responderla; un mensaje, el chat
+        // (ANDROID-23); las demás, el detalle.
+        when {
+            message.isAlarm -> IncomingRequestRoute(id)
+            message.type == CHAT_MESSAGE -> ChatRoute(id)
+            else -> ServiceRequestRoute(id)
+        }
     }
     else -> null
 }
 
 private const val SERVICE_REQUEST = "service_request"
+private const val CHAT_MESSAGE = "chat_message"

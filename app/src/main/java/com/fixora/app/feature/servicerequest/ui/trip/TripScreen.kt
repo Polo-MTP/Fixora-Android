@@ -105,6 +105,7 @@ import java.util.Locale
 @Composable
 fun TripScreen(
     onBack: () -> Unit,
+    onOpenChat: () -> Unit,
     viewModel: TripViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -143,6 +144,7 @@ fun TripScreen(
             state = state,
             request = request,
             onBack = onBack,
+            onOpenChat = onOpenChat,
             onProposeAdjustment = viewModel::openAdjustment,
             onAdvance = { if (state.nextStep == TripStep.Finish) confirmingFinish = true else viewModel.advance() },
             onEnableLocation = { permissionLauncher.launch(FusedLocationSource.LOCATION_PERMISSIONS) },
@@ -204,6 +206,7 @@ private fun TripNavigation(
     state: TripUiState,
     request: ServiceRequest,
     onBack: () -> Unit,
+    onOpenChat: () -> Unit,
     onProposeAdjustment: () -> Unit,
     onAdvance: () -> Unit,
     onEnableLocation: () -> Unit,
@@ -299,7 +302,7 @@ private fun TripNavigation(
                     .verticalScroll(rememberScrollState()),
             ) {
                 Headline(state, request)
-                ClientRow(request)
+                ClientRow(request, onOpenChat)
                 if (request.status == RequestStatus.Arrived) {
                     PriceSection(state, request, onProposeAdjustment)
                 }
@@ -410,7 +413,7 @@ private fun PriceSection(state: TripUiState, request: ServiceRequest, onProposeA
 }
 
 @Composable
-private fun ClientRow(request: ServiceRequest) {
+private fun ClientRow(request: ServiceRequest, onOpenChat: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         HorizontalDivider(color = Mist200)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -434,9 +437,20 @@ private fun ClientRow(request: ServiceRequest) {
                 request.addressReference?.let {
                     Text(stringResource(R.string.trip_reference, it), style = MaterialTheme.typography.bodySmall, color = Slate500)
                 }
+                if (request.categoryName.isNotBlank()) {
+                    Text(request.categoryName, style = MaterialTheme.typography.labelMedium, color = Navy800)
+                }
             }
-            if (request.categoryName.isNotBlank()) {
-                Text(request.categoryName, style = MaterialTheme.typography.labelMedium, color = Navy800)
+            // Chat con el cliente (ANDROID-23).
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(Navy900)
+                    .clickable(role = Role.Button, onClick = onOpenChat),
+            ) {
+                Icon(painterResource(R.drawable.ic_chat), contentDescription = stringResource(R.string.chat_open_client), tint = White, modifier = Modifier.size(20.dp))
             }
         }
         HorizontalDivider(color = Mist200)

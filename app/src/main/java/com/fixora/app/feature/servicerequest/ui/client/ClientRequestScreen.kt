@@ -102,6 +102,7 @@ fun ClientRequestScreen(
     onHome: () -> Unit,
     onResent: (requestId: String) -> Unit,
     onChooseAnother: (categoryId: String?) -> Unit,
+    onOpenChat: (requestId: String) -> Unit,
     viewModel: ClientRequestViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -115,6 +116,7 @@ fun ClientRequestScreen(
         onHome = onHome,
         onRespondAdjustment = viewModel::respondAdjustment,
         onOpenPayment = viewModel::openPayment,
+        onOpenChat = { state.request?.id?.let(onOpenChat) },
     )
     if (state.showPaymentSheet) {
         state.request?.let { request ->
@@ -139,6 +141,7 @@ private fun ClientRequestContent(
     onHome: () -> Unit,
     onRespondAdjustment: (approve: Boolean) -> Unit = {},
     onOpenPayment: () -> Unit = {},
+    onOpenChat: () -> Unit = {},
 ) {
     SystemBarsAppearance(lightIcons = true)
     val request = state.request
@@ -200,6 +203,7 @@ private fun ClientRequestContent(
             Actions(
                 state = state,
                 onOpenPayment = onOpenPayment,
+                onOpenChat = onOpenChat,
                 onCancel = { confirmCancel = true },
                 onResend = onResend,
                 onChooseAnother = onChooseAnother,
@@ -546,6 +550,7 @@ private fun RequestSummary(request: ServiceRequest) {
 private fun Actions(
     state: ClientRequestUiState,
     onOpenPayment: () -> Unit,
+    onOpenChat: () -> Unit,
     onCancel: () -> Unit,
     onResend: () -> Unit,
     onChooseAnother: () -> Unit,
@@ -570,10 +575,12 @@ private fun Actions(
                 SecondaryButton(stringResource(R.string.client_request_choose_another), onClick = onChooseAnother)
             }
             ClientPhase.Accepted -> {
+                // Chat con el técnico (ANDROID-23); llamar queda como respaldo.
+                FixoraPrimaryButton(text = stringResource(R.string.chat_open_technician), onClick = onOpenChat)
                 val phone = state.request?.branchPhone
                 if (phone != null) {
-                    FixoraPrimaryButton(
-                        text = stringResource(R.string.client_request_call),
+                    SecondaryButton(
+                        stringResource(R.string.client_request_call),
                         onClick = {
                             try {
                                 context.startActivity(Intent(Intent.ACTION_DIAL, "tel:$phone".toUri()))

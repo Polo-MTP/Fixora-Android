@@ -735,4 +735,29 @@
     <string name="client_payment_due_hint">Págale al técnico en efectivo o por transferencia y regístralo aquí.</string>
     <string name="client_payment_due_partial">Ya pagaste %1$s. Lo que falta queda como adeudo.</string>
     <string name="client_payment_register">Registrar pago</string>
+
+    <!-- Chat de la solicitud (ANDROID-23) -->
+    <string name="chat_title">Chat</string>
+    <string name="chat_open_technician">Enviar mensaje al técnico</string>
+    <string name="chat_open_client">Enviar mensaje al cliente</string>
+    <string name="chat_empty">Todavía no hay mensajes. Escribe para coordinar el servicio.</string>
+    <string name="chat_empty_closed">Esta solicitud no tuvo mensajes.</string>
+    <string name="chat_closed">El servicio terminó; el chat queda solo para consulta.</string>
+    <string name="chat_reconnecting">Sin conexión en tiempo real. Reconectando…</string>
+    <string name="chat_placeholder">Escribe un mensaje</string>
+    <string name="chat_send">Enviar</string>
+    <string name="chat_sending">Enviando…</string>
+    <string name="chat_read">Leído</string>
+    <string name="chat_failed_retry">No se envió. Reintentar</string>
+    <string name="chat_failed_discard">Descartar</string>
+    <string name="chat_today">Hoy</string>
+    <string name="chat_yesterday">Ayer</string>
+    <string name="chat_photo">Foto</string>
+    <string name="chat_photo_remove">Quitar foto</string>
+    <string name="chat_photo_error">No se pudo leer una de las fotos. Elige otra.</string>
+    <string name="chat_attach_gallery">Adjuntar fotos</string>
+    <string name="chat_attach_camera">Tomar foto</string>
+    <string name="chat_reply_you">Tú</string>
+    <string name="chat_reply_other">Mensaje</string>
+    <string name="chat_reply_cancel">Cancelar respuesta</string>
 </resources>
