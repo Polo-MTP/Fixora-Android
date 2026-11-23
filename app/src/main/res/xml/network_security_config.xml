@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Producción: solo HTTPS. El flavor dev reemplaza este archivo (src/dev/res/xml) para
+     permitir HTTP hacia la API local. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+</network-security-config>

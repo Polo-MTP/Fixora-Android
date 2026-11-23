@@ -1,0 +1,143 @@
+package com.fixora.app.feature.auth.ui.login
+
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.activity.compose.BackHandler
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.fixora.app.R
+import com.fixora.app.core.designsystem.component.FixoraPrimaryButton
+import com.fixora.app.core.designsystem.component.FixoraTextLink
+import com.fixora.app.core.designsystem.theme.ErrorRed
+import com.fixora.app.core.designsystem.theme.FixoraTheme
+import com.fixora.app.core.network.ApiError
+import com.fixora.app.core.ui.message
+import com.fixora.app.feature.auth.data.AuthRepository
+import com.fixora.app.feature.auth.ui.components.AuthFooter
+import com.fixora.app.feature.auth.ui.components.AuthScaffold
+import com.fixora.app.feature.auth.ui.components.AuthTextField
+import com.fixora.app.feature.auth.ui.components.message
+
+/** Inicio de sesión de clientes y proveedores ya aprobados (módulos 1 y 2). */
+@Composable
+fun LoginScreen(
+    onBack: () -> Unit,
+    onForgotPassword: () -> Unit,
+    onRegister: () -> Unit,
+    onOpenProviderPortal: () -> Unit,
+    viewModel: LoginViewModel = hiltViewModel(),
+) {
+    val state by viewModel.uiState.collectAsState()
+
+    if (state.inReview) {
+        BackHandler(onBack = viewModel::dismissReview)
+        ProviderInReviewContent(onBack = viewModel::dismissReview, onOpenPortal = onOpenProviderPortal)
+        return
+    }
+
+    LoginContent(
+        state = state,
+        onBack = onBack,
+        onEmailChange = viewModel::onEmailChange,
+        onEmailBlur = viewModel::onEmailBlur,
+        onPasswordChange = viewModel::onPasswordChange,
+        onPasswordBlur = viewModel::onPasswordBlur,
+        onForgotPassword = onForgotPassword,
+        onRegister = onRegister,
+        onSubmit = viewModel::submit,
+    )
+}
+
+@Composable
+private fun LoginContent(
+    state: LoginUiState,
+    onBack: () -> Unit,
+    onEmailChange: (String) -> Unit,
+    onEmailBlur: () -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onPasswordBlur: () -> Unit,
+    onForgotPassword: () -> Unit,
+    onRegister: () -> Unit,
+    onSubmit: () -> Unit,
+) {
+    AuthScaffold(
+        title = stringResource(R.string.login_title),
+        subtitle = AnnotatedString(stringResource(R.string.login_subtitle)),
+        onBack = onBack,
+        footer = {
+            AuthFooter(
+                question = stringResource(R.string.login_no_account),
+                action = stringResource(R.string.login_register),
+                onAction = onRegister,
+            )
+        },
+    ) {
+        AuthTextField(
+            value = state.email.value,
+            onValueChange = onEmailChange,
+            onFocusLost = onEmailBlur,
+            label = stringResource(R.string.auth_field_email),
+            placeholder = stringResource(R.string.auth_field_email_placeholder),
+            keyboardType = KeyboardType.Email,
+            error = state.emailError.message(),
+        )
+        AuthTextField(
+            value = state.password.value,
+            onValueChange = onPasswordChange,
+            onFocusLost = onPasswordBlur,
+            label = stringResource(R.string.auth_field_password),
+            placeholder = stringResource(R.string.login_password_placeholder),
+            isPassword = true,
+            error = state.passwordError.message(),
+        )
+        FixoraTextLink(
+            text = stringResource(R.string.login_forgot_password),
+            onClick = onForgotPassword,
+            modifier = Modifier.align(Alignment.End),
+        )
+        state.error?.let { error ->
+            Text(
+                text = error.loginMessage(),
+                style = MaterialTheme.typography.bodySmall,
+                color = ErrorRed,
+                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+            )
+        }
+        FixoraPrimaryButton(
+            text = stringResource(R.string.login_submit),
+            onClick = onSubmit,
+            loading = state.isLoading,
+            modifier = Modifier.padding(top = 6.dp),
+        )
+    }
+}
+
+@Preview(widthDp = 390, heightDp = 844)
+@Composable
+private fun LoginPreview() {
+    FixoraTheme {
+        LoginContent(LoginUiState(), {}, {}, {}, {}, {}, {}, {}, {})
+    }
+}
+
+/** Las cuentas de administrador y soporte se usan en el panel web, no en la app. */
+@Composable
+private fun ApiError.loginMessage(): String =
+    if (this is ApiError.Http && code == AuthRepository.WEB_ONLY_ROLE) {
+        stringResource(R.string.login_error_web_only)
+    } else {
+        message()
+    }

@@ -1,3 +1,645 @@
 <resources>
-    <string name="app_name">Fixora App</string>
+    <!-- app_name lo define cada flavor en app/build.gradle.kts -->
+
+    <!-- Landing -->
+    <string name="landing_title">Ayuda de confianza, a un toque.</string>
+    <string name="landing_subtitle">Técnicos verificados cerca de ti.</string>
+    <string name="landing_start">Comenzar</string>
+    <string name="landing_provider_question">¿Ofreces servicios?</string>
+    <string name="landing_provider_link">Únete como proveedor</string>
+
+    <!-- Cuenta: común -->
+    <string name="auth_back">Regresar</string>
+    <string name="auth_step">Paso %1$d de %2$d</string>
+    <string name="auth_password_show">Mostrar</string>
+    <string name="auth_password_hide">Ocultar</string>
+    <string name="auth_field_email">Correo electrónico</string>
+    <string name="auth_field_email_placeholder">tucorreo@ejemplo.com</string>
+    <string name="auth_field_password">Contraseña</string>
+    <string name="auth_login_action">Inicia sesión</string>
+
+    <!-- Iniciar sesión -->
+    <string name="login_title">Bienvenido de nuevo</string>
+    <string name="login_subtitle">Inicia sesión para pedir ayuda cuando la necesites.</string>
+    <string name="login_password_placeholder">Tu contraseña</string>
+    <string name="login_forgot_password">¿Olvidaste tu contraseña?</string>
+    <string name="login_submit">Iniciar sesión</string>
+    <string name="login_no_account">¿No tienes cuenta?</string>
+    <string name="login_register">Regístrate</string>
+    <string name="login_error_web_only">Esta cuenta es de administración. Entra desde el panel web de Fixora.</string>
+
+    <!-- Recuperar contraseña -->
+    <string name="forgot_title">Recupera tu contraseña</string>
+    <string name="forgot_subtitle">Escribe tu correo y te enviaremos un código para crear una nueva.</string>
+    <string name="forgot_submit">Enviar código</string>
+    <string name="forgot_remembered">¿La recordaste?</string>
+    <string name="forgot_reset_title">Crea tu nueva contraseña</string>
+    <string name="forgot_reset_subtitle">Si %1$s tiene una cuenta, te enviamos un código de 6 dígitos. Escríbelo junto con tu nueva contraseña.</string>
+    <string name="forgot_reset_submit">Cambiar contraseña</string>
+    <string name="forgot_error_email_send">No pudimos enviarte el código. Intenta de nuevo en unos minutos.</string>
+    <string name="forgot_success_title">¡Contraseña actualizada!</string>
+    <string name="forgot_success_subtitle">Ya puedes iniciar sesión con tu nueva contraseña. Por seguridad, cerramos las sesiones que tenías abiertas.</string>
+    <string name="forgot_success_continue">Iniciar sesión</string>
+
+    <!-- Registro · 1 Cuenta -->
+    <string name="register_account_title">Crea tu cuenta</string>
+    <string name="register_account_subtitle">Con tu correo y una contraseña segura.</string>
+    <string name="register_password_placeholder">Crea una contraseña</string>
+    <string name="register_confirm_password">Confirma tu contraseña</string>
+    <string name="register_confirm_placeholder">Repite la contraseña</string>
+    <string name="register_rule_length">8 caracteres o más</string>
+    <string name="register_rule_uppercase">Una mayúscula</string>
+    <string name="register_rule_digit">Un número</string>
+    <string name="register_rule_lowercase">Una minúscula</string>
+    <string name="register_continue">Continuar</string>
+    <string name="register_has_account">¿Ya tienes cuenta?</string>
+
+    <!-- Registro · 3 Verificar correo -->
+    <string name="verify_title">Verifica tu correo</string>
+    <string name="verify_subtitle">Te enviamos un código de 6 dígitos a %1$s.</string>
+    <string name="verify_code_label">Código de verificación</string>
+    <string name="verify_resend_in">Puedes pedir otro código en %1$s</string>
+    <string name="verify_not_received">¿No te llegó?</string>
+    <string name="verify_resend">Reenviar código</string>
+    <string name="verify_submit">Verificar</string>
+    <string name="verify_wrong_email">¿Correo equivocado?</string>
+    <string name="verify_change_email">Cámbialo</string>
+    <string name="verify_code_resent">Te enviamos un código nuevo.</string>
+    <string name="register_error_email_send">Creamos tu cuenta, pero no pudimos enviarte el código. Pide otro.</string>
+
+    <!-- Registro · 2 Tus datos -->
+    <string name="personal_title">Cuéntanos de ti</string>
+    <string name="personal_subtitle">Así te reconocerán los técnicos al llegar.</string>
+    <string name="personal_name">Nombre(s)</string>
+    <string name="personal_name_placeholder">Ej. Ana María</string>
+    <string name="personal_lastname_p">Apellido paterno</string>
+    <string name="personal_lastname_p_placeholder">Pérez</string>
+    <string name="personal_lastname_m">Apellido materno</string>
+    <string name="personal_lastname_m_placeholder">López</string>
+    <string name="personal_birth_date">Fecha de nacimiento</string>
+    <string name="personal_birth_date_placeholder">dd/mm/aaaa</string>
+    <string name="personal_phone">Teléfono</string>
+    <string name="personal_phone_placeholder">10 dígitos</string>
+    <string name="personal_phone_prefix">+52</string>
+    <string name="personal_submit">Crear cuenta</string>
+    <string name="date_picker_ok">Aceptar</string>
+    <string name="date_picker_cancel">Cancelar</string>
+
+    <!-- Cuenta creada -->
+    <string name="register_success_title">¡Tu cuenta está lista!</string>
+    <string name="register_success_subtitle">Ya puedes pedir ayuda a técnicos verificados cerca de ti.</string>
+    <string name="register_success_continue">Continuar</string>
+
+    <!-- Errores de validación -->
+    <string name="auth_error_required">Este campo es obligatorio.</string>
+    <string name="auth_error_email_empty">Escribe tu correo.</string>
+    <string name="auth_error_email_invalid">Revisa el formato del correo.</string>
+    <string name="auth_error_password_weak">La contraseña no cumple los requisitos.</string>
+    <string name="auth_error_confirm_empty">Confirma tu contraseña.</string>
+    <string name="auth_error_password_mismatch">Las contraseñas no coinciden.</string>
+    <string name="auth_error_phone">Escribe 10 dígitos.</string>
+    <string name="auth_error_birth_date_empty">Elige tu fecha de nacimiento.</string>
+    <string name="auth_error_underage">Debes ser mayor de edad.</string>
+    <string name="auth_error_postal_code">Escribe 5 dígitos.</string>
+    <string name="auth_error_password_unchanged">Debe ser distinta de la actual.</string>
+
+    <!-- Errores de conexión con la API -->
+    <string name="error_no_connection">No hay conexión a internet. Revisa tu red e intenta de nuevo.</string>
+    <string name="error_timeout">El servidor tardó demasiado en responder. Intenta de nuevo.</string>
+    <string name="error_server">Algo salió mal de nuestro lado. Intenta más tarde.</string>
+    <string name="error_unknown">Ocurrió un error inesperado. Intenta de nuevo.</string>
+
+    <!-- Aviso sin conexión -->
+    <string name="offline_title">Sin conexión a internet</string>
+    <string name="offline_message">No podrás iniciar sesión ni enviar solicitudes hasta que vuelva la conexión.</string>
+
+    <!-- Inicios por rol: pestañas -->
+    <string name="tab_home">Inicio</string>
+    <string name="tab_map">Mapa</string>
+    <string name="tab_activity">Actividad</string>
+    <string name="tab_account">Cuenta</string>
+    <string name="tab_services">Servicios</string>
+    <string name="tab_reviews">Reseñas</string>
+    <string name="tab_profile">Perfil</string>
+
+    <!-- Inicios por rol: contenido provisional -->
+    <string name="home_greeting">¡Hola!</string>
+    <string name="home_logout">Cerrar sesión</string>
+    <string name="client_activity_soon">Aquí aparecerán tus servicios en curso y tu historial.</string>
+    <string name="provider_home_soon">Pronto verás aquí tus solicitudes, ingresos y calificación del día.</string>
+    <string name="provider_services_soon">Aquí aparecerán los servicios que aceptes y su estado.</string>
+    <string name="provider_reviews_soon">Aquí verás las reseñas que te dejen tus clientes.</string>
+    <string name="account_title">Mi cuenta</string>
+
+    <!-- Mi cuenta -->
+    <string name="account_load_error">No pudimos cargar tus datos. %1$s</string>
+    <string name="account_retry">Reintentar</string>
+    <string name="account_personal_subtitle">Nombre, fecha de nacimiento y teléfono</string>
+    <string name="account_addresses_main">Principal: %1$s</string>
+    <string name="account_addresses_empty">Agrega dónde necesitas los servicios</string>
+    <string name="account_save">Guardar cambios</string>
+
+    <!-- Mi cuenta · Datos personales -->
+    <string name="personal_data_title">Datos personales</string>
+    <string name="personal_data_email_hint">El correo es con el que inicias sesión y no se puede cambiar aquí.</string>
+    <string name="personal_data_saved">Datos actualizados</string>
+
+    <!-- Mi cuenta · Direcciones -->
+    <string name="addresses_title">Mis direcciones</string>
+    <string name="addresses_add">Agregar dirección</string>
+    <string name="addresses_empty">Todavía no tienes direcciones guardadas.</string>
+    <string name="addresses_main">Principal</string>
+    <string name="addresses_set_main">Usar como principal</string>
+    <string name="address_form_new_title">Nueva dirección</string>
+    <string name="address_form_edit_title">Editar dirección</string>
+    <string name="address_alias">Nombre de la dirección</string>
+    <string name="address_alias_placeholder">Ej. Casa, Trabajo</string>
+    <string name="address_alias_home">Casa</string>
+    <string name="address_alias_work">Trabajo</string>
+    <string name="address_street">Calle</string>
+    <string name="address_street_placeholder">Ej. Av. Insurgentes Sur</string>
+    <string name="address_num_ext">Núm. exterior</string>
+    <string name="address_num_ext_placeholder">1234</string>
+    <string name="address_num_int">Núm. interior</string>
+    <string name="address_num_int_placeholder">Opcional</string>
+    <string name="address_colony">Colonia</string>
+    <string name="address_colony_placeholder">Ej. Del Valle</string>
+    <string name="address_postal_code">C.P.</string>
+    <string name="address_postal_code_placeholder">5 dígitos</string>
+    <string name="address_municipality">Municipio o alcaldía</string>
+    <string name="address_municipality_placeholder">Ej. Benito Juárez</string>
+    <string name="address_state">Estado</string>
+    <string name="address_state_placeholder">Ej. Ciudad de México</string>
+    <string name="address_reference">Referencias</string>
+    <string name="address_reference_placeholder">Opcional: color de la fachada, entre calles…</string>
+    <string name="address_main_label">Dirección principal</string>
+    <string name="address_main_hint">Se usará por defecto al pedir un servicio.</string>
+    <string name="address_main_locked">Para cambiarla, marca otra dirección como principal.</string>
+    <string name="address_delete">Eliminar dirección</string>
+    <string name="address_delete_title">¿Eliminar esta dirección?</string>
+    <string name="address_delete_message">Ya no aparecerá al pedir un servicio.</string>
+    <string name="address_delete_confirm">Eliminar</string>
+
+    <!-- Mi cuenta · Cambiar contraseña -->
+    <string name="change_password_title">Cambiar contraseña</string>
+    <string name="change_password_current">Contraseña actual</string>
+    <string name="change_password_current_placeholder">Tu contraseña actual</string>
+    <string name="change_password_new">Nueva contraseña</string>
+    <string name="change_password_submit">Guardar contraseña</string>
+    <string name="change_password_saved">Contraseña actualizada</string>
+
+    <!-- Roles -->
+    <string name="role_client">Cliente</string>
+    <string name="role_provider">Proveedor</string>
+    <string name="role_manager">Gerente</string>
+    <string name="role_employee">Empleado</string>
+
+    <!-- Perfil del técnico (ANDROID-7) -->
+    <string name="profile_visible_hint">Tu foto, tu biografía y tu vehículo los verá el cliente antes de que llegues.</string>
+    <string name="profile_not_technician">Esta cuenta no atiende servicios, así que no tiene foto ni vehículo. Los técnicos de tu negocio los agregan desde su propia cuenta.</string>
+    <string name="profile_photo_title">Foto y biografía</string>
+    <string name="profile_photo_subtitle_empty">Agrega tu foto y una breve presentación</string>
+    <string name="profile_photo_description">Foto de perfil</string>
+    <string name="profile_photo_take">Tomar foto</string>
+    <string name="profile_photo_pick">Elegir de la galería</string>
+    <string name="profile_photo_hint">Usa una foto de frente y con buena luz: el cliente la verá para reconocerte.</string>
+    <string name="profile_photo_unreadable">No pudimos leer esa foto. Prueba con otra.</string>
+    <string name="profile_photo_no_camera">No encontramos una app de cámara en tu celular.</string>
+    <string name="profile_photo_saved">Perfil actualizado</string>
+    <string name="profile_bio">Biografía</string>
+    <string name="profile_bio_placeholder">Cuéntale al cliente tu experiencia y en qué te especializas</string>
+    <plurals name="profile_bio_remaining">
+        <item quantity="one">Queda %d carácter</item>
+        <item quantity="other">Quedan %d caracteres</item>
+    </plurals>
+
+    <string name="vehicle_title">Vehículo</string>
+    <string name="vehicle_subtitle_empty">Sin vehículo registrado</string>
+    <string name="vehicle_hint">El cliente verá las placas para saber que eres tú quien llega.</string>
+    <string name="vehicle_plate">Placas</string>
+    <string name="vehicle_plate_placeholder">ABC-123-D</string>
+    <string name="vehicle_brand">Marca</string>
+    <string name="vehicle_brand_placeholder">Nissan</string>
+    <string name="vehicle_model">Modelo</string>
+    <string name="vehicle_model_placeholder">NP300</string>
+    <string name="vehicle_color">Color</string>
+    <string name="vehicle_color_placeholder">Blanco</string>
+    <string name="vehicle_error_plate">Revisa las placas.</string>
+    <string name="vehicle_delete">Quitar vehículo</string>
+    <string name="vehicle_delete_title">¿Quitar este vehículo?</string>
+    <string name="vehicle_delete_message">El cliente ya no verá las placas de tu vehículo.</string>
+    <string name="vehicle_delete_confirm">Quitar</string>
+
+    <!-- Notificaciones push -->
+    <string name="push_channel_general">Avisos de Fixora</string>
+    <string name="push_channel_alarm">Solicitudes entrantes</string>
+    <string name="push_channel_alarm_description">Alarma con sonido cuando te llega una solicitud de servicio o una emergencia cercana.</string>
+    <string name="push_alarm_open">Ver solicitud</string>
+    <string name="push_channel_general_description">Cambios en tus solicitudes, servicios y cuenta.</string>
+
+    <!-- En línea / Fuera de línea (ANDROID-9) -->
+    <string name="availability_online">En línea</string>
+    <string name="availability_offline">Fuera de línea</string>
+    <string name="availability_online_hint">Apareces en el mapa y puedes recibir solicitudes.</string>
+    <string name="availability_offline_hint">Conéctate para aparecer en el mapa y recibir solicitudes.</string>
+    <string name="availability_branch_closed">Tu sucursal está cerrada o no acepta solicitudes ahora. Podrás conectarte en su horario.</string>
+    <string name="availability_load_error">No pudimos consultar tu estado. %1$s</string>
+    <string name="availability_location_denied">Para conectarte necesitamos tu ubicación: así el cliente sabe que estás cerca. Actívala en los permisos de la app.</string>
+    <string name="availability_location_unavailable">No pudimos obtener tu ubicación. Revisa que esté encendida e inténtalo de nuevo.</string>
+    <string name="availability_channel">Estado En línea</string>
+    <string name="availability_channel_description">Aviso fijo mientras compartes tu ubicación para recibir solicitudes.</string>
+    <string name="availability_notification_title">Estás en línea</string>
+    <string name="availability_notification_text">Compartimos tu ubicación para que te lleguen solicitudes cercanas.</string>
+    <string name="availability_go_offline">Desconectarme</string>
+
+    <!-- Evidencias de trabajo y certificados (ANDROID-8) -->
+    <string name="dialog_cancel">Cancelar</string>
+    <string name="portfolio_title">Trabajos realizados</string>
+    <string name="portfolio_subtitle">Muestra lo que has hecho, con fotos</string>
+    <string name="portfolio_hint">El cliente ve estos trabajos en tu ficha antes de pedirte un servicio.</string>
+    <string name="portfolio_empty">Todavía no agregas trabajos. Muestra a tus clientes lo que has hecho.</string>
+    <string name="portfolio_no_branch">Esta cuenta no tiene una sucursal donde atienda, así que no tiene trabajos que mostrar.</string>
+    <string name="portfolio_add">Agregar trabajo</string>
+    <string name="portfolio_delete">Quitar</string>
+    <string name="portfolio_delete_title">¿Quitar este trabajo?</string>
+    <string name="portfolio_delete_message">Ya no se verá en tu ficha.</string>
+    <string name="portfolio_photo_description">Foto del trabajo %1$s</string>
+    <plurals name="portfolio_photos_count">
+        <item quantity="one">%d foto</item>
+        <item quantity="other">%d fotos</item>
+    </plurals>
+
+    <string name="add_work_title">Agregar trabajo</string>
+    <string name="add_work_field_title">Título</string>
+    <string name="add_work_field_title_placeholder">Cambio de tubería de cobre</string>
+    <string name="add_work_title_required">Escribe un título para el trabajo.</string>
+    <string name="add_work_field_description">Descripción (opcional)</string>
+    <string name="add_work_field_description_placeholder">Qué hiciste, cuánto tardó, qué materiales usaste</string>
+    <string name="add_work_photos">Fotos (opcional)</string>
+    <plurals name="add_work_photos_left">
+        <item quantity="one">Puedes agregar %d foto más</item>
+        <item quantity="other">Puedes agregar %d fotos más</item>
+    </plurals>
+    <string name="add_work_remove_photo">Quitar foto</string>
+    <string name="add_work_photo_unreadable">No pudimos leer una de las fotos. Quítala o prueba con otra.</string>
+    <string name="add_work_save">Guardar trabajo</string>
+    <string name="add_work_saved">Trabajo agregado</string>
+
+    <string name="certificates_title">Certificados</string>
+    <string name="certificates_subtitle">Cursos, títulos y certificaciones</string>
+    <string name="certificates_hint">Sube tus certificados o títulos en PDF o imagen. Un administrador los revisa y, ya aprobados, eliges cuáles se ven en tu ficha.</string>
+    <string name="certificates_empty">Todavía no tienes certificados.</string>
+    <string name="certificates_upload">Subir certificado</string>
+    <string name="certificates_uploaded">Recibimos tu certificado. Te avisaremos cuando un administrador lo revise.</string>
+    <string name="certificates_uploaded_on">Subido el %1$s</string>
+    <string name="certificates_status_pending">Pendiente de revisión</string>
+    <string name="certificates_status_approved">Aprobado</string>
+    <string name="certificates_status_rejected">Rechazado</string>
+    <string name="certificates_reason">Motivo: %1$s</string>
+    <string name="certificates_show_in_profile">Mostrar en mi ficha</string>
+    <string name="certificates_wrong_type">El archivo debe ser un PDF o una imagen (JPG, PNG o WebP).</string>
+    <string name="certificates_too_large">El archivo pesa más de 10 MB. Prueba con uno más ligero.</string>
+    <string name="certificates_unreadable">No pudimos leer ese archivo. Prueba con otro.</string>
+
+    <!-- Visor de fotos -->
+    <string name="photo_viewer_open">Ver en grande</string>
+    <string name="photo_viewer_close">Cerrar</string>
+    <string name="photo_viewer_position">%1$d de %2$d</string>
+    <string name="portfolio_add_photos">Agregar fotos</string>
+
+    <!-- Foto de perfil del cliente -->
+    <string name="account_photo_title">Foto de perfil</string>
+    <string name="account_photo_subtitle_empty">Agrega una foto para que el técnico te reconozca</string>
+    <string name="account_photo_subtitle_change">Cambia o quita tu foto</string>
+    <string name="account_photo_remove">Quitar foto</string>
+    <string name="account_photo_hint">Usa una foto donde se te vea la cara: la verá el técnico que atienda tu servicio.</string>
+    <string name="account_photo_saved">Foto de perfil actualizada</string>
+
+    <!-- Mapa de proveedores del cliente (ANDROID-10) -->
+    <string name="map_search_hint">¿Qué necesitas arreglar?</string>
+    <string name="map_search_clear">Borrar búsqueda</string>
+    <string name="map_filters">Filtros</string>
+    <string name="map_category_all">Todos</string>
+    <string name="map_search_here">Buscar en esta zona</string>
+    <string name="map_my_location">Mi ubicación</string>
+    <string name="map_loading">Buscando técnicos…</string>
+    <plurals name="map_providers_nearby">
+        <item quantity="one">%d técnico cerca</item>
+        <item quantity="other">%d técnicos cerca</item>
+    </plurals>
+    <plurals name="map_providers_available">
+        <item quantity="one">%d técnico disponible</item>
+        <item quantity="other">%d técnicos disponibles</item>
+    </plurals>
+    <string name="map_providers_hint">Toca un ícono para ver el negocio</string>
+    <string name="map_providers_empty_title">No hay técnicos cerca</string>
+    <string name="map_providers_empty">No encontramos técnicos a %1$d km. Prueba con otro servicio o aumenta la distancia en Filtros.</string>
+    <string name="map_providers_limited">Se muestran los %1$d más cercanos de %2$d.</string>
+    <string name="map_location_off">Sin tu ubicación buscamos en el centro de la CDMX. Toca aquí para activarla.</string>
+    <string name="map_filters_reset">Restablecer</string>
+    <string name="map_filters_distance">Distancia</string>
+    <string name="map_filters_distance_value">%1$d km</string>
+    <string name="map_filters_any">Cualquiera</string>
+    <string name="map_filters_rating">Calificación mínima</string>
+    <string name="map_filters_rating_value">%1$s o más</string>
+    <string name="map_filters_price">Precio base máximo</string>
+    <string name="map_filters_price_hint">Del servicio elegido; en «Todos», que tenga algún servicio a ese precio o menos.</string>
+    <string name="map_filters_price_value">Hasta $%1$s</string>
+    <string name="map_filters_available">Solo abiertos ahora</string>
+    <string name="map_filters_available_hint">Negocios en su horario de atención y que aceptan solicitudes.</string>
+    <string name="map_filters_apply">Aplicar</string>
+    <string name="map_provider_independent">Técnico independiente</string>
+    <string name="map_provider_close">Cerrar</string>
+    <string name="map_provider_no_reviews">Sin reseñas</string>
+    <string name="map_provider_rating">%1$s (%2$d)</string>
+    <string name="map_provider_distance">%1$s km</string>
+    <string name="map_provider_open">Abierto</string>
+    <string name="map_provider_closed">Cerrado</string>
+    <string name="map_provider_price">Desde $%1$s en %2$s</string>
+
+    <!-- Ficha pública del proveedor (ANDROID-11) -->
+    <string name="map_provider_open_profile">Ver negocio</string>
+    <string name="provider_profile_verified">Verificado por Fixora</string>
+    <string name="provider_profile_distance">a %1$s km</string>
+    <plurals name="provider_profile_reviews">
+        <item quantity="one">%d reseña</item>
+        <item quantity="other">%d reseñas</item>
+    </plurals>
+    <string name="provider_profile_jobs_label">Servicios</string>
+    <string name="provider_profile_price_label">Precio base</string>
+    <string name="provider_profile_price_from_label">Precio desde</string>
+    <string name="provider_profile_price_value">$%1$s</string>
+    <string name="provider_profile_tab_info">Info</string>
+    <string name="provider_profile_tab_reviews">Reseñas (%1$d)</string>
+    <string name="provider_profile_tab_works">Trabajos (%1$d)</string>
+    <string name="provider_profile_tab_certificates">Certificados (%1$d)</string>
+    <string name="provider_profile_services">Servicios que ofrece</string>
+    <string name="provider_profile_service_duration">Aprox. %1$d min</string>
+    <string name="provider_profile_vehicle">Vehículo</string>
+    <string name="provider_profile_plates">Placas %1$s</string>
+    <string name="provider_profile_schedule">Horario</string>
+    <string name="provider_profile_no_schedule">Sin horario publicado</string>
+    <string name="provider_profile_area">Atiende en</string>
+    <string name="provider_profile_about">Acerca del negocio</string>
+    <string name="provider_profile_price_note">El precio puede ajustarse según el trabajo. Si cambia, tú decides si aceptas.</string>
+    <string name="provider_profile_no_reviews">Todavía no tiene reseñas.</string>
+    <string name="provider_profile_reviews_latest">Se muestran las %1$d más recientes de %2$d.</string>
+    <string name="provider_profile_review_author_unknown">Cliente</string>
+    <string name="provider_profile_stars">%1$d de 5 estrellas</string>
+    <string name="provider_profile_no_works">Todavía no ha publicado trabajos.</string>
+    <string name="provider_profile_no_certificates">No tiene certificados publicados.</string>
+    <string name="provider_profile_certificate_open">Ver</string>
+    <string name="provider_profile_certificate_pdf">Documento PDF</string>
+    <string name="provider_profile_certificate_photo">Foto</string>
+    <string name="provider_profile_certificate_no_app">No hay una aplicación para abrir el PDF.</string>
+    <string name="provider_profile_request">Solicitar servicio</string>
+    <string name="provider_profile_not_accepting">Por ahora no está recibiendo solicitudes.</string>
+    <string-array name="week_days_short">
+        <item>Dom</item>
+        <item>Lun</item>
+        <item>Mar</item>
+        <item>Mié</item>
+        <item>Jue</item>
+        <item>Vie</item>
+        <item>Sáb</item>
+    </string-array>
+    <string name="schedule_every_day">Todos los días</string>
+    <string name="schedule_day_range">%1$s a %2$s</string>
+    <string name="schedule_hours">%1$s, %2$s a %3$s</string>
+    <string name="schedule_all_day">%1$s, 24 horas</string>
+
+    <!-- Inicio del cliente (ANDROID-12) -->
+    <string name="client_home_greeting">Hola, %1$s</string>
+    <string name="client_home_greeting_plain">Hola</string>
+    <string name="client_home_question">¿Qué necesitas arreglar hoy?</string>
+    <string name="client_home_search_hint">Busca un servicio o negocio</string>
+    <string name="client_home_emergency">Emergencia</string>
+    <string name="client_home_emergency_hint">Un técnico en camino, sin formularios</string>
+    <string name="client_home_services">Servicios</string>
+    <string name="client_home_see_all">Ver todos</string>
+    <string name="client_home_see_less">Ver menos</string>
+    <string name="client_home_nearby">Cerca de ti</string>
+    <string name="client_home_map_title">Ver técnicos en el mapa</string>
+
+    <!-- Proveedor con la solicitud en revisión (ANDROID-4) -->
+    <string name="provider_review_title">Tu cuenta está en revisión</string>
+    <string name="provider_review_subtitle">La app es para proveedores aprobados. Tu solicitud todavía no termina de revisarse.</string>
+    <string name="provider_review_step_review_title">Revisamos tus documentos</string>
+    <string name="provider_review_step_review">El equipo de Fixora valida tu identificación y los documentos de tu negocio.</string>
+    <string name="provider_review_step_notice_title">Te avisamos por correo</string>
+    <string name="provider_review_step_notice">Cuando tu cuenta quede aprobada podrás entrar aquí con el mismo correo y contraseña.</string>
+    <string name="provider_review_step_documents_title">Si falta algo, corrígelo en el portal</string>
+    <string name="provider_review_step_documents">Si observamos algún documento, súbelo de nuevo desde el portal de proveedores.</string>
+    <string name="provider_review_ok">Entendido</string>
+    <string name="provider_review_portal">Ir al portal de proveedores</string>
+
+    <!-- Solicitud abierta desde un aviso (ANDROID-13) -->
+    <string name="request_title">Solicitud #%1$s</string>
+    <string name="request_title_loading">Solicitud</string>
+    <string name="request_urgent">Urgente</string>
+    <string name="request_service">Servicio</string>
+    <string name="request_client">Cliente</string>
+    <string name="request_zone">Zona</string>
+    <string name="request_base_price">Precio base</string>
+    <string name="request_scheduled_for">Agendada para</string>
+    <string name="request_received">Recibida</string>
+    <string name="request_answer_before">Responde antes de las</string>
+    <string name="request_technician">Técnico</string>
+    <string name="request_distance">Distancia</string>
+    <string name="request_distance_value">%1$s km · ~%2$d min en llegar</string>
+    <string name="request_answer_in">Tiempo para responder</string>
+    <string name="request_status_pending">Esperando respuesta</string>
+    <string name="request_status_accepted">Aceptada</string>
+    <string name="request_status_scheduled">Agendada</string>
+    <string name="request_status_on_the_way">En camino</string>
+    <string name="request_status_arrived">El técnico llegó</string>
+    <string name="request_status_completed">Terminada</string>
+    <string name="request_status_canceled">Cancelada</string>
+    <string name="request_status_expired">Venció</string>
+    <string name="request_status_unknown">Sin estado</string>
+
+    <!-- Permisos de las alarmas en el inicio del proveedor (ANDROID-13) -->
+    <string name="alerts_setup_title">Activa las alertas de solicitudes</string>
+    <string name="alerts_setup_notifications">Las notificaciones están apagadas: no te llegarán las solicitudes nuevas.</string>
+    <string name="alerts_setup_full_screen">Permite que Fixora muestre las solicitudes a pantalla completa, aunque tu celular esté bloqueado.</string>
+    <string name="alerts_setup_action">Activar</string>
+
+    <!-- Pantalla de alarma de solicitud entrante (ANDROID-13) -->
+    <string name="incoming_kind_emergency">EMERGENCIA</string>
+    <string name="incoming_kind_request">NUEVA SOLICITUD</string>
+    <string name="incoming_to_answer">para responder</string>
+    <string name="incoming_time_left_description">Quedan %1$s para responder</string>
+    <string name="incoming_eta">~%1$d min</string>
+    <string name="incoming_client">Cliente</string>
+    <string name="incoming_client_rating">%1$s como cliente</string>
+    <string name="incoming_client_new">Cliente nuevo, sin calificaciones</string>
+    <string name="incoming_no_details_emergency">Emergencia sin detalles</string>
+    <string name="incoming_no_details">Sin descripción</string>
+    <string name="incoming_accept_for">Aceptar por $%1$s</string>
+    <string name="incoming_accept">Aceptar</string>
+    <string name="incoming_reject">Rechazar</string>
+    <string name="incoming_close">Cerrar</string>
+    <string name="incoming_closed_expired">Esta solicitud ya venció.</string>
+    <string name="incoming_closed_canceled">El cliente canceló esta solicitud.</string>
+    <string name="incoming_closed_taken">Esta solicitud ya no está disponible.</string>
+    <string name="incoming_reason_title">¿Por qué la rechazas?</string>
+    <string name="incoming_reason_busy">Estoy ocupado en otro servicio</string>
+    <string name="incoming_reason_far">Me queda muy lejos</string>
+    <string name="incoming_reason_service">No hago ese tipo de trabajo</string>
+    <string name="incoming_reason_other">Otro motivo</string>
+    <string name="incoming_reject_confirm">Rechazar solicitud</string>
+
+    <!-- Centro de notificaciones (ANDROID-14) -->
+    <string name="notifications_title">Notificaciones</string>
+    <string name="notifications_mark_all">Marcar todas como leídas</string>
+    <string name="notifications_unread">Sin leer</string>
+    <string name="notifications_empty_title">No tienes notificaciones</string>
+    <string name="notifications_empty">Aquí verás los avisos de tus solicitudes, servicios y cuenta.</string>
+    <string name="notifications_when_now">Ahora</string>
+    <string name="notifications_when_minutes">Hace %1$d min</string>
+    <string name="notifications_when_hours">Hace %1$d h</string>
+    <string name="notifications_when_yesterday">Ayer</string>
+    <plurals name="notifications_bell_unread">
+        <item quantity="one">Notificaciones, %d sin leer</item>
+        <item quantity="other">Notificaciones, %d sin leer</item>
+    </plurals>
+
+    <!-- Formulario de solicitud y agendar cita (ANDROID-15) -->
+    <string name="request_form_title">Solicitar servicio</string>
+    <string name="request_form_eta">Llega en ~%1$d min</string>
+    <string name="request_form_service">Servicio</string>
+    <string name="request_form_problem">¿Qué está pasando?</string>
+    <string name="request_form_details_hint">Cuéntale al técnico qué pasa, desde cuándo y cualquier detalle útil.</string>
+    <string name="request_form_photos">Fotos</string>
+    <string name="request_form_optional">Opcional</string>
+    <string name="request_form_add">Agregar</string>
+    <string name="request_form_add_photo">Agregar foto</string>
+    <string name="request_form_remove_photo">Quitar foto</string>
+    <string name="request_form_when">¿Cuándo?</string>
+    <string name="request_form_when_now">Lo antes posible</string>
+    <string name="request_form_when_schedule">Agendar cita</string>
+    <string name="request_form_today">Hoy</string>
+    <string name="request_form_tomorrow">Mañana</string>
+    <string name="request_form_no_slots">No hay horarios libres ese día. Prueba con otro.</string>
+    <string name="request_form_address">Dirección</string>
+    <string name="request_form_address_title">¿A dónde va el técnico?</string>
+    <string name="request_form_current_location">Mi ubicación actual</string>
+    <string name="request_form_current_hint">Usa la dirección donde estás ahora</string>
+    <string name="request_form_current_failed">No pudimos saber tu dirección. Prende la ubicación o elige una guardada.</string>
+    <string name="request_form_locating">Buscando tu dirección…</string>
+    <string name="request_form_no_address">Elige a dónde va el técnico</string>
+    <string name="request_form_add_address">Agregar dirección</string>
+    <string name="request_form_add_address_hint">Se guarda en Mi cuenta para la próxima vez</string>
+    <string name="request_form_change">Cambiar</string>
+    <string name="request_form_choose">Elegir</string>
+    <string name="request_form_price_note">Si el técnico lo ajusta, tú decides si aceptas.</string>
+    <string name="request_form_send">Enviar solicitud</string>
+    <string name="request_form_send_scheduled">Agendar cita</string>
+    <string name="request_form_sent">Solicitud enviada</string>
+    <string name="request_form_missing_service">Elige el servicio que necesitas.</string>
+    <string name="request_form_missing_description">Elige qué está pasando o descríbelo.</string>
+    <string name="request_form_missing_address">Elige a dónde va el técnico.</string>
+    <string name="request_form_missing_slot">Elige un horario para la cita.</string>
+
+    <!-- Botón de emergencia (ANDROID-16) -->
+    <string name="emergency_title">¿Es una emergencia real?</string>
+    <string name="emergency_subtitle">Tu solicitud llegará marcada como urgente y sin formulario a los técnicos disponibles cerca de ti. La verán primero.</string>
+    <string name="emergency_which_service">¿Qué servicio necesitas?</string>
+    <string name="emergency_no_service">Elige un servicio</string>
+    <string name="emergency_nearby">Técnicos disponibles a menos de 10 km</string>
+    <string name="emergency_your_location">Tu ubicación actual</string>
+    <string name="emergency_location_ready">Lista</string>
+    <string name="emergency_location_activate">Activar</string>
+    <string name="emergency_location_no_permission">Fixora necesita tu ubicación para mandarte al técnico más cercano.</string>
+    <string name="emergency_location_off">No pudimos obtener tu ubicación. Revisa que esté prendida en tu celular.</string>
+    <string name="emergency_warning">Usar este botón sin una emergencia real afecta tu calificación como cliente.</string>
+    <string name="emergency_send">Enviar emergencia</string>
+    <string name="emergency_cancel">Cancelar</string>
+    <string name="emergency_sent">Emergencia enviada</string>
+    <string name="emergency_no_technicians">Ahora no hay técnicos de ese servicio disponibles cerca. Intenta en unos minutos o busca un negocio en el mapa.</string>
+
+    <!-- Pantalla de espera del cliente (ANDROID-17) -->
+    <string name="client_request_kind_waiting">ESPERANDO RESPUESTA</string>
+    <string name="client_request_kind_emergency">BUSCANDO TÉCNICO</string>
+    <string name="client_request_to_accept">para que acepten</string>
+    <string name="client_request_time_left">Quedan %1$s para que acepten</string>
+    <string name="client_request_sent_to">Le enviamos tu solicitud a %1$s.</string>
+    <string name="client_request_the_provider">el proveedor</string>
+    <plurals name="client_request_notified">
+        <item quantity="one">Avisamos a %d técnico cerca de ti.</item>
+        <item quantity="other">Avisamos a %d técnicos cerca de ti.</item>
+    </plurals>
+    <string name="client_request_cancel">Cancelar solicitud</string>
+    <string name="client_request_cancel_title">¿Cancelar la solicitud?</string>
+    <string name="client_request_cancel_message">Nadie la ha aceptado todavía, así que no tiene costo.</string>
+    <string name="client_request_cancel_confirm">Cancelar</string>
+    <string name="client_request_keep_waiting">Seguir esperando</string>
+    <string name="client_request_rejected_title">No pudieron atenderte</string>
+    <string name="client_request_rejected_hint">%1$s no puede tomar tu solicitud ahora. Puedes enviarla de nuevo o elegir otro proveedor.</string>
+    <string name="client_request_rejected_emergency">Los técnicos cercanos no pueden atenderte ahora. Puedes enviarla de nuevo o buscar un negocio en el mapa.</string>
+    <string name="client_request_expired_title">Nadie respondió a tiempo</string>
+    <string name="client_request_expired_hint">Pasaron los 5 minutos sin respuesta. Puedes enviarla de nuevo o elegir otro proveedor.</string>
+    <string name="client_request_canceled_title">Solicitud cancelada</string>
+    <string name="client_request_canceled_hint">Ya no se le avisará a nadie.</string>
+    <string name="client_request_resend">Enviar de nuevo</string>
+    <string name="client_request_choose_another">Elegir otro proveedor</string>
+    <string name="client_request_accepted_title">¡Aceptaron tu solicitud!</string>
+    <string name="client_request_completed_title">Servicio terminado</string>
+    <string name="client_request_completed_hint">Gracias por usar Fixora.</string>
+    <string name="client_request_your_technician">Tu técnico</string>
+    <string name="client_request_technician_pending">Por asignar</string>
+    <string name="client_request_step_accepted">Aceptada</string>
+    <string name="client_request_step_on_the_way">En camino</string>
+    <string name="client_request_step_arrived">Llegó a tu domicilio</string>
+    <string name="client_request_step_completed">Terminado</string>
+    <string name="client_request_step_accepted_now">El técnico se prepara para salir.</string>
+    <string name="client_request_step_on_the_way_now">El técnico va en camino.</string>
+    <string name="client_request_step_arrived_now">El técnico llegó a tu domicilio.</string>
+    <string name="client_request_step_scheduled_now">Tu cita quedó agendada.</string>
+    <string name="client_request_call">Llamar al negocio</string>
+    <string name="client_request_home">Volver al inicio</string>
+
+    <!-- Ubicación durante el traslado (ANDROID-19) -->
+    <string name="trip_channel">Traslado al cliente</string>
+    <string name="trip_channel_description">Aviso fijo mientras el cliente ve tu ubicación camino a su domicilio.</string>
+    <string name="trip_notification_title">Vas en camino</string>
+    <string name="trip_notification_text">El cliente ve tu ubicación hasta que llegues.</string>
+    <string name="trip_location_title">Comparte tu ubicación</string>
+    <string name="trip_location_text">Para salir y que el cliente te vea llegar, Fixora necesita tu ubicación mientras vas en camino.</string>
+    <string name="trip_location_denied">La ubicación está desactivada para Fixora. Actívala en los ajustes, en Permisos, para que el cliente te vea llegar.</string>
+    <string name="trip_location_enable">Permitir ubicación</string>
+    <string name="trip_location_settings">Abrir ajustes</string>
+
+    <!-- Traslado: mapa de ruta y botones (ANDROID-20) -->
+    <string name="trip_destination">Domicilio del cliente</string>
+    <string name="trip_heading_to">Vas hacia</string>
+    <string name="trip_at">Estás en</string>
+    <string name="trip_emergency">Emergencia</string>
+    <string name="trip_minutes">%1$d min</string>
+    <string name="trip_km">%1$s km</string>
+    <string name="trip_km_arrival">%1$s km · Llegada %2$s</string>
+    <string name="trip_calculating">Calculando la ruta…</string>
+    <string name="trip_ready_title">Listo para salir</string>
+    <string name="trip_estimate">A %1$s km · unos %2$d min en llegar</string>
+    <string name="trip_scheduled_for">Agendada para el %1$s</string>
+    <string name="trip_arrived_title">Llegaste</string>
+    <string name="trip_arrived_text">Cuando termines el trabajo, finaliza el servicio.</string>
+    <string name="trip_reference">Referencia: %1$s</string>
+    <string name="trip_other_app">Abrir en otra app de mapas</string>
+    <string name="trip_no_position">No pudimos leer tu ubicación. Revisa que el GPS esté encendido e inténtalo de nuevo.</string>
+    <string name="trip_start">Iniciar traslado</string>
+    <string name="trip_arrived">Llegué</string>
+    <string name="trip_finish">Finalizar servicio</string>
+    <string name="trip_finish_title">¿Terminaste el trabajo?</string>
+    <string name="trip_finish_text">Al finalizar, el cliente verá el servicio como terminado.</string>
+    <string name="trip_finish_confirm">Finalizar</string>
+    <string name="trip_finish_cancel">Todavía no</string>
+    <string name="trip_summary_title">Servicio finalizado</string>
+    <string name="trip_summary_subtitle">Solicitud #%1$s</string>
+    <string name="trip_summary_address">Domicilio</string>
+    <string name="trip_summary_accepted">Aceptada</string>
+    <string name="trip_summary_arrived">Llegada</string>
+    <string name="trip_summary_finished">Terminado</string>
+    <string name="trip_summary_on_site">Tiempo en el domicilio</string>
+    <string name="trip_summary_done">Listo</string>
 </resources>

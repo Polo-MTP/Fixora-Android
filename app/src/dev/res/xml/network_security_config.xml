@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Desarrollo: permite HTTP porque la API local corre sin certificado, ya sea en 10.0.2.2
+     (emulador) o en la IP de tu PC (celular físico). Solo existe en el flavor dev. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>
