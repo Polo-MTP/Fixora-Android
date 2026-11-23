@@ -44,6 +44,7 @@ fun NavGraphBuilder.clientHomeScreen(
 
 fun NavGraphBuilder.providerHomeScreen(
     onOpenNotifications: () -> Unit,
+    onOpenDebts: () -> Unit,
     onOpenPhoto: () -> Unit,
     onOpenVehicle: () -> Unit,
     onOpenPortfolio: () -> Unit,
@@ -54,6 +55,7 @@ fun NavGraphBuilder.providerHomeScreen(
     composable<ProviderHomeRoute> {
         ProviderHomeScreen(
             onOpenNotifications = onOpenNotifications,
+            onOpenDebts = onOpenDebts,
             onOpenPhoto = onOpenPhoto,
             onOpenVehicle = onOpenVehicle,
             onOpenPortfolio = onOpenPortfolio,

@@ -40,6 +40,8 @@ import com.fixora.app.feature.home.navigation.clientHomeScreen
 import com.fixora.app.feature.home.navigation.providerHomeScreen
 import com.fixora.app.feature.notifications.navigation.NotificationsRoute
 import com.fixora.app.feature.notifications.navigation.notificationsScreen
+import com.fixora.app.feature.payment.navigation.DebtsRoute
+import com.fixora.app.feature.payment.navigation.debtsScreen
 import com.fixora.app.feature.portfolio.navigation.AddWorkRoute
 import com.fixora.app.feature.portfolio.navigation.CertificatesRoute
 import com.fixora.app.feature.portfolio.navigation.PortfolioRoute
@@ -145,6 +147,7 @@ fun FixoraNavHost(
         )
         providerHomeScreen(
             onOpenNotifications = { navController.navigate(NotificationsRoute) },
+            onOpenDebts = { navController.navigate(DebtsRoute(asProvider = true)) },
             onOpenPhoto = { navController.navigate(TechnicianPhotoRoute) },
             onOpenVehicle = { navController.navigate(VehicleRoute) },
             onOpenPortfolio = { navController.navigate(PortfolioRoute) },
@@ -185,6 +188,10 @@ fun FixoraNavHost(
                     popUpTo<EmergencyRoute> { inclusive = true }
                 }
             },
+        )
+        debtsScreen(
+            onBack = navController::popBackStack,
+            onOpenRequest = { requestId -> navController.navigate(ServiceRequestRoute(requestId).forArea(homeArea)) },
         )
         notificationsScreen(
             onBack = navController::popBackStack,

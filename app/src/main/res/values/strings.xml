@@ -642,4 +642,67 @@
     <string name="trip_summary_finished">Terminado</string>
     <string name="trip_summary_on_site">Tiempo en el domicilio</string>
     <string name="trip_summary_done">Listo</string>
+
+    <!-- Cobro del servicio: ajustes de precio, pagos y adeudos (ANDROID-24 y ANDROID-25) -->
+    <string name="payment_base_price">Precio base</string>
+    <string name="payment_total_to_charge">Total a cobrar</string>
+    <string name="payment_reason_materials">Materiales extra</string>
+    <string name="payment_reason_time">Tiempo adicional</string>
+    <string name="payment_reason_other">Otro</string>
+    <string name="payment_method_cash">Efectivo</string>
+    <string name="payment_method_transfer">Transferencia</string>
+    <string name="payment_reference_value">Ref. %1$s</string>
+    <string name="payment_adjustment_pending">Esperando respuesta del cliente</string>
+    <string name="payment_adjustment_rejected">Rechazado por el cliente</string>
+    <string name="payment_amount_invalid">Escribe un monto mayor a 0, con máximo 2 decimales.</string>
+    <string name="payment_amount_too_high">El ajuste no puede pasar de %1$s.</string>
+    <string name="payment_adjustment_title">Proponer ajuste de precio</string>
+    <string name="payment_adjustment_hint">El cliente debe aprobarlo antes de que se sume al total.</string>
+    <string name="payment_adjustment_amount">¿Cuánto se agrega?</string>
+    <string name="payment_adjustment_reason">Motivo</string>
+    <string name="payment_adjustment_description">Explica el ajuste</string>
+    <string name="payment_adjustment_description_optional">Detalle (opcional)</string>
+    <string name="payment_adjustment_description_placeholder">Ej. Se cambió la llave de paso</string>
+    <string name="payment_adjustment_description_required">Explica qué se cobra cuando el motivo es «Otro».</string>
+    <string name="payment_adjustment_send">Enviar al cliente</string>
+    <string name="payment_reject_title">No recibí el pago</string>
+    <string name="payment_reject_hint">El cliente verá el motivo y podrá registrarlo otra vez.</string>
+    <string name="payment_reject_reason">Motivo (opcional)</string>
+    <string name="payment_reject_reason_placeholder">Ej. No llegó la transferencia</string>
+    <string name="payment_reject_send">Avisar al cliente</string>
+
+    <string name="trip_adjustment_propose">Proponer ajuste de precio</string>
+    <string name="trip_adjustment_waiting">Ajuste de %1$s enviado</string>
+    <string name="trip_adjustment_waiting_hint">Podrás finalizar cuando el cliente lo apruebe o lo rechace.</string>
+    <string name="trip_charge_title">Cobro</string>
+    <string name="trip_payment_registered">El cliente registró un pago de %1$s</string>
+    <string name="trip_payment_received">Lo recibí</string>
+    <string name="trip_payment_not_received">No lo recibí</string>
+    <string name="trip_payment_paid">Servicio pagado</string>
+    <string name="trip_payment_paid_hint">Recibiste %1$s.</string>
+    <string name="trip_payment_waiting">Faltan %1$s por cobrar</string>
+    <string name="trip_payment_waiting_hint">Cuando el cliente registre su pago, confirma aquí que lo recibiste. Lo que no pague queda como adeudo.</string>
+    <string name="trip_payment_waiting_partial">Ya recibiste %1$s. Lo que falta queda como adeudo.</string>
+    <string name="trip_payment_last_failed">Marcaste como no recibido el último pago de %1$s.</string>
+
+    <string name="debts_title_provider">Adeudos</string>
+    <string name="debts_title_client">Pagos pendientes</string>
+    <string name="debts_total_provider">Por cobrar</string>
+    <string name="debts_total_client">Por pagar</string>
+    <string name="debts_count_one">1 adeudo</string>
+    <string name="debts_count">%1$d adeudos</string>
+    <string name="debts_empty_provider">Ningún cliente te debe.</string>
+    <string name="debts_empty_client">No tienes pagos pendientes.</string>
+    <string name="debts_finished_on">Terminado el %1$s</string>
+    <string name="debts_paid_of">Pagado %1$s de %2$s</string>
+    <string name="debts_awaiting_provider">El cliente registró %1$s: confírmalo</string>
+    <string name="debts_awaiting_client">Registraste %1$s; falta que el proveedor lo confirme</string>
+    <string name="debts_reminder_sent">Recordatorio enviado</string>
+    <string name="debts_reminder_next">Podrás recordarle otra vez el %1$s</string>
+    <string name="debts_reminders_one">Se le ha recordado 1 vez</string>
+    <string name="debts_reminders">Se le ha recordado %1$d veces</string>
+    <string name="debts_remind">Recordar pago</string>
+    <string name="debts_home_provider">%1$s por cobrar</string>
+    <string name="debts_home_client">%1$s por pagar</string>
+
 </resources>
