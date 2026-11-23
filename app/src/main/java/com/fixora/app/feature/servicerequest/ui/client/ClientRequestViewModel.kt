@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fixora.app.core.network.ApiError
 import com.fixora.app.core.network.ApiResult
+import com.fixora.app.feature.payment.data.PaymentRepository
+import com.fixora.app.feature.payment.ui.PaymentDraft
 import com.fixora.app.feature.servicerequest.data.ClientRequestRepository
 import com.fixora.app.feature.servicerequest.domain.RequestStatus
 import com.fixora.app.feature.servicerequest.domain.ServiceRequest
@@ -35,7 +37,17 @@ data class ClientRequestUiState(
     val actionError: ApiError? = null,
     /** Solicitud nueva al reenviar; la pantalla la abre en lugar de esta. */
     val resentRequestId: String? = null,
+    /** Ajuste que se está aprobando o rechazando (ANDROID-24). */
+    val respondingAdjustmentId: String? = null,
+    val showPaymentSheet: Boolean = false,
+    val isRegisteringPayment: Boolean = false,
+    /** Error de los ajustes o de la hoja de pago. */
+    val paymentError: ApiError? = null,
 ) {
+    /** Terminado y con saldo, sin otro pago esperando confirmación: le toca registrar su pago. */
+    val canRegisterPayment: Boolean
+        get() = request?.status == RequestStatus.Completed && request.balanceCents > 0 && request.pendingPayment == null
+
     val phase: ClientPhase?
         get() {
             val request = request ?: return null
@@ -71,6 +83,7 @@ data class ClientRequestUiState(
 class ClientRequestViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val repository: ClientRequestRepository,
+    private val payments: PaymentRepository,
 ) : ViewModel() {
 
     private val requestId: String = checkNotNull(savedStateHandle["requestId"])
@@ -82,6 +95,9 @@ class ClientRequestViewModel @Inject constructor(
     val uiState: StateFlow<ClientRequestUiState> = _uiState.asStateFlow()
 
     private var ticker: Job? = null
+
+    /** Llave del pago que se registra: la misma en cada reintento para que no se cobre doble. */
+    private var paymentKey: String? = null
     private var poller: Job? = null
 
     init {
@@ -121,13 +137,58 @@ class ClientRequestViewModel @Inject constructor(
         }
     }
 
-    /** Mientras la solicitud sigue viva se consulta; al terminar (rechazo, vencida...) se deja. */
+    /** El cliente aprueba o rechaza lo que el técnico quiere cobrar de más. */
+    fun respondAdjustment(approve: Boolean) {
+        val state = _uiState.value
+        val adjustment = state.request?.pendingAdjustment ?: return
+        if (state.respondingAdjustmentId != null) return
+        _uiState.update { it.copy(respondingAdjustmentId = adjustment.id, paymentError = null) }
+        viewModelScope.launch {
+            val result = payments.respondAdjustment(requestId, adjustment.id, approve)
+            // 409: el ajuste ya estaba respondido o el servicio avanzó; se muestra cómo quedó.
+            if (result is ApiResult.Failure) _uiState.update { it.copy(paymentError = result.error) }
+            loadNow(showLoading = false)
+            _uiState.update { it.copy(respondingAdjustmentId = null) }
+        }
+    }
+
+    fun openPayment() {
+        if (!_uiState.value.canRegisterPayment) return
+        if (paymentKey == null) paymentKey = UUID.randomUUID().toString()
+        _uiState.update { it.copy(showPaymentSheet = true, paymentError = null) }
+    }
+
+    fun dismissPayment() = _uiState.update { it.copy(showPaymentSheet = false, paymentError = null) }
+
+    /** Queda pendiente hasta que el proveedor confirme que lo recibió. */
+    fun registerPayment(draft: PaymentDraft) {
+        if (_uiState.value.isRegisteringPayment) return
+        val key = paymentKey ?: UUID.randomUUID().toString().also { paymentKey = it }
+        _uiState.update { it.copy(isRegisteringPayment = true, paymentError = null) }
+        viewModelScope.launch {
+            when (val result = payments.registerPayment(requestId, draft.method, draft.amountCents, draft.reference, key)) {
+                is ApiResult.Success -> {
+                    paymentKey = null
+                    _uiState.update { it.copy(isRegisteringPayment = false, showPaymentSheet = false) }
+                    loadNow(showLoading = false)
+                }
+                is ApiResult.Failure -> _uiState.update { it.copy(isRegisteringPayment = false, paymentError = result.error) }
+            }
+        }
+    }
+
+    /**
+     * Mientras la solicitud sigue viva se consulta; al terminar (rechazo, vencida...) se deja. Ya
+     * terminada se sigue mientras falte pagar, para ver cuando el proveedor confirme el pago.
+     */
     private fun startPolling() {
         poller = viewModelScope.launch {
             while (isActive) {
                 delay(POLL_INTERVAL_MS)
-                val phase = _uiState.value.phase
-                if (phase == ClientPhase.Waiting || phase == ClientPhase.Accepted || phase == null) load(showLoading = false)
+                val state = _uiState.value
+                val phase = state.phase
+                val owes = phase == ClientPhase.Completed && (state.request?.balanceCents ?: 0) > 0
+                if (phase == ClientPhase.Waiting || phase == ClientPhase.Accepted || phase == null || owes) load(showLoading = false)
             }
         }
     }

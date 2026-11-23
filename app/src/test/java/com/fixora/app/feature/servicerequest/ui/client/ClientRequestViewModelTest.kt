@@ -4,6 +4,16 @@ import androidx.lifecycle.SavedStateHandle
 import com.fixora.app.core.network.ApiError
 import com.fixora.app.core.network.ApiResult
 import com.fixora.app.feature.availability.location.Coordinates
+import com.fixora.app.feature.payment.data.PaymentRepository
+import com.fixora.app.feature.payment.domain.AdjustmentReason
+import com.fixora.app.feature.payment.domain.AdjustmentStatus
+import com.fixora.app.feature.payment.domain.Debts
+import com.fixora.app.feature.payment.domain.Payment
+import com.fixora.app.feature.payment.domain.PaymentMethod
+import com.fixora.app.feature.payment.domain.PaymentStatus
+import com.fixora.app.feature.payment.domain.PaymentSummary
+import com.fixora.app.feature.payment.domain.PriceAdjustment
+import com.fixora.app.feature.payment.ui.PaymentDraft
 import com.fixora.app.feature.servicerequest.data.ClientRequestRepository
 import com.fixora.app.feature.servicerequest.domain.RequestStatus
 import com.fixora.app.feature.servicerequest.domain.ServiceRequest
@@ -63,6 +73,40 @@ class ClientRequestViewModelTest {
         branchName = "Plomería Laguna", addressId = addressId, dispatchesSent = sent, dispatchesRejected = rejected,
     )
 
+    private inner class FakePayments : PaymentRepository {
+        val adjustmentAnswers = mutableListOf<Pair<String, Boolean>>()
+        val registered = mutableListOf<Pair<PaymentDraft, String>>()
+        var error: ApiError? = null
+        override suspend fun respondAdjustment(requestId: String, adjustmentId: String, approve: Boolean): ApiResult<Unit> {
+            adjustmentAnswers += adjustmentId to approve
+            error?.let { return ApiResult.Failure(it) }
+            val current = repository.request
+            repository.request = current.copy(
+                adjustments = current.adjustments.map {
+                    if (it.id == adjustmentId) it.copy(status = if (approve) AdjustmentStatus.Approved else AdjustmentStatus.Rejected) else it
+                },
+            )
+            return ApiResult.Success(Unit)
+        }
+        override suspend fun registerPayment(
+            requestId: String, method: PaymentMethod, amountCents: Long, reference: String?, clientUuid: String,
+        ): ApiResult<Unit> {
+            registered += PaymentDraft(method, amountCents, reference) to clientUuid
+            error?.let { return ApiResult.Failure(it) }
+            repository.request = repository.request.copy(
+                payments = listOf(Payment("7", "380.00", method, reference, PaymentStatus.Pending, null, null)),
+                paymentSummary = PaymentSummary("380.00", "0.00", "380.00", "380.00", true),
+            )
+            return ApiResult.Success(Unit)
+        }
+        override suspend fun proposeAdjustment(requestId: String, amountCents: Long, reason: AdjustmentReason, description: String?, clientUuid: String) =
+            ApiResult.Success(Unit)
+        override suspend fun respondPayment(requestId: String, paymentId: String, received: Boolean, reason: String?) = ApiResult.Success(Unit)
+        override suspend fun debts() = ApiResult.Success(Debts("0.00", emptyList()))
+        override suspend fun sendReminder(requestId: String) = ApiResult.Success(Unit)
+    }
+
+    private val payments = FakePayments()
     private lateinit var repository: FakeRepository
     private lateinit var viewModel: ClientRequestViewModel
     private val state get() = viewModel.uiState.value
@@ -75,7 +119,7 @@ class ClientRequestViewModelTest {
 
     private fun create(request: ServiceRequest) {
         repository = FakeRepository(request)
-        viewModel = ClientRequestViewModel(SavedStateHandle(mapOf("requestId" to "52")), repository)
+        viewModel = ClientRequestViewModel(SavedStateHandle(mapOf("requestId" to "52")), repository, payments)
         viewModel.now = { start.plusMillis(scheduler.currentTime) }
         scheduler.runCurrent()
     }
@@ -177,5 +221,87 @@ class ClientRequestViewModelTest {
         viewModel.resend()
         scheduler.runCurrent()
         assertTrue(repository.resent.isEmpty())
+    }
+
+    private fun adjustment(status: AdjustmentStatus = AdjustmentStatus.Pending) =
+        PriceAdjustment("4", "120.00", AdjustmentReason.ExtraMaterials, null, status, null)
+
+    @Test
+    fun atTheHomeTheClientApprovesTheAdjustment() {
+        create(request(status = RequestStatus.Arrived).copy(agreedPrice = "380.00", adjustments = listOf(adjustment())))
+        assertEquals("4", state.request?.pendingAdjustment?.id)
+        assertEquals(38_000L, state.request?.totalCents)
+
+        viewModel.respondAdjustment(approve = true)
+        scheduler.runCurrent()
+
+        assertEquals(listOf("4" to true), payments.adjustmentAnswers)
+        assertEquals(null, state.request?.pendingAdjustment)
+        assertEquals(50_000L, state.request?.totalCents)
+        assertEquals(null, state.respondingAdjustmentId)
+    }
+
+    @Test
+    fun aRejectedAdjustmentDoesNotCount() {
+        create(request(status = RequestStatus.Arrived).copy(agreedPrice = "380.00", adjustments = listOf(adjustment())))
+
+        viewModel.respondAdjustment(approve = false)
+        scheduler.runCurrent()
+
+        assertEquals(listOf("4" to false), payments.adjustmentAnswers)
+        assertEquals(38_000L, state.request?.totalCents)
+    }
+
+    @Test
+    fun finishedItRegistersThePaymentOnceEvenIfRetried() {
+        val completed = request(status = RequestStatus.Completed).copy(
+            agreedPrice = "380.00",
+            totalAmount = "380.00",
+            paymentSummary = PaymentSummary("380.00", "0.00", "0.00", "380.00", true),
+        )
+        create(completed)
+        assertTrue(state.canRegisterPayment)
+        payments.error = ApiError.Timeout
+
+        viewModel.openPayment()
+        viewModel.registerPayment(PaymentDraft(PaymentMethod.Cash, 38_000, null))
+        scheduler.runCurrent()
+        assertTrue(state.showPaymentSheet)
+        assertEquals(ApiError.Timeout, state.paymentError)
+
+        payments.error = null
+        viewModel.registerPayment(PaymentDraft(PaymentMethod.Cash, 38_000, null))
+        scheduler.runCurrent()
+
+        assertEquals(2, payments.registered.size)
+        // La misma llave: si el primero sí llegó a la API, no se registra dos veces.
+        assertEquals(payments.registered[0].second, payments.registered[1].second)
+        assertFalse(state.showPaymentSheet)
+        assertFalse(state.canRegisterPayment)
+        assertEquals("7", state.request?.pendingPayment?.id)
+    }
+
+    @Test
+    fun withABalanceItKeepsCheckingUntilTheProviderConfirms() {
+        create(
+            request(status = RequestStatus.Completed).copy(
+                totalAmount = "380.00",
+                payments = listOf(Payment("7", "380.00", PaymentMethod.Cash, null, PaymentStatus.Pending, null, null)),
+                paymentSummary = PaymentSummary("380.00", "0.00", "380.00", "380.00", true),
+            ),
+        )
+        repository.request = repository.request.copy(
+            payments = listOf(Payment("7", "380.00", PaymentMethod.Cash, null, PaymentStatus.Confirmed, null, null)),
+            paymentSummary = PaymentSummary("380.00", "380.00", "0.00", "0.00", false),
+        )
+        scheduler.advanceTimeBy(ClientRequestViewModel.POLL_INTERVAL_MS + 1)
+        scheduler.runCurrent()
+        assertTrue(state.request?.paymentSummary?.isPaid == true)
+
+        // Ya pagado deja de consultar.
+        val loads = repository.loads
+        scheduler.advanceTimeBy(ClientRequestViewModel.POLL_INTERVAL_MS * 3)
+        scheduler.runCurrent()
+        assertEquals(loads, repository.loads)
     }
 }

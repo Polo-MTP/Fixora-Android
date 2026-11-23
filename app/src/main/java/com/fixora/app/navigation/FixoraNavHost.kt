@@ -137,6 +137,7 @@ fun FixoraNavHost(
         clientHomeScreen(
             onOpenNotifications = { navController.navigate(NotificationsRoute) },
             onEmergency = { navController.navigate(EmergencyRoute) },
+            onOpenDebts = { navController.navigate(DebtsRoute(asProvider = false)) },
             onOpenProvider = { branchId, distanceKm, categoryId ->
                 navController.navigate(ProviderProfileRoute(branchId, distanceKm, categoryId))
             },

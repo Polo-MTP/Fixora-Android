@@ -705,4 +705,34 @@
     <string name="debts_home_provider">%1$s por cobrar</string>
     <string name="debts_home_client">%1$s por pagar</string>
 
+    <!-- El cliente: aprobar ajustes y registrar su pago (ANDROID-24) -->
+    <string name="payment_amount_over_balance">No puede ser mayor a lo que falta por pagar (%1$s).</string>
+    <string name="payment_register_title">Registrar pago</string>
+    <string name="payment_register_hint">El proveedor confirmará que lo recibió.</string>
+    <string name="payment_register_method">¿Cómo pagaste?</string>
+    <string name="payment_register_amount">¿Cuánto pagaste?</string>
+    <string name="payment_register_partial">Quedarán %1$s como adeudo.</string>
+    <string name="payment_register_reference">Referencia de la transferencia (opcional)</string>
+    <string name="payment_register_reference_placeholder">Ej. clave de rastreo</string>
+    <string name="payment_register_send">Registrar pago</string>
+    <string name="client_adjustment_title">El técnico propone cobrar %1$s más</string>
+    <string name="client_adjustment_new_total">Si lo apruebas, el total queda en %1$s.</string>
+    <string name="client_adjustment_approve">Aprobar ajuste</string>
+    <string name="client_adjustment_reject">Rechazar</string>
+    <string name="client_adjustment_reject_title">¿Rechazar el ajuste?</string>
+    <string name="client_adjustment_reject_message">No se sumará al total. Si tienes dudas, coméntalo con el técnico antes de rechazarlo.</string>
+    <string name="client_adjustment_reject_confirm">Rechazar ajuste</string>
+    <string name="client_adjustment_reject_keep">Volver</string>
+    <string name="client_payment_total">Total</string>
+    <string name="client_payment_total_to_pay">Total a pagar</string>
+    <string name="client_payment_registered">Registraste un pago de %1$s</string>
+    <string name="client_payment_registered_hint">Falta que el proveedor confirme que lo recibió.</string>
+    <string name="client_payment_paid">Servicio pagado</string>
+    <string name="client_payment_paid_hint">Pagaste %1$s. Gracias.</string>
+    <string name="client_payment_failed">El proveedor no recibió tu pago de %1$s</string>
+    <string name="client_payment_failed_hint">Revisa el pago y regístralo de nuevo.</string>
+    <string name="client_payment_due">Faltan %1$s por pagar</string>
+    <string name="client_payment_due_hint">Págale al técnico en efectivo o por transferencia y regístralo aquí.</string>
+    <string name="client_payment_due_partial">Ya pagaste %1$s. Lo que falta queda como adeudo.</string>
+    <string name="client_payment_register">Registrar pago</string>
 </resources>

@@ -64,6 +64,7 @@ import com.fixora.app.feature.map.domain.ServiceCategory
 import com.fixora.app.feature.map.ui.MapLaunch
 import com.fixora.app.feature.map.ui.iconRes
 import com.fixora.app.feature.notifications.ui.NotificationBell
+import com.fixora.app.feature.payment.ui.debts.DebtsHomeCard
 
 private const val SERVICE_COLUMNS = 4
 private val EmergencyRed = Color(0xFFD32F2F)
@@ -79,6 +80,7 @@ fun ClientHomeTab(
     onOpenMap: (MapLaunch) -> Unit,
     onOpenNotifications: () -> Unit,
     onEmergency: () -> Unit,
+    onOpenDebts: () -> Unit,
     viewModel: ClientHomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -91,6 +93,7 @@ fun ClientHomeTab(
         onRetry = viewModel::retry,
         bell = { NotificationBell(onClick = onOpenNotifications) },
         onEmergency = onEmergency,
+        debts = { DebtsHomeCard(asProvider = false, onOpen = onOpenDebts, modifier = Modifier.padding(bottom = 12.dp)) },
     )
 }
 
@@ -104,6 +107,7 @@ private fun ClientHomeContent(
     onRetry: () -> Unit,
     bell: @Composable () -> Unit = {},
     onEmergency: () -> Unit = {},
+    debts: @Composable () -> Unit = {},
 ) {
     Column(
         modifier = Modifier
@@ -132,7 +136,9 @@ private fun ClientHomeContent(
             style = MaterialTheme.typography.bodyLarge,
             color = Slate500,
         )
+        // Servicios terminados que falta pagar (ANDROID-24).
         Spacer(Modifier.height(16.dp))
+        debts()
         HomeSearchField(state.query, onQueryChange, onSearch)
         Spacer(Modifier.height(12.dp))
         EmergencyCard(onClick = onEmergency)

@@ -39,6 +39,7 @@ fun ClientHomeScreen(
     onMapCategoryHandled: () -> Unit,
     onOpenNotifications: () -> Unit,
     onEmergency: () -> Unit,
+    onOpenDebts: () -> Unit,
     onOpenProvider: (branchId: String, distanceKm: String, categoryId: String?) -> Unit,
     onOpenPhoto: () -> Unit,
     onOpenPersonalData: () -> Unit,
@@ -68,6 +69,7 @@ fun ClientHomeScreen(
                 },
                 onOpenNotifications = onOpenNotifications,
                 onEmergency = onEmergency,
+                onOpenDebts = onOpenDebts,
             )
         },
         mapTab = {
