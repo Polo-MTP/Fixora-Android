@@ -1,6 +1,7 @@
 package com.fixora.app.feature.account.domain
 
 import com.fixora.app.feature.auth.domain.FieldError
+import com.fixora.app.feature.availability.location.Coordinates
 import java.time.LocalDate
 
 /** Datos personales del usuario (tabla personal_data). */
@@ -19,6 +20,9 @@ data class PersonalData(
 /**
  * Dirección guardada del usuario (tablas addresses y address_user). [id] es null mientras no se
  * ha guardado. El país es siempre México, por eso no se pide.
+ *
+ * [location] es el punto que el usuario marcó en el mapa (ANDROID-41): es a donde llega el
+ * técnico. Las direcciones que se guardaron antes no lo tienen.
  */
 data class Address(
     val id: String?,
@@ -32,6 +36,7 @@ data class Address(
     val state: String,
     val reference: String,
     val isMain: Boolean,
+    val location: Coordinates? = null,
 ) {
     /** «Av. Insurgentes Sur 1234, int. 5» */
     val streetLine get() = buildString {

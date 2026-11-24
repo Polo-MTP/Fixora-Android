@@ -1,5 +1,7 @@
 package com.fixora.app.feature.account.ui.address
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -8,8 +10,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -25,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -49,6 +54,8 @@ import com.fixora.app.feature.account.ui.components.AccountScaffold
 import com.fixora.app.feature.account.ui.components.FormErrorText
 import com.fixora.app.feature.auth.ui.components.AuthTextField
 import com.fixora.app.feature.auth.ui.components.message
+import com.fixora.app.feature.availability.location.Coordinates
+import com.fixora.app.feature.availability.location.FusedLocationSource
 
 /** Agregar o editar una dirección (ANDROID-5). Al guardar o eliminar regresa a la lista. */
 @Composable
@@ -59,15 +66,34 @@ fun AddressFormScreen(
     val state by viewModel.uiState.collectAsState()
     LaunchedEffect(state.isDone) { if (state.isDone) onBack() }
 
+    // Con permiso, el mapa abre donde está el celular; sin él se marca a mano desde la ciudad.
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions(),
+    ) { results -> if (results.values.any { it }) viewModel.onMyLocation() }
+    val askPermission = { permissionLauncher.launch(FusedLocationSource.LOCATION_PERMISSIONS) }
+
     AddressFormContent(
         state = state,
         onBack = onBack,
         onChange = viewModel::onChange,
         onBlur = viewModel::onBlur,
         onMainChange = viewModel::onMainChange,
+        onPickLocation = {
+            viewModel.openPicker()
+            if (!viewModel.hasLocationPermission()) askPermission()
+        },
         onSave = viewModel::save,
         onDelete = viewModel::delete,
     )
+
+    state.picker?.let { picker ->
+        AddressLocationPicker(
+            picker = picker,
+            onMyLocation = { if (viewModel.hasLocationPermission()) viewModel.onMyLocation() else askPermission() },
+            onConfirm = viewModel::onLocationConfirmed,
+            onDismiss = viewModel::closePicker,
+        )
+    }
 }
 
 @Composable
@@ -77,6 +103,7 @@ private fun AddressFormContent(
     onChange: (AddressField, String) -> Unit,
     onBlur: (AddressField) -> Unit,
     onMainChange: (Boolean) -> Unit,
+    onPickLocation: () -> Unit,
     onSave: () -> Unit,
     onDelete: () -> Unit,
 ) {
@@ -114,6 +141,12 @@ private fun AddressFormContent(
             )
         },
     ) {
+        // Primero el punto en el mapa: es lo que necesita el técnico y llena lo demás.
+        LocationCard(location = state.location, missing = state.locationMissing, onClick = onPickLocation)
+        when {
+            state.isLookingUp -> FormNotice(R.string.address_location_looking_up)
+            state.showReviewNotice -> FormNotice(R.string.address_location_review)
+        }
         Field(AddressField.Alias, R.string.address_alias, R.string.address_alias_placeholder)
         AliasSuggestions(onPick = { onChange(AddressField.Alias, it) })
         Field(AddressField.Street, R.string.address_street, R.string.address_street_placeholder)
@@ -185,6 +218,68 @@ private fun AliasSuggestions(onPick: (String) -> Unit) {
     }
 }
 
+/** Aviso discreto bajo la tarjeta del mapa: buscando la dirección o pidiendo que se revise. */
+@Composable
+private fun FormNotice(text: Int) {
+    Row(
+        verticalAlignment = Alignment.Top,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(White)
+            .border(1.dp, Mist200, RoundedCornerShape(12.dp))
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+    ) {
+        Icon(painterResource(R.drawable.ic_info), contentDescription = null, tint = Navy800, modifier = Modifier.size(18.dp))
+        Text(stringResource(text), style = MaterialTheme.typography.bodySmall, color = Navy800)
+    }
+}
+
+/** Si la dirección ya tiene su punto en el mapa; al tocarla se abre el mapa para marcarlo o moverlo. */
+@Composable
+private fun LocationCard(location: Coordinates?, missing: Boolean, onClick: () -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        FixoraCard {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(role = Role.Button, onClick = onClick)
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_place),
+                    contentDescription = null,
+                    tint = if (location != null) Orange500 else Slate500,
+                    modifier = Modifier.size(24.dp),
+                )
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.address_location_title),
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                        color = Navy900,
+                    )
+                    Text(
+                        text = stringResource(if (location != null) R.string.address_location_set else R.string.address_location_hint),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Slate500,
+                    )
+                }
+                Text(
+                    text = stringResource(if (location != null) R.string.address_location_change else R.string.address_location_mark),
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                    color = Orange500,
+                )
+            }
+        }
+        if (missing) {
+            Text(stringResource(R.string.address_location_required), style = MaterialTheme.typography.bodySmall, color = ErrorRed)
+        }
+    }
+}
+
 @Composable
 private fun MainAddressSwitch(checked: Boolean, enabled: Boolean, onChange: (Boolean) -> Unit) {
     FixoraCard {
@@ -225,7 +320,7 @@ private fun AddressFormPreview() {
     FixoraTheme {
         AddressFormContent(
             state = AddressFormUiState(isLoaded = true, isEditing = true, isMain = true, canChangeMain = false),
-            onBack = {}, onChange = { _, _ -> }, onBlur = {}, onMainChange = {}, onSave = {}, onDelete = {},
+            onBack = {}, onChange = { _, _ -> }, onBlur = {}, onMainChange = {}, onPickLocation = {}, onSave = {}, onDelete = {},
         )
     }
 }

@@ -2,6 +2,7 @@ package com.fixora.app.feature.account.data
 
 import com.fixora.app.feature.account.domain.Address
 import com.fixora.app.feature.account.domain.PersonalData
+import com.fixora.app.feature.availability.location.Coordinates
 import java.time.LocalDate
 import java.time.format.DateTimeParseException
 
@@ -36,6 +37,7 @@ internal fun AddressDto.toDomain() = Address(
     state = state,
     reference = reference.orEmpty(),
     isMain = isMain,
+    location = if (latitude != null && longitude != null) Coordinates(latitude, longitude) else null,
 )
 
 internal fun Address.toCreateRequest() = CreateAddressRequest(
@@ -49,6 +51,8 @@ internal fun Address.toCreateRequest() = CreateAddressRequest(
     postalCode = postalCode.trim(),
     reference = reference.trim(),
     isMain = isMain,
+    latitude = location?.latitude,
+    longitude = location?.longitude,
 )
 
 /**
@@ -68,13 +72,16 @@ internal fun Address.toUpdateRequest(current: Address?): UpdateAddressRequest {
         state = state.trim(),
         postalCode = postalCode.trim(),
         reference = reference.trim(),
+        latitude = location?.latitude,
+        longitude = location?.longitude,
     )
 }
 
 private fun Address.sameLocation(other: Address) =
     street.trim() == other.street && numExt.trim() == other.numExt && numInt.trim() == other.numInt &&
         colony.trim() == other.colony && municipality.trim() == other.municipality &&
-        state.trim() == other.state && postalCode.trim() == other.postalCode && reference.trim() == other.reference
+        state.trim() == other.state && postalCode.trim() == other.postalCode && reference.trim() == other.reference &&
+        location == other.location
 
 // Una fecha con otro formato no debe tumbar la pantalla: se muestra vacía y el usuario la elige.
 private fun parseDate(value: String): LocalDate? =

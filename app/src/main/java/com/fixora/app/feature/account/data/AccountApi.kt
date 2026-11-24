@@ -114,6 +114,8 @@ data class AddressDto(
     val municipality: String = "",
     val state: String = "",
     @SerialName("postal_code") val postalCode: String = "",
+    val latitude: Double? = null,
+    val longitude: Double? = null,
 )
 
 @Serializable
@@ -128,6 +130,8 @@ data class CreateAddressRequest(
     @SerialName("postal_code") val postalCode: String,
     val reference: String,
     @SerialName("is_main") val isMain: Boolean,
+    val latitude: Double? = null,
+    val longitude: Double? = null,
 )
 
 /**
@@ -145,4 +149,6 @@ data class UpdateAddressRequest(
     val state: String? = null,
     @SerialName("postal_code") val postalCode: String? = null,
     val reference: String? = null,
+    val latitude: Double? = null,
+    val longitude: Double? = null,
 )

@@ -179,6 +179,18 @@
     <string name="address_delete_title">¿Eliminar esta dirección?</string>
     <string name="address_delete_message">Ya no aparecerá al pedir un servicio.</string>
     <string name="address_delete_confirm">Eliminar</string>
+    <!-- Ubicación de la dirección en el mapa (ANDROID-41) -->
+    <string name="address_location_title">Ubicación en el mapa</string>
+    <string name="address_location_hint">Marca dónde está para que el técnico llegue directo.</string>
+    <string name="address_location_set">Marcada. El técnico llegará a este punto.</string>
+    <string name="address_location_mark">Marcar</string>
+    <string name="address_location_change">Cambiar</string>
+    <string name="address_location_required">Marca la ubicación en el mapa.</string>
+    <string name="address_location_picker_title">Marca la ubicación</string>
+    <string name="address_location_picker_hint">Mueve el mapa hasta que el pin quede en la entrada.</string>
+    <string name="address_location_confirm">Confirmar ubicación</string>
+    <string name="address_location_looking_up">Buscando la dirección de ese punto…</string>
+    <string name="address_location_review">Llenamos la dirección con el punto del mapa. Revisa que los datos sean correctos y corrígelos si algo no coincide, sobre todo el número y la colonia.</string>
 
     <!-- Mi cuenta · Cambiar contraseña -->
     <string name="change_password_title">Cambiar contraseña</string>
@@ -540,6 +552,9 @@
     <string name="request_form_missing_description">Elige qué está pasando o descríbelo.</string>
     <string name="request_form_missing_address">Elige a dónde va el técnico.</string>
     <string name="request_form_missing_slot">Elige un horario para la cita.</string>
+    <string name="request_form_missing_location">Marca la dirección en el mapa para que el técnico sepa a dónde llegar.</string>
+    <string name="request_form_address_no_location">Esta dirección no está marcada en el mapa.</string>
+    <string name="request_form_address_mark_location">Marcar en el mapa</string>
 
     <!-- Botón de emergencia (ANDROID-16) -->
     <string name="emergency_title">¿Es una emergencia real?</string>

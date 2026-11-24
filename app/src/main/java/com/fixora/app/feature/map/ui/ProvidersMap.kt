@@ -170,7 +170,7 @@ fun ProvidersMap(
 
 /** MapView necesita enterarse del ciclo de vida de la pantalla para pausar y liberar memoria. */
 @Composable
-private fun MapLifecycle(mapView: MapView) {
+internal fun MapLifecycle(mapView: MapView) {
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     DisposableEffect(lifecycle, mapView) {
         val observer = LifecycleEventObserver { _, event ->
