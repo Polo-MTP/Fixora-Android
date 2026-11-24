@@ -113,6 +113,7 @@ import java.util.Locale
 fun TripScreen(
     onBack: () -> Unit,
     onOpenChat: () -> Unit,
+    onRate: () -> Unit,
     viewModel: TripViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -161,6 +162,7 @@ fun TripScreen(
             state = state,
             request = request,
             onDone = onBack,
+            onRate = onRate,
             onConfirmPayment = viewModel::confirmPayment,
             onRejectPayment = viewModel::openRejectPayment,
         )
@@ -570,6 +572,7 @@ private fun TripSummary(
     state: TripUiState,
     request: ServiceRequest,
     onDone: () -> Unit,
+    onRate: () -> Unit,
     onConfirmPayment: () -> Unit,
     onRejectPayment: () -> Unit,
 ) {
@@ -627,6 +630,12 @@ private fun TripSummary(
                 onSite?.let { SummaryRow(R.drawable.ic_schedule, R.string.trip_summary_on_site, formatDuration(it)) }
             }
         }
+        // Calificar al cliente (ANDROID-26); la pantalla avisa si ya lo calificó.
+        OutlineActionButton(
+            text = stringResource(R.string.review_rate_client),
+            onClick = onRate,
+            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 16.dp),
+        )
         FixoraPrimaryButton(
             text = stringResource(R.string.trip_summary_done),
             onClick = onDone,

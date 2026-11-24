@@ -17,7 +17,7 @@ import com.fixora.app.feature.servicerequest.data.TripRepository
 import com.fixora.app.feature.servicerequest.data.TripRoute
 import com.fixora.app.feature.servicerequest.data.TripStep
 import com.fixora.app.feature.servicerequest.domain.CancelRules
-import com.fixora.app.feature.servicerequest.domain.EvidenceKind
+import com.fixora.app.feature.servicerequest.domain.PickedEvidence
 import com.fixora.app.feature.servicerequest.domain.RequestStatus
 import com.fixora.app.feature.servicerequest.domain.ServiceRequest
 import com.fixora.app.feature.servicerequest.domain.evidenceKindOf
@@ -34,16 +34,13 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
 
-/** Archivo elegido como evidencia de la cancelación; [key] la da la API al subirlo. */
-data class CancelEvidence(val id: Long, val name: String, val kind: EvidenceKind, val key: String? = null)
-
 /**
  * Lo que escribe el técnico para cancelar (ANDROID-21). Se conserva al cerrar la hoja, por si la
  * cerró sin querer o salió a tomar la foto.
  */
 data class CancelForm(
     val reason: String = "",
-    val evidence: List<CancelEvidence> = emptyList(),
+    val evidence: List<PickedEvidence> = emptyList(),
     val submitted: Boolean = false,
     /** La última evidencia elegida no se pudo usar. */
     val problem: EvidenceProblem? = null,
@@ -311,7 +308,7 @@ class TripViewModel @Inject constructor(
 
     /** Foto de la cámara o archivo elegido; null si el usuario no eligió nada. */
     fun onEvidencePicked(uri: Uri?) {
-        if (uri != null) addEvidence { evidenceReader.read(uri) }
+        if (uri != null) addEvidence { evidenceReader.read(uri, CancelRules.EVIDENCE_MIME_TYPES) }
     }
 
     /** Lee la evidencia con [read] y la agrega. Separado de la Uri para poder probarlo. */
@@ -323,7 +320,7 @@ class TripViewModel @Inject constructor(
                 is EvidenceReadResult.Ready -> {
                     val id = nextEvidenceId++
                     evidenceFiles[id] = result.mimeType to result.bytes
-                    val item = CancelEvidence(id, result.name, evidenceKindOf(result.mimeType))
+                    val item = PickedEvidence(id, result.name, evidenceKindOf(result.mimeType))
                     updateCancel { copy(isReading = false, evidence = evidence + item, error = null) }
                 }
                 is EvidenceReadResult.Rejected -> updateCancel { copy(isReading = false, problem = result.problem) }

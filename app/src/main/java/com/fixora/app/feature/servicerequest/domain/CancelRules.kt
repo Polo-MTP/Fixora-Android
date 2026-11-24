@@ -29,6 +29,12 @@ object CancelRules {
     }
 }
 
+/**
+ * Foto o archivo elegido como evidencia (de una cancelación o de una reseña); [key] la da la API
+ * al subirlo y sirve para no subirlo otra vez en un reintento.
+ */
+data class PickedEvidence(val id: Long, val name: String, val kind: EvidenceKind, val key: String? = null)
+
 /** Qué tipo de evidencia es, para mostrar su ícono. */
 enum class EvidenceKind { Photo, Document, Video }
 

@@ -40,6 +40,7 @@ import com.fixora.app.feature.payment.ui.PaymentSheet
 import com.fixora.app.feature.servicerequest.data.EvidenceProblem
 import com.fixora.app.feature.servicerequest.domain.CancelRules
 import com.fixora.app.feature.servicerequest.domain.EvidenceKind
+import com.fixora.app.feature.servicerequest.domain.PickedEvidence
 
 /**
  * El técnico cancela un servicio ya aceptado (ANDROID-21): motivo obligatorio y evidencia con la
@@ -117,7 +118,7 @@ fun CancelServiceSheet(
 }
 
 @Composable
-private fun EvidenceRow(item: CancelEvidence, enabled: Boolean, onRemove: () -> Unit) {
+internal fun EvidenceRow(item: PickedEvidence, enabled: Boolean, onRemove: () -> Unit) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -146,7 +147,7 @@ private fun EvidenceRow(item: CancelEvidence, enabled: Boolean, onRemove: () -> 
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f),
         )
-        val description = stringResource(R.string.trip_cancel_remove_evidence, item.name)
+        val description = stringResource(R.string.evidence_remove, item.name)
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier

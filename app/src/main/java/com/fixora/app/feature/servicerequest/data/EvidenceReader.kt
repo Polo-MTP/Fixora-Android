@@ -11,6 +11,9 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import javax.inject.Inject
 
 /** Por qué no se pudo usar la evidencia elegida. */
@@ -21,10 +24,24 @@ sealed interface EvidenceReadResult {
     data class Rejected(val problem: EvidenceProblem) : EvidenceReadResult
 }
 
-/** Lee la foto o el archivo elegido. Interfaz para probar el ViewModel sin Android. */
+/**
+ * Lee la foto o el archivo elegido y revisa que sea de [allowedTypes]. La usan la cancelación
+ * (ANDROID-21) y la calificación (ANDROID-26). Interfaz para probar los ViewModels sin Android.
+ */
 fun interface EvidenceReader {
-    suspend fun read(uri: Uri): EvidenceReadResult
+    suspend fun read(uri: Uri, allowedTypes: Array<String>): EvidenceReadResult
 }
+
+/** La parte del archivo para POST /files/upload; la API revisa que la extensión sea la del tipo. */
+internal fun evidencePart(mimeType: String, bytes: ByteArray): MultipartBody.Part =
+    MultipartBody.Part.createFormData(
+        "file",
+        "evidencia.${CancelRules.extensionFor(mimeType)}",
+        bytes.toRequestBody(mimeType.toMediaType()),
+    )
+
+/** Categoría «evidences» de la API: imágenes, PDF y video MP4 de hasta 25 MB. */
+internal val EvidencesCategory = "evidences".toRequestBody("text/plain".toMediaType())
 
 /**
  * Revisa el tipo y el tamaño antes de subir, para no esperar una subida que la API va a rechazar.
@@ -34,11 +51,11 @@ class AndroidEvidenceReader @Inject constructor(
     @param:ApplicationContext private val context: Context,
 ) : EvidenceReader {
 
-    override suspend fun read(uri: Uri): EvidenceReadResult = withContext(Dispatchers.IO) {
+    override suspend fun read(uri: Uri, allowedTypes: Array<String>): EvidenceReadResult = withContext(Dispatchers.IO) {
         val resolver = context.contentResolver
         val mimeType = resolver.getType(uri)?.lowercase()
             ?: return@withContext EvidenceReadResult.Rejected(EvidenceProblem.Unreadable)
-        if (mimeType !in CancelRules.EVIDENCE_MIME_TYPES) {
+        if (mimeType !in allowedTypes) {
             return@withContext EvidenceReadResult.Rejected(EvidenceProblem.WrongType)
         }
 

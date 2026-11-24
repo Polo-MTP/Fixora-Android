@@ -157,7 +157,7 @@ class TripViewModelTest {
 
     private fun create(status: RequestStatus) {
         repository = FakeRepository(status)
-        viewModel = TripViewModel(SavedStateHandle(mapOf("requestId" to "15")), repository, location, trip, payments) {
+        viewModel = TripViewModel(SavedStateHandle(mapOf("requestId" to "15")), repository, location, trip, payments) { _, _ ->
             error("En las pruebas la evidencia se agrega con addEvidence")
         }
         scheduler.runCurrent()

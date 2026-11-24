@@ -99,6 +99,7 @@ fun ClientRequestScreen(
     onResent: (requestId: String) -> Unit,
     onChooseAnother: (categoryId: String?) -> Unit,
     onOpenChat: (requestId: String) -> Unit,
+    onRate: (requestId: String) -> Unit,
     viewModel: ClientRequestViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -114,6 +115,7 @@ fun ClientRequestScreen(
         onOpenPayment = viewModel::openPayment,
         onOpenChat = { state.request?.id?.let(onOpenChat) },
         onCancelAccepted = viewModel::openCancelAccepted,
+        onRate = { state.request?.id?.let(onRate) },
     )
     ArrivalAlertEffect(state.arrivalAlerts)
     if (state.showCancelSheet) {
@@ -149,6 +151,7 @@ private fun ClientRequestContent(
     onOpenPayment: () -> Unit = {},
     onOpenChat: () -> Unit = {},
     onCancelAccepted: () -> Unit = {},
+    onRate: () -> Unit = {},
 ) {
     val request = state.request
     val phase = state.phase
@@ -215,6 +218,7 @@ private fun ClientRequestContent(
             Actions(
                 state = state,
                 onOpenPayment = onOpenPayment,
+                onRate = onRate,
                 onCancel = { confirmCancel = true },
                 onResend = onResend,
                 onChooseAnother = onChooseAnother,
@@ -561,6 +565,7 @@ private fun RequestSummary(request: ServiceRequest) {
 private fun Actions(
     state: ClientRequestUiState,
     onOpenPayment: () -> Unit,
+    onRate: () -> Unit,
     onCancel: () -> Unit,
     onResend: () -> Unit,
     onChooseAnother: () -> Unit,
@@ -584,8 +589,12 @@ private fun Actions(
                 SecondaryButton(stringResource(R.string.client_request_choose_another), onClick = onChooseAnother)
             }
             ClientPhase.Completed -> {
+                // Primero el pago, si falta; calificar (ANDROID-26) avisa si ya lo hizo.
                 if (state.canRegisterPayment) {
                     FixoraPrimaryButton(text = stringResource(R.string.client_payment_register), onClick = onOpenPayment)
+                    SecondaryButton(stringResource(R.string.review_rate_technician), onClick = onRate)
+                } else {
+                    FixoraPrimaryButton(text = stringResource(R.string.review_rate_technician), onClick = onRate)
                 }
                 SecondaryButton(stringResource(R.string.client_request_home), onClick = onHome)
             }

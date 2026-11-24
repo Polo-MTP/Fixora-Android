@@ -26,6 +26,7 @@ fun NavGraphBuilder.serviceRequestScreen(
     onClientResent: (requestId: String) -> Unit,
     onChooseAnother: (categoryId: String?) -> Unit,
     onOpenChat: (requestId: String) -> Unit,
+    onRate: (requestId: String) -> Unit,
 ) {
     composable<ClientRequestRoute> {
         ClientRequestScreen(
@@ -33,8 +34,9 @@ fun NavGraphBuilder.serviceRequestScreen(
             onResent = onClientResent,
             onChooseAnother = onChooseAnother,
             onOpenChat = onOpenChat,
+            onRate = onRate,
         )
     }
-    composable<ServiceRequestRoute> { ServiceRequestScreen(onBack = onBack, onOpenChat = onOpenChat) }
+    composable<ServiceRequestRoute> { ServiceRequestScreen(onBack = onBack, onOpenChat = onOpenChat, onRate = onRate) }
     composable<IncomingRequestRoute> { IncomingRequestScreen(onAccepted = onAccepted, onClose = onBack) }
 }
