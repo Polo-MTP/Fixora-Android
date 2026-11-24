@@ -64,6 +64,7 @@ interface AccountApi {
 data class MeDto(
     @SerialName("personal_data") val personalData: PersonalDataDto? = null,
     @SerialName("photo_url") val photoUrl: String? = null,
+    @SerialName("active_service") val activeService: Boolean = false,
 )
 
 @Serializable

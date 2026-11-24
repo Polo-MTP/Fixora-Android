@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fixora.app.core.network.ApiError
 import com.fixora.app.core.network.ApiResult
+import com.fixora.app.feature.account.data.AccountRepository
 import com.fixora.app.feature.auth.domain.AuthValidator
 import com.fixora.app.feature.auth.domain.FieldError
 import com.fixora.app.feature.auth.ui.FormField
@@ -30,6 +31,8 @@ data class VehicleUiState(
     val notTechnician: Boolean = false,
     /** Ya tiene un vehículo guardado: se puede quitar. */
     val hasVehicle: Boolean = false,
+    /** Hay un servicio en curso: el cliente identifica al técnico por el vehículo (API-55). */
+    val locked: Boolean = false,
     val fields: Map<VehicleField, FormField> = VehicleField.entries.associateWith { FormField() },
     val submitted: Boolean = false,
     val isSaving: Boolean = false,
@@ -53,12 +56,17 @@ data class VehicleUiState(
 @HiltViewModel
 class VehicleViewModel @Inject constructor(
     private val repository: TechnicianProfileRepository,
+    private val accountRepository: AccountRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(VehicleUiState())
     val uiState: StateFlow<VehicleUiState> = _uiState.asStateFlow()
 
     init {
+        viewModelScope.launch {
+            accountRepository.activeService.collect { locked -> _uiState.update { it.copy(locked = locked) } }
+        }
+        viewModelScope.launch { accountRepository.refreshPersonalData() }
         viewModelScope.launch {
             repository.state.collect { state ->
                 _uiState.update { ui ->
@@ -79,6 +87,7 @@ class VehicleViewModel @Inject constructor(
     }
 
     fun onChange(field: VehicleField, value: String) {
+        if (_uiState.value.locked) return
         val cleaned = if (field == VehicleField.Plate) value.uppercase().take(TechnicianProfileRules.PLATE_MAX_LENGTH) else value
         _uiState.update { it.copy(fields = it.fields + (field to it[field].onChange(cleaned)), error = null) }
     }
@@ -87,7 +96,7 @@ class VehicleViewModel @Inject constructor(
 
     fun save() {
         val state = _uiState.updateAndGet { it.copy(submitted = true) }
-        if (!state.isLoaded || !state.isValid || state.isBusy) return
+        if (!state.isLoaded || !state.isValid || state.isBusy || state.locked) return
         _uiState.update { it.copy(isSaving = true, error = null) }
         val vehicle = Vehicle(
             plate = state[VehicleField.Plate].value,
@@ -99,7 +108,7 @@ class VehicleViewModel @Inject constructor(
     }
 
     fun delete() {
-        if (!_uiState.value.hasVehicle || _uiState.value.isBusy) return
+        if (!_uiState.value.hasVehicle || _uiState.value.isBusy || _uiState.value.locked) return
         _uiState.update { it.copy(isDeleting = true, error = null) }
         viewModelScope.launch { finish(repository.deleteVehicle()) { copy(isDeleting = false) } }
     }

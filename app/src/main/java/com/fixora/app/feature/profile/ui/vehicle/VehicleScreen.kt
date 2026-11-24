@@ -28,6 +28,7 @@ import com.fixora.app.core.designsystem.theme.FixoraTheme
 import com.fixora.app.core.designsystem.theme.Slate500
 import com.fixora.app.core.ui.message
 import com.fixora.app.feature.account.ui.components.AccountScaffold
+import com.fixora.app.feature.account.ui.components.ActiveServiceNotice
 import com.fixora.app.feature.account.ui.components.FormErrorText
 import com.fixora.app.feature.account.ui.components.LoadErrorNotice
 import com.fixora.app.feature.auth.ui.components.AuthTextField
@@ -74,6 +75,8 @@ private fun VehicleContent(
             label = stringResource(label),
             placeholder = stringResource(placeholder),
             error = state.errorOf(field).message(),
+            // Con un servicio en curso los datos quedan de solo lectura.
+            onClick = if (state.locked) ({}) else null,
             modifier = modifier,
         )
     }
@@ -85,7 +88,7 @@ private fun VehicleContent(
             FixoraPrimaryButton(
                 text = stringResource(R.string.account_save),
                 onClick = onSave,
-                enabled = state.isLoaded && !state.isDeleting,
+                enabled = state.isLoaded && !state.isDeleting && !state.locked,
                 loading = state.isSaving,
             )
         },
@@ -96,7 +99,11 @@ private fun VehicleContent(
         }
         state.loadError?.takeIf { !state.isLoaded }?.let { LoadErrorNotice(it, onRetry = onRetryLoad) }
 
-        Text(stringResource(R.string.vehicle_hint), style = MaterialTheme.typography.bodySmall, color = Slate500)
+        if (state.locked) {
+            ActiveServiceNotice(stringResource(R.string.active_service_vehicle_locked))
+        } else {
+            Text(stringResource(R.string.vehicle_hint), style = MaterialTheme.typography.bodySmall, color = Slate500)
+        }
         Field(VehicleField.Plate, R.string.vehicle_plate, R.string.vehicle_plate_placeholder)
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Field(VehicleField.Brand, R.string.vehicle_brand, R.string.vehicle_brand_placeholder, Modifier.weight(1f))
@@ -104,7 +111,7 @@ private fun VehicleContent(
         }
         Field(VehicleField.Color, R.string.vehicle_color, R.string.vehicle_color_placeholder)
         state.error?.let { FormErrorText(it.message()) }
-        if (state.hasVehicle) {
+        if (state.hasVehicle && !state.locked) {
             FixoraTextLink(
                 text = stringResource(R.string.vehicle_delete),
                 onClick = { if (!state.isBusy) confirmDelete = true },

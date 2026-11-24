@@ -36,6 +36,7 @@ import com.fixora.app.core.designsystem.theme.FixoraTheme
 import com.fixora.app.core.designsystem.theme.Slate500
 import com.fixora.app.core.ui.message
 import com.fixora.app.feature.account.ui.components.AccountScaffold
+import com.fixora.app.feature.account.ui.components.ActiveServiceNotice
 import com.fixora.app.feature.account.ui.components.FormErrorText
 import com.fixora.app.feature.account.ui.components.LoadErrorNotice
 import com.fixora.app.feature.auth.ui.components.AuthTextField
@@ -119,20 +120,24 @@ private fun TechnicianPhotoContent(
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             ProfilePhoto(model = state.pickedPhoto ?: state.savedPhotoUrl, initials = "", size = 120.dp)
         }
-        FixoraCard {
-            FixoraListRow(
-                icon = R.drawable.ic_photo_camera,
-                title = stringResource(R.string.profile_photo_take),
-                onClick = { if (state.isLoaded && !state.isSaving) onTakePhoto() },
-            )
-            FixoraCardDivider()
-            FixoraListRow(
-                icon = R.drawable.ic_image,
-                title = stringResource(R.string.profile_photo_pick),
-                onClick = { if (state.isLoaded && !state.isSaving) onPickPhoto() },
-            )
+        if (state.photoLocked) {
+            ActiveServiceNotice(stringResource(R.string.active_service_technician_photo_locked))
+        } else {
+            FixoraCard {
+                FixoraListRow(
+                    icon = R.drawable.ic_photo_camera,
+                    title = stringResource(R.string.profile_photo_take),
+                    onClick = { if (state.isLoaded && !state.isSaving) onTakePhoto() },
+                )
+                FixoraCardDivider()
+                FixoraListRow(
+                    icon = R.drawable.ic_image,
+                    title = stringResource(R.string.profile_photo_pick),
+                    onClick = { if (state.isLoaded && !state.isSaving) onPickPhoto() },
+                )
+            }
+            Text(stringResource(R.string.profile_photo_hint), style = MaterialTheme.typography.labelSmall, color = Slate500)
         }
-        Text(stringResource(R.string.profile_photo_hint), style = MaterialTheme.typography.labelSmall, color = Slate500)
         if (state.photoUnreadable) FormErrorText(stringResource(R.string.profile_photo_unreadable))
 
         AuthTextField(
