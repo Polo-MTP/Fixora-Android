@@ -654,6 +654,25 @@
     <string name="trip_finish_text">Al finalizar, el cliente verá el servicio como terminado.</string>
     <string name="trip_finish_confirm">Finalizar</string>
     <string name="trip_finish_cancel">Todavía no</string>
+    <!-- ANDROID-21: el técnico cancela un servicio ya aceptado -->
+    <string name="trip_cancel_open">Cancelar servicio</string>
+    <string name="trip_cancel_title">Cancelar servicio</string>
+    <string name="trip_cancel_hint">El cliente verá el motivo. Cancela solo si de verdad no puedes atender.</string>
+    <string name="trip_cancel_reason">Motivo</string>
+    <string name="trip_cancel_reason_placeholder">Por ejemplo: se ponchó una llanta y no llego a tiempo</string>
+    <string name="trip_cancel_reason_required">Escribe por qué cancelas.</string>
+    <string name="trip_cancel_evidence">Evidencia (opcional)</string>
+    <string name="trip_cancel_evidence_hint">Hasta %1$d fotos, PDF o videos MP4 de máximo 25 MB.</string>
+    <string name="trip_cancel_take_photo">Tomar foto</string>
+    <string name="trip_cancel_pick_file">Elegir archivo</string>
+    <string name="trip_cancel_remove_evidence">Quitar %1$s</string>
+    <string name="trip_cancel_evidence_wrong_type">Ese archivo no se puede adjuntar. Elige una foto JPG, PNG o WebP, un PDF o un video MP4.</string>
+    <string name="trip_cancel_evidence_too_large">El archivo pesa más de 25 MB. Elige uno más ligero.</string>
+    <string name="trip_cancel_evidence_unreadable">No se pudo leer el archivo. Intenta con otro.</string>
+    <string name="trip_cancel_penalty_title">Sin evidencia puede haber una penalización</string>
+    <string name="trip_cancel_penalty_text">Si no puedes atender por algo ajeno a ti, como una falla del vehículo o un accidente, adjunta una foto o un archivo que lo muestre.</string>
+    <string name="trip_cancel_confirm">Cancelar servicio</string>
+    <string name="trip_cancel_done">Cancelaste el servicio. Se le avisó al cliente.</string>
     <string name="trip_summary_title">Servicio finalizado</string>
     <string name="trip_summary_subtitle">Solicitud #%1$s</string>
     <string name="trip_summary_address">Domicilio</string>

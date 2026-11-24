@@ -3,6 +3,7 @@ package com.fixora.app.feature.servicerequest.data
 import com.fixora.app.core.network.ApiResult
 import com.fixora.app.core.network.safeApiCall
 import com.fixora.app.feature.availability.location.Coordinates
+import com.fixora.app.feature.servicerequest.domain.CancelRules
 import com.fixora.app.feature.servicerequest.domain.ServiceRequest
 import com.fixora.app.feature.servicerequest.domain.parseApiInstant
 import dagger.Module
@@ -10,6 +11,9 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.time.Instant
 
 /** Ruta al cliente con lo que falta para llegar. */
@@ -33,6 +37,12 @@ interface TripRepository {
 
     /** La API pide dónde está el técnico al salir, al llegar y al terminar. */
     suspend fun advance(id: String, step: TripStep, position: Coordinates): ApiResult<Unit>
+
+    /** Sube una evidencia de la cancelación y devuelve su llave (ANDROID-21). */
+    suspend fun uploadEvidence(name: String, mimeType: String, bytes: ByteArray): ApiResult<String>
+
+    /** El técnico cancela ya aceptada: el motivo es obligatorio y la evidencia, opcional. */
+    suspend fun cancel(id: String, reason: String, evidenceKeys: List<String>): ApiResult<Unit>
 }
 
 class RemoteTripRepository(
@@ -63,6 +73,21 @@ class RemoteTripRepository(
 
     override suspend fun advance(id: String, step: TripStep, position: Coordinates) = safeApiCall(json) {
         api.changeStatus(id, StatusChangeRequest(step.apiValue, position.latitude, position.longitude))
+    }
+
+    override suspend fun uploadEvidence(name: String, mimeType: String, bytes: ByteArray) = safeApiCall(json) {
+        // La API revisa la extensión: el nombre siempre lleva la que corresponde al tipo.
+        val fileName = "evidencia.${CancelRules.extensionFor(mimeType)}"
+        val part = MultipartBody.Part.createFormData("file", fileName, bytes.toRequestBody(mimeType.toMediaType()))
+        api.uploadEvidence(EvidencesCategory, part).data.fileKey
+    }
+
+    override suspend fun cancel(id: String, reason: String, evidenceKeys: List<String>) = safeApiCall(json) {
+        api.cancel(id, CancelRequest(reason = reason, evidenceKeys = evidenceKeys.takeIf { it.isNotEmpty() }))
+    }
+
+    private companion object {
+        val EvidencesCategory = "evidences".toRequestBody("text/plain".toMediaType())
     }
 }
 

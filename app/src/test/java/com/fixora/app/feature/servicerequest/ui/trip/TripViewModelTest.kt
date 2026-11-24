@@ -15,10 +15,13 @@ import com.fixora.app.feature.payment.domain.PaymentStatus
 import com.fixora.app.feature.payment.domain.PaymentSummary
 import com.fixora.app.feature.payment.domain.PriceAdjustment
 import com.fixora.app.feature.payment.ui.AdjustmentDraft
+import com.fixora.app.feature.servicerequest.data.EvidenceProblem
+import com.fixora.app.feature.servicerequest.data.EvidenceReadResult
 import com.fixora.app.feature.servicerequest.data.TripRepository
 import com.fixora.app.feature.servicerequest.data.TripRoute
 import com.fixora.app.feature.servicerequest.data.TripStep
 import com.fixora.app.feature.servicerequest.data.TripTracking
+import com.fixora.app.feature.servicerequest.domain.CancelRules
 import com.fixora.app.feature.servicerequest.domain.RequestStatus
 import com.fixora.app.feature.servicerequest.domain.ServiceRequest
 import com.fixora.app.feature.tracking.service.TripTrackingController
@@ -75,6 +78,23 @@ class TripViewModelTest {
                 TripStep.Arrive -> RequestStatus.Arrived
                 TripStep.Finish -> RequestStatus.Completed
             }
+            return ApiResult.Success(Unit)
+        }
+
+        val uploads = mutableListOf<String>()
+        /** Nombres de archivo cuya subida falla. */
+        val failingUploads = mutableSetOf<String>()
+        val cancels = mutableListOf<Pair<String, List<String>>>()
+        var cancelError: ApiError? = null
+        override suspend fun uploadEvidence(name: String, mimeType: String, bytes: ByteArray): ApiResult<String> {
+            uploads += name
+            if (name in failingUploads) return ApiResult.Failure(ApiError.NoConnection)
+            return ApiResult.Success("evidences/7/$name")
+        }
+        override suspend fun cancel(id: String, reason: String, evidenceKeys: List<String>): ApiResult<Unit> {
+            cancels += reason to evidenceKeys
+            cancelError?.let { return ApiResult.Failure(it) }
+            status = RequestStatus.Canceled
             return ApiResult.Success(Unit)
         }
     }
@@ -137,7 +157,9 @@ class TripViewModelTest {
 
     private fun create(status: RequestStatus) {
         repository = FakeRepository(status)
-        viewModel = TripViewModel(SavedStateHandle(mapOf("requestId" to "15")), repository, location, trip, payments)
+        viewModel = TripViewModel(SavedStateHandle(mapOf("requestId" to "15")), repository, location, trip, payments) {
+            error("En las pruebas la evidencia se agrega con addEvidence")
+        }
         scheduler.runCurrent()
     }
 
@@ -345,5 +367,142 @@ class TripViewModelTest {
         repository.summary = PaymentSummary("300.00", "0.00", "300.00", "300.00", true)
         scheduler.advanceTimeBy(TripViewModel.WATCH_INTERVAL_MS + 1)
         scheduler.runCurrent()
+    }
+
+    // ANDROID-21: cancelar con evidencia.
+
+    private fun photo(name: String) = EvidenceReadResult.Ready(name, "image/jpeg", byteArrayOf(1, 2, 3))
+
+    private fun addEvidence(result: EvidenceReadResult) {
+        viewModel.addEvidence { result }
+        scheduler.runCurrent()
+    }
+
+    @Test
+    fun onlyAnAcceptedServiceThatHasNotEndedCanBeCanceled() {
+        for (status in listOf(RequestStatus.Accepted, RequestStatus.OnTheWay, RequestStatus.Arrived)) {
+            create(status)
+            assertTrue(status.name, state.canCancel)
+        }
+        create(RequestStatus.Completed)
+        assertFalse(state.canCancel)
+        viewModel.openCancel()
+        assertFalse(state.showCancelSheet)
+    }
+
+    @Test
+    fun withoutAReasonItIsNotCanceled() {
+        create(RequestStatus.OnTheWay)
+        viewModel.openCancel()
+
+        viewModel.confirmCancel()
+        scheduler.runCurrent()
+
+        assertTrue(state.cancelForm.reasonMissing)
+        assertTrue(repository.cancels.isEmpty())
+    }
+
+    @Test
+    fun theEvidenceIsUploadedAndItsKeysGoWithTheCancellation() {
+        create(RequestStatus.OnTheWay)
+        viewModel.openCancel()
+        viewModel.onCancelReasonChange("  Se ponchó una llanta  ")
+        addEvidence(photo("llanta.jpg"))
+        addEvidence(EvidenceReadResult.Ready("reporte.pdf", "application/pdf", byteArrayOf(9)))
+        assertFalse(state.cancelForm.withoutEvidence)
+
+        viewModel.confirmCancel()
+        scheduler.runCurrent()
+
+        assertEquals(listOf("llanta.jpg", "reporte.pdf"), repository.uploads)
+        assertEquals(
+            listOf("Se ponchó una llanta" to listOf("evidences/7/llanta.jpg", "evidences/7/reporte.pdf")),
+            repository.cancels,
+        )
+        assertTrue(state.canceled)
+        assertFalse(state.showCancelSheet)
+        // Ya no comparte su ubicación con el cliente.
+        assertEquals(1, trip.stopped)
+    }
+
+    @Test
+    fun withoutEvidenceItWarnsAndStillCancels() {
+        create(RequestStatus.Accepted)
+        viewModel.openCancel()
+        viewModel.onCancelReasonChange("El cliente no contesta")
+        assertTrue(state.cancelForm.withoutEvidence)
+
+        viewModel.confirmCancel()
+        scheduler.runCurrent()
+
+        assertEquals(listOf("El cliente no contesta" to emptyList<String>()), repository.cancels)
+        assertTrue(state.canceled)
+    }
+
+    @Test
+    fun ifAnUploadFailsTheRetryDoesNotUploadAgainWhatWasAlreadyUp() {
+        create(RequestStatus.Arrived)
+        viewModel.openCancel()
+        viewModel.onCancelReasonChange("Falta material")
+        addEvidence(photo("uno.jpg"))
+        addEvidence(photo("dos.jpg"))
+        repository.failingUploads += "dos.jpg"
+
+        viewModel.confirmCancel()
+        scheduler.runCurrent()
+
+        assertEquals(ApiError.NoConnection, state.cancelForm.error)
+        assertTrue(repository.cancels.isEmpty())
+        assertFalse(state.canceled)
+
+        repository.failingUploads.clear()
+        viewModel.confirmCancel()
+        scheduler.runCurrent()
+
+        assertEquals(listOf("uno.jpg", "dos.jpg", "dos.jpg"), repository.uploads)
+        assertEquals(listOf("evidences/7/uno.jpg", "evidences/7/dos.jpg"), repository.cancels.single().second)
+        assertTrue(state.canceled)
+    }
+
+    @Test
+    fun aFileThatCannotBeUsedIsExplainedAndNotAdded() {
+        create(RequestStatus.OnTheWay)
+        viewModel.openCancel()
+
+        addEvidence(EvidenceReadResult.Rejected(EvidenceProblem.TooLarge))
+
+        assertEquals(EvidenceProblem.TooLarge, state.cancelForm.problem)
+        assertTrue(state.cancelForm.evidence.isEmpty())
+    }
+
+    @Test
+    fun noMoreThanFiveFiles() {
+        create(RequestStatus.OnTheWay)
+        viewModel.openCancel()
+        repeat(6) { addEvidence(photo("foto$it.jpg")) }
+
+        assertEquals(CancelRules.MAX_EVIDENCE, state.cancelForm.evidence.size)
+        assertFalse(state.cancelForm.canAddEvidence)
+
+        viewModel.removeEvidence(state.cancelForm.evidence.first().id)
+        assertTrue(state.cancelForm.canAddEvidence)
+    }
+
+    @Test
+    fun ifTheServiceWasNoLongerActiveTheErrorShowsAndItReloads() {
+        create(RequestStatus.OnTheWay)
+        viewModel.openCancel()
+        viewModel.onCancelReasonChange("No llego")
+        repository.cancelError = ApiError.Http(409, "INVALID_STATUS_TRANSITION", "La solicitud no se encuentra en un estado que permita cancelación.")
+        repository.status = RequestStatus.Canceled
+        val loadsBefore = repository.requestCalls
+
+        viewModel.confirmCancel()
+        scheduler.runCurrent()
+
+        assertFalse(state.canceled)
+        assertTrue(state.cancelForm.error is ApiError.Http)
+        assertTrue(repository.requestCalls > loadsBefore)
+        assertEquals(RequestStatus.Canceled, state.request?.status)
     }
 }

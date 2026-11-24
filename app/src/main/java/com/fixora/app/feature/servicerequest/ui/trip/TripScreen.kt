@@ -1,9 +1,11 @@
 package com.fixora.app.feature.servicerequest.ui.trip
 
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
@@ -36,6 +38,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -57,12 +60,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.fixora.app.BuildConfig
 import com.fixora.app.R
 import com.fixora.app.core.designsystem.component.FixoraPrimaryButton
+import com.fixora.app.core.designsystem.component.FixoraTextLink
 import com.fixora.app.core.designsystem.theme.ErrorRed
 import com.fixora.app.core.designsystem.theme.Mist200
 import com.fixora.app.core.designsystem.theme.Mist50
@@ -88,9 +93,11 @@ import com.fixora.app.feature.payment.ui.ProposeAdjustmentSheet
 import com.fixora.app.feature.payment.ui.RejectPaymentSheet
 import com.fixora.app.feature.payment.ui.paymentMethodLabel
 import com.fixora.app.feature.servicerequest.data.TripStep
+import com.fixora.app.feature.servicerequest.domain.CancelRules
 import com.fixora.app.feature.servicerequest.domain.RequestStatus
 import com.fixora.app.feature.servicerequest.domain.ServiceRequest
 import com.fixora.app.feature.servicerequest.ui.incoming.IncomingRequestViewModel
+import java.io.File
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
@@ -117,6 +124,23 @@ fun TripScreen(
     LifecycleResumeEffect(Unit) {
         viewModel.onResume()
         onPauseOrDispose { }
+    }
+
+    // Evidencia de la cancelación (ANDROID-21): foto de la cámara o un archivo.
+    var cameraUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+    val takePhoto = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { taken ->
+        if (taken) viewModel.onEvidencePicked(cameraUri)
+    }
+    val pickFile = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        viewModel.onEvidencePicked(uri)
+    }
+    val canceledMessage = stringResource(R.string.trip_cancel_done)
+    val noCameraMessage = stringResource(R.string.profile_photo_no_camera)
+    LaunchedEffect(state.canceled) {
+        if (state.canceled) {
+            Toast.makeText(context, canceledMessage, Toast.LENGTH_LONG).show()
+            onBack()
+        }
     }
 
     val request = state.request
@@ -146,6 +170,7 @@ fun TripScreen(
             onBack = onBack,
             onOpenChat = onOpenChat,
             onProposeAdjustment = viewModel::openAdjustment,
+            onCancel = viewModel::openCancel,
             onAdvance = { if (state.nextStep == TripStep.Finish) confirmingFinish = true else viewModel.advance() },
             onEnableLocation = { permissionLauncher.launch(FusedLocationSource.LOCATION_PERMISSIONS) },
             onOpenSettings = {
@@ -191,6 +216,25 @@ fun TripScreen(
             onSubmit = viewModel::proposeAdjustment,
         )
     }
+    if (state.showCancelSheet) {
+        CancelServiceSheet(
+            form = state.cancelForm,
+            onReasonChange = viewModel::onCancelReasonChange,
+            onTakePhoto = {
+                val uri = newEvidencePhotoUri(context)
+                cameraUri = uri
+                try {
+                    takePhoto.launch(uri)
+                } catch (_: ActivityNotFoundException) {
+                    Toast.makeText(context, noCameraMessage, Toast.LENGTH_SHORT).show()
+                }
+            },
+            onPickFile = { pickFile.launch(CancelRules.EVIDENCE_MIME_TYPES) },
+            onRemoveEvidence = viewModel::removeEvidence,
+            onConfirm = viewModel::confirmCancel,
+            onDismiss = viewModel::dismissCancel,
+        )
+    }
     if (state.showRejectPaymentSheet) {
         RejectPaymentSheet(
             isSaving = state.isSubmitting,
@@ -208,6 +252,7 @@ private fun TripNavigation(
     onBack: () -> Unit,
     onOpenChat: () -> Unit,
     onProposeAdjustment: () -> Unit,
+    onCancel: () -> Unit,
     onAdvance: () -> Unit,
     onEnableLocation: () -> Unit,
     onOpenSettings: () -> Unit,
@@ -327,8 +372,24 @@ private fun TripNavigation(
                     enabled = !(step == TripStep.Finish && state.waitsAdjustmentAnswer),
                 )
             }
+            if (state.canCancel) {
+                FixoraTextLink(
+                    text = stringResource(R.string.trip_cancel_open),
+                    onClick = { if (!state.isAdvancing) onCancel() },
+                    color = ErrorRed,
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                )
+            }
         }
     }
+}
+
+/** Archivo nuevo en la caché para la foto de la cámara; borra los de cancelaciones anteriores. */
+private fun newEvidencePhotoUri(context: Context): Uri {
+    val dir = File(context.cacheDir, "camera_photos").apply { mkdirs() }
+    dir.listFiles()?.filter { it.name.startsWith("cancelacion-") }?.forEach { it.delete() }
+    val file = File(dir, "cancelacion-${System.currentTimeMillis()}.jpg")
+    return FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
 }
 
 private fun destinationTitle(status: RequestStatus): Int = when (status) {

@@ -6,9 +6,13 @@ import com.fixora.app.feature.payment.data.PaymentSummaryDto
 import com.fixora.app.feature.payment.data.PriceAdjustmentDto
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.Path
 
 /** Solicitudes de servicio (API-26 y API-27). */
@@ -32,10 +36,24 @@ interface ServiceRequestApi {
     @GET("service-requests/{id}/tracking")
     suspend fun tracking(@Path("id") id: String): DataResponse<TrackingDto>
 
-    /** El cliente cancela mientras nadie la acepta (sin motivo). */
+    /**
+     * Cancela la solicitud. El cliente, mientras nadie la acepta, sin motivo; después de aceptar, el
+     * técnico con motivo y, si tiene, las llaves de su evidencia (ANDROID-21).
+     */
     @POST("service-requests/{id}/cancel")
     suspend fun cancel(@Path("id") id: String, @Body body: CancelRequest = CancelRequest())
+
+    /** La evidencia de la cancelación se sube antes en la categoría «evidences». */
+    @Multipart
+    @POST("files/upload")
+    suspend fun uploadEvidence(
+        @Part("category") category: RequestBody,
+        @Part file: MultipartBody.Part,
+    ): DataResponse<UploadedEvidenceDto>
 }
+
+@Serializable
+data class UploadedEvidenceDto(@SerialName("file_key") val fileKey: String)
 
 @Serializable
 data class StatusChangeRequest(val status: String, val latitude: Double, val longitude: Double)
@@ -60,7 +78,10 @@ data class RouteEtaDto(
 data class LineStringDto(val coordinates: List<List<Double>> = emptyList())
 
 @Serializable
-data class CancelRequest(val reason: String? = null)
+data class CancelRequest(
+    val reason: String? = null,
+    @SerialName("evidence_keys") val evidenceKeys: List<String>? = null,
+)
 
 @Serializable
 data class AcceptRequest(@SerialName("employee_id") val employeeId: String)
