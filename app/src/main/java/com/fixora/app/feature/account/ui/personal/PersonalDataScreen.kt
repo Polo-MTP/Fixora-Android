@@ -25,6 +25,7 @@ import com.fixora.app.core.designsystem.theme.FixoraTheme
 import com.fixora.app.core.designsystem.theme.Slate500
 import com.fixora.app.core.ui.message
 import com.fixora.app.feature.account.ui.components.AccountScaffold
+import com.fixora.app.feature.account.ui.components.ActiveServiceNotice
 import com.fixora.app.feature.account.ui.components.FormErrorText
 import com.fixora.app.feature.account.ui.components.LoadErrorNotice
 import com.fixora.app.feature.auth.ui.FormField
@@ -96,6 +97,9 @@ private fun PersonalDataContent(
         },
     ) {
         state.loadError?.takeIf { !state.isLoaded }?.let { LoadErrorNotice(it, onRetry = onRetryLoad) }
+        if (state.nameLocked) ActiveServiceNotice(stringResource(R.string.active_service_name_locked))
+        // Con un servicio en curso el nombre queda de solo lectura, igual que el correo.
+        val nameReadOnly: (() -> Unit)? = if (state.nameLocked) ({}) else null
         AuthTextField(
             value = state.name.value,
             onValueChange = onNameChange,
@@ -103,6 +107,7 @@ private fun PersonalDataContent(
             label = stringResource(R.string.personal_name),
             placeholder = stringResource(R.string.personal_name_placeholder),
             error = state.nameError.message(),
+            onClick = nameReadOnly,
         )
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             AuthTextField(
@@ -112,6 +117,7 @@ private fun PersonalDataContent(
                 label = stringResource(R.string.personal_lastname_p),
                 placeholder = stringResource(R.string.personal_lastname_p_placeholder),
                 error = state.lastNamePError.message(),
+                onClick = nameReadOnly,
                 modifier = Modifier.weight(1f),
             )
             AuthTextField(
@@ -119,6 +125,7 @@ private fun PersonalDataContent(
                 onValueChange = onLastNameMChange,
                 label = stringResource(R.string.personal_lastname_m),
                 placeholder = stringResource(R.string.personal_lastname_m_placeholder),
+                onClick = nameReadOnly,
                 modifier = Modifier.weight(1f),
             )
         }

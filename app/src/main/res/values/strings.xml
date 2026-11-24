@@ -143,6 +143,11 @@
     <string name="personal_data_title">Datos personales</string>
     <string name="personal_data_email_hint">El correo es con el que inicias sesión y no se puede cambiar aquí.</string>
     <string name="personal_data_saved">Datos actualizados</string>
+    <!-- API-55: datos que no se cambian con un servicio en curso -->
+    <string name="active_service_name_locked">Tienes un servicio en curso. Tu nombre no se puede cambiar hasta que termine; el teléfono y la fecha de nacimiento sí.</string>
+    <string name="active_service_photo_locked">Tienes un servicio en curso. Podrás cambiar tu foto cuando termine.</string>
+    <string name="active_service_technician_photo_locked">Tienes un servicio en curso. Podrás cambiar tu foto cuando termine; la biografía sí se puede editar.</string>
+    <string name="active_service_vehicle_locked">Tienes un servicio en curso. El cliente identifica tu vehículo con estos datos: podrás cambiarlos cuando termine.</string>
 
     <!-- Mi cuenta · Direcciones -->
     <string name="addresses_title">Mis direcciones</string>

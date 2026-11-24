@@ -12,6 +12,11 @@ data class PersonalData(
     val phone: String,
     /** Enlace firmado a la foto de perfil, vigente unas horas; null si no tiene. */
     val photoUrl: String? = null,
+    /**
+     * Tiene un servicio aceptado que no ha terminado, como cliente o como técnico (API-55). Mientras
+     * dure, el nombre, la foto y el vehículo no se pueden cambiar: la otra parte ya los vio.
+     */
+    val activeService: Boolean = false,
 ) {
     val fullName get() = listOf(name, lastNameP, lastNameM).filter { it.isNotBlank() }.joinToString(" ")
 }

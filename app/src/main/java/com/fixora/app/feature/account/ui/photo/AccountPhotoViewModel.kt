@@ -29,6 +29,8 @@ data class AccountPhotoUiState(
     val pickedPhoto: Uri? = null,
     /** Se pidió quitar la foto guardada; se quita al guardar. */
     val removeRequested: Boolean = false,
+    /** Hay un servicio en curso: la foto no se puede cambiar (API-55). */
+    val locked: Boolean = false,
     val isSaving: Boolean = false,
     val error: ApiError? = null,
     val photoUnreadable: Boolean = false,
@@ -51,6 +53,11 @@ class AccountPhotoViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            repository.activeService.collect { locked -> _uiState.update { it.copy(locked = locked) } }
+        }
+        // Se vuelve a preguntar: el servicio pudo empezar o terminar desde la última consulta.
+        viewModelScope.launch { repository.refreshPersonalData() }
+        viewModelScope.launch {
             // Solo se lee una vez: después la foto en pantalla es la que elija el usuario.
             val personal = repository.personalData.first()
             _uiState.update { it.copy(isLoaded = true, savedPhotoUrl = personal.photoUrl) }
@@ -65,7 +72,7 @@ class AccountPhotoViewModel @Inject constructor(
 
     fun save() {
         val state = _uiState.value
-        if (!state.isLoaded || state.isSaving) return
+        if (!state.isLoaded || state.isSaving || state.locked) return
         val picked = state.pickedPhoto
         if (picked == null && !state.removeRequested) {
             _uiState.update { it.copy(isSaved = true) }

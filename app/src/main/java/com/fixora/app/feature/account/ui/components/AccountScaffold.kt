@@ -142,6 +142,26 @@ fun LoadErrorNotice(error: ApiError, onRetry: () -> Unit, modifier: Modifier = M
     }
 }
 
+/**
+ * Aviso de que algo no se puede cambiar mientras hay un servicio en curso (API-55): la otra parte
+ * ya vio esos datos al aceptar.
+ */
+@Composable
+fun ActiveServiceNotice(text: String, modifier: Modifier = Modifier) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodySmall,
+        color = Navy800,
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(White)
+            .border(1.dp, Mist200, RoundedCornerShape(14.dp))
+            .padding(horizontal = 14.dp, vertical = 12.dp)
+            .semantics { liveRegion = LiveRegionMode.Polite },
+    )
+}
+
 /** Mensaje de error de la API sobre el botón de guardar. */
 @Composable
 fun FormErrorText(text: String) {

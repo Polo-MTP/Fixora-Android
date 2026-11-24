@@ -19,6 +19,7 @@ import mockwebserver3.RecordedRequest
 import okhttp3.MediaType.Companion.toMediaType
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -100,6 +101,27 @@ class RemoteAccountRepositoryTest {
 
         assertEquals("López", repository.personalData.first().lastNameP)
         assertEquals("https://f/ana.jpg", repository.personalData.first().photoUrl)
+    }
+
+    @Test
+    fun activeService_comesFromTheApiAndSurvivesSavingThePhone() = runBlocking {
+        respond(data("""{"personal_data":{"name":"Ana","lastname_p":"López"},"active_service":true}"""))
+        assertTrue(repository.activeService.first())
+
+        respond(data("""{"name":"Ana","lastname_p":"López","lastname_m":null,"birth_date":null,"phone":"8711234567"}"""))
+        repository.updatePersonalData(PersonalData("Ana", "López", "", null, "8711234567"))
+        assertTrue(repository.activeService.first())
+
+        // Al terminar el servicio, la siguiente consulta lo desbloquea.
+        respond(data("""{"personal_data":{"name":"Ana","lastname_p":"López"},"active_service":false}"""))
+        repository.refreshPersonalData()
+        assertFalse(repository.activeService.first())
+    }
+
+    @Test
+    fun activeService_isFalseWhenTheApiDoesNotSendIt() = runBlocking {
+        respond(meWithPhoto)
+        assertFalse(repository.activeService.first())
     }
 
     @Test

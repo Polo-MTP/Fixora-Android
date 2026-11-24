@@ -5,6 +5,8 @@ import com.fixora.app.core.network.ApiResult
 import com.fixora.app.feature.account.domain.Address
 import com.fixora.app.feature.account.domain.PersonalData
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 
 /**
  * Datos de Mi cuenta (ANDROID-5). [personalData] y [addresses] emiten en cuanto hay datos del
@@ -13,6 +15,12 @@ import kotlinx.coroutines.flow.Flow
 interface AccountRepository {
     val personalData: Flow<PersonalData>
     val addresses: Flow<List<Address>>
+
+    /**
+     * Si hay un servicio en curso (API-55); las pantallas que editan el nombre, la foto o el
+     * vehículo lo usan para bloquearlos. Se actualiza con [refreshPersonalData].
+     */
+    val activeService: Flow<Boolean> get() = personalData.map { it.activeService }.distinctUntilChanged()
 
     /** Error de la última carga de datos personales; null si cargó bien o está cargando. */
     val personalDataError: Flow<ApiError?>

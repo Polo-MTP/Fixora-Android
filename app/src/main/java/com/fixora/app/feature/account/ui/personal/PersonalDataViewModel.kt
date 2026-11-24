@@ -32,6 +32,8 @@ data class PersonalDataUiState(
     val lastNameM: FormField = FormField(),
     val birthDate: LocalDate? = null,
     val phone: FormField = FormField(),
+    /** Hay un servicio en curso: el nombre no se puede cambiar (API-55). */
+    val nameLocked: Boolean = false,
     val submitted: Boolean = false,
     val isSaving: Boolean = false,
     val error: ApiError? = null,
@@ -63,6 +65,11 @@ class PersonalDataViewModel @Inject constructor(
     val uiState: StateFlow<PersonalDataUiState> = _uiState.asStateFlow()
 
     init {
+        viewModelScope.launch {
+            accountRepository.activeService.collect { locked -> _uiState.update { it.copy(nameLocked = locked) } }
+        }
+        // Se vuelve a preguntar: el servicio pudo empezar o terminar desde la última consulta.
+        viewModelScope.launch { accountRepository.refreshPersonalData() }
         // Mientras los datos no lleguen, se muestra el error de la última carga (si hubo).
         viewModelScope.launch {
             accountRepository.personalDataError.collect { error ->
@@ -92,11 +99,15 @@ class PersonalDataViewModel @Inject constructor(
         viewModelScope.launch { accountRepository.refreshPersonalData() }
     }
 
-    fun onNameChange(value: String) = _uiState.update { it.copy(name = it.name.onChange(value), error = null) }
+    fun onNameChange(value: String) = _uiState.update { if (it.nameLocked) it else it.copy(name = it.name.onChange(value), error = null) }
     fun onNameBlur() = _uiState.update { it.copy(name = it.name.onBlur()) }
-    fun onLastNamePChange(value: String) = _uiState.update { it.copy(lastNameP = it.lastNameP.onChange(value), error = null) }
+    fun onLastNamePChange(value: String) = _uiState.update {
+        if (it.nameLocked) it else it.copy(lastNameP = it.lastNameP.onChange(value), error = null)
+    }
     fun onLastNamePBlur() = _uiState.update { it.copy(lastNameP = it.lastNameP.onBlur()) }
-    fun onLastNameMChange(value: String) = _uiState.update { it.copy(lastNameM = it.lastNameM.onChange(value), error = null) }
+    fun onLastNameMChange(value: String) = _uiState.update {
+        if (it.nameLocked) it else it.copy(lastNameM = it.lastNameM.onChange(value), error = null)
+    }
     fun onBirthDateSelected(date: LocalDate) = _uiState.update { it.copy(birthDate = date, error = null) }
     fun onPhoneChange(value: String) = _uiState.update {
         it.copy(phone = it.phone.onChange(value.filter { c -> c in '0'..'9' }.take(AuthValidator.PHONE_LENGTH)), error = null)
