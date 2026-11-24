@@ -47,6 +47,7 @@ import com.fixora.app.feature.availability.location.FusedLocationSource
 import com.fixora.app.feature.home.ui.components.ComingSoonCard
 import com.fixora.app.feature.home.ui.components.TabTitle
 import com.fixora.app.feature.notifications.ui.NotificationBell
+import com.fixora.app.feature.payment.ui.debts.DebtsHomeCard
 
 /**
  * Pestaña Inicio del proveedor: el interruptor En línea / Fuera de línea (ANDROID-9), el aviso si
@@ -56,6 +57,7 @@ import com.fixora.app.feature.notifications.ui.NotificationBell
 @Composable
 fun ProviderHomeTab(
     onOpenNotifications: () -> Unit,
+    onOpenDebts: () -> Unit,
     viewModel: AvailabilityViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -72,6 +74,7 @@ fun ProviderHomeTab(
         onToggle = viewModel::onToggle,
         onRetry = viewModel::refresh,
         bell = { NotificationBell(onClick = onOpenNotifications) },
+        debts = { DebtsHomeCard(asProvider = true, onOpen = onOpenDebts) },
     )
 }
 
@@ -81,6 +84,7 @@ private fun ProviderHomeContent(
     onToggle: (Boolean) -> Unit,
     onRetry: () -> Unit,
     bell: @Composable () -> Unit = {},
+    debts: @Composable () -> Unit = {},
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -95,6 +99,8 @@ private fun ProviderHomeContent(
         }
         if (state.isVisible) AvailabilityCard(state, onToggle, onRetry)
         AlertsSetupCard()
+        // Lo que le deben, como «$580 por cobrar · 2 adeudos» del diseño (ANDROID-25).
+        debts()
         ComingSoonCard(message = stringResource(R.string.provider_home_soon), icon = R.drawable.ic_nav_home)
     }
 }

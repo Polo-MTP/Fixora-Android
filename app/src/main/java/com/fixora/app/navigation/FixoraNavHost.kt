@@ -25,6 +25,8 @@ import com.fixora.app.feature.account.navigation.ChangePasswordRoute
 import com.fixora.app.feature.account.navigation.PersonalDataRoute
 import com.fixora.app.feature.account.navigation.accountScreens
 import com.fixora.app.feature.auth.navigation.ForgotPasswordRoute
+import com.fixora.app.feature.chat.navigation.ChatRoute
+import com.fixora.app.feature.chat.navigation.chatScreen
 import com.fixora.app.feature.auth.navigation.LandingRoute
 import com.fixora.app.feature.auth.navigation.LoginRoute
 import com.fixora.app.feature.auth.navigation.RegisterRoute
@@ -40,6 +42,8 @@ import com.fixora.app.feature.home.navigation.clientHomeScreen
 import com.fixora.app.feature.home.navigation.providerHomeScreen
 import com.fixora.app.feature.notifications.navigation.NotificationsRoute
 import com.fixora.app.feature.notifications.navigation.notificationsScreen
+import com.fixora.app.feature.payment.navigation.DebtsRoute
+import com.fixora.app.feature.payment.navigation.debtsScreen
 import com.fixora.app.feature.portfolio.navigation.AddWorkRoute
 import com.fixora.app.feature.portfolio.navigation.CertificatesRoute
 import com.fixora.app.feature.portfolio.navigation.PortfolioRoute
@@ -135,6 +139,7 @@ fun FixoraNavHost(
         clientHomeScreen(
             onOpenNotifications = { navController.navigate(NotificationsRoute) },
             onEmergency = { navController.navigate(EmergencyRoute) },
+            onOpenDebts = { navController.navigate(DebtsRoute(asProvider = false)) },
             onOpenProvider = { branchId, distanceKm, categoryId ->
                 navController.navigate(ProviderProfileRoute(branchId, distanceKm, categoryId))
             },
@@ -145,6 +150,7 @@ fun FixoraNavHost(
         )
         providerHomeScreen(
             onOpenNotifications = { navController.navigate(NotificationsRoute) },
+            onOpenDebts = { navController.navigate(DebtsRoute(asProvider = true)) },
             onOpenPhoto = { navController.navigate(TechnicianPhotoRoute) },
             onOpenVehicle = { navController.navigate(VehicleRoute) },
             onOpenPortfolio = { navController.navigate(PortfolioRoute) },
@@ -186,6 +192,11 @@ fun FixoraNavHost(
                 }
             },
         )
+        chatScreen(onBack = navController::popBackStack)
+        debtsScreen(
+            onBack = navController::popBackStack,
+            onOpenRequest = { requestId -> navController.navigate(ServiceRequestRoute(requestId).forArea(homeArea)) },
+        )
         notificationsScreen(
             onBack = navController::popBackStack,
             onOpen = { route -> navController.navigate(route.forArea(homeArea)) },
@@ -210,6 +221,7 @@ fun FixoraNavHost(
                     ?.savedStateHandle?.set(MAP_CATEGORY_KEY, categoryId ?: "")
                 navController.popBackStack<ClientHomeRoute>(inclusive = false)
             },
+            onOpenChat = { requestId -> navController.navigate(ChatRoute(requestId)) },
         )
     }
 }
