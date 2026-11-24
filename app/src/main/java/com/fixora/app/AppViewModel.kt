@@ -41,6 +41,9 @@ class AppViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, SessionState.Loading)
 
+    /** Cerrando sesión: se muestra «Cerrando sesión…» encima de todo (ANDROID-44). */
+    val isLoggingOut: StateFlow<Boolean> = sessionRepository.isLoggingOut
+
     // Arranca en true para no mostrar el aviso un instante mientras se consulta la red.
     val isOnline: StateFlow<Boolean> = connectivityObserver.isOnline
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), true)

@@ -1,4 +1,6 @@
 <resources>
+    <!-- ANDROID-44 -->
+    <string name="logging_out">Cerrando sesión…</string>
     <!-- app_name lo define cada flavor en app/build.gradle.kts -->
 
     <!-- Landing -->
