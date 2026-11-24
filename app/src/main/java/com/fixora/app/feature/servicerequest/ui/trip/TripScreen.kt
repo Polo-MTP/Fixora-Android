@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -48,6 +49,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -75,6 +77,16 @@ import com.fixora.app.core.ui.message
 import com.fixora.app.feature.account.ui.components.LoadErrorNotice
 import com.fixora.app.feature.availability.location.FusedLocationSource
 import com.fixora.app.feature.map.domain.MapRules
+import com.fixora.app.feature.payment.domain.MoneyRules
+import com.fixora.app.feature.payment.domain.PaymentMethod
+import com.fixora.app.feature.payment.domain.PaymentStatus
+import com.fixora.app.feature.payment.ui.NoticeTone
+import com.fixora.app.feature.payment.ui.OutlineActionButton
+import com.fixora.app.feature.payment.ui.PaymentNotice
+import com.fixora.app.feature.payment.ui.PriceBreakdownCard
+import com.fixora.app.feature.payment.ui.ProposeAdjustmentSheet
+import com.fixora.app.feature.payment.ui.RejectPaymentSheet
+import com.fixora.app.feature.payment.ui.paymentMethodLabel
 import com.fixora.app.feature.servicerequest.data.TripStep
 import com.fixora.app.feature.servicerequest.domain.RequestStatus
 import com.fixora.app.feature.servicerequest.domain.ServiceRequest
@@ -93,6 +105,7 @@ import java.util.Locale
 @Composable
 fun TripScreen(
     onBack: () -> Unit,
+    onOpenChat: () -> Unit,
     viewModel: TripViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -120,11 +133,19 @@ fun TripScreen(
             if (error != null) LoadErrorNotice(error, onRetry = viewModel::retry)
             else CircularProgressIndicator(color = Navy800, strokeWidth = 2.dp, modifier = Modifier.size(24.dp))
         }
-        request.status == RequestStatus.Completed -> TripSummary(request, onDone = onBack)
+        request.status == RequestStatus.Completed -> TripSummary(
+            state = state,
+            request = request,
+            onDone = onBack,
+            onConfirmPayment = viewModel::confirmPayment,
+            onRejectPayment = viewModel::openRejectPayment,
+        )
         else -> TripNavigation(
             state = state,
             request = request,
             onBack = onBack,
+            onOpenChat = onOpenChat,
+            onProposeAdjustment = viewModel::openAdjustment,
             onAdvance = { if (state.nextStep == TripStep.Finish) confirmingFinish = true else viewModel.advance() },
             onEnableLocation = { permissionLauncher.launch(FusedLocationSource.LOCATION_PERMISSIONS) },
             onOpenSettings = {
@@ -161,6 +182,23 @@ fun TripScreen(
             containerColor = White,
         )
     }
+
+    if (state.showAdjustmentSheet) {
+        ProposeAdjustmentSheet(
+            isSaving = state.isSubmitting,
+            error = state.paymentError,
+            onDismiss = viewModel::dismissAdjustment,
+            onSubmit = viewModel::proposeAdjustment,
+        )
+    }
+    if (state.showRejectPaymentSheet) {
+        RejectPaymentSheet(
+            isSaving = state.isSubmitting,
+            error = state.paymentError,
+            onDismiss = viewModel::dismissRejectPayment,
+            onSubmit = viewModel::rejectPayment,
+        )
+    }
 }
 
 @Composable
@@ -168,6 +206,8 @@ private fun TripNavigation(
     state: TripUiState,
     request: ServiceRequest,
     onBack: () -> Unit,
+    onOpenChat: () -> Unit,
+    onProposeAdjustment: () -> Unit,
     onAdvance: () -> Unit,
     onEnableLocation: () -> Unit,
     onOpenSettings: () -> Unit,
@@ -255,8 +295,18 @@ private fun TripNavigation(
                     .size(width = 40.dp, height = 4.dp)
                     .background(Mist200, CircleShape),
             )
-            Headline(state, request)
-            ClientRow(request)
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier
+                    .heightIn(max = LocalConfiguration.current.screenHeightDp.dp * 0.55f)
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                Headline(state, request)
+                ClientRow(request, onOpenChat)
+                if (request.status == RequestStatus.Arrived) {
+                    PriceSection(state, request, onProposeAdjustment)
+                }
+            }
             if (state.needsLocation) LocationNotice(state.locationDenied, onEnableLocation, onOpenSettings)
             if (state.nextStep == TripStep.Start || state.nextStep == TripStep.Arrive) {
                 OtherAppButton(enabled = request.position != null, onClick = onOtherApp)
@@ -274,6 +324,7 @@ private fun TripNavigation(
                     ),
                     onClick = onAdvance,
                     loading = state.isAdvancing,
+                    enabled = !(step == TripStep.Finish && state.waitsAdjustmentAnswer),
                 )
             }
         }
@@ -335,8 +386,34 @@ private fun Headline(state: TripUiState, request: ServiceRequest) {
     }
 }
 
+/**
+ * En el domicilio (ANDROID-25): cuánto se cobra con los ajustes y el botón para proponer otro.
+ * Mientras el cliente no responda uno, no se puede finalizar.
+ */
 @Composable
-private fun ClientRow(request: ServiceRequest) {
+private fun PriceSection(state: TripUiState, request: ServiceRequest, onProposeAdjustment: () -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        PriceBreakdownCard(request, totalLabel = stringResource(R.string.payment_total_to_charge))
+        val pending = request.pendingAdjustment
+        if (pending != null) {
+            PaymentNotice(
+                icon = R.drawable.ic_schedule,
+                title = stringResource(R.string.trip_adjustment_waiting, MoneyRules.format(pending.amount)),
+                text = stringResource(R.string.trip_adjustment_waiting_hint),
+                tone = NoticeTone.Warning,
+            )
+        } else {
+            OutlineActionButton(
+                text = stringResource(R.string.trip_adjustment_propose),
+                onClick = onProposeAdjustment,
+                enabled = state.canProposeAdjustment,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ClientRow(request: ServiceRequest, onOpenChat: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         HorizontalDivider(color = Mist200)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -360,9 +437,20 @@ private fun ClientRow(request: ServiceRequest) {
                 request.addressReference?.let {
                     Text(stringResource(R.string.trip_reference, it), style = MaterialTheme.typography.bodySmall, color = Slate500)
                 }
+                if (request.categoryName.isNotBlank()) {
+                    Text(request.categoryName, style = MaterialTheme.typography.labelMedium, color = Navy800)
+                }
             }
-            if (request.categoryName.isNotBlank()) {
-                Text(request.categoryName, style = MaterialTheme.typography.labelMedium, color = Navy800)
+            // Chat con el cliente (ANDROID-23).
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(Navy900)
+                    .clickable(role = Role.Button, onClick = onOpenChat),
+            ) {
+                Icon(painterResource(R.drawable.ic_chat), contentDescription = stringResource(R.string.chat_open_client), tint = White, modifier = Modifier.size(20.dp))
             }
         }
         HorizontalDivider(color = Mist200)
@@ -415,9 +503,15 @@ private fun LocationNotice(denied: Boolean, onEnable: () -> Unit, onOpenSettings
     }
 }
 
-/** Al finalizar: lo que se hizo, para quién y cuánto tardó. */
+/** Al finalizar: el cobro (ANDROID-25), lo que se hizo, para quién y cuánto tardó. */
 @Composable
-private fun TripSummary(request: ServiceRequest, onDone: () -> Unit) {
+private fun TripSummary(
+    state: TripUiState,
+    request: ServiceRequest,
+    onDone: () -> Unit,
+    onConfirmPayment: () -> Unit,
+    onRejectPayment: () -> Unit,
+) {
     SystemBarsAppearance(lightIcons = false)
     Column(
         Modifier
@@ -455,14 +549,13 @@ private fun TripSummary(request: ServiceRequest, onDone: () -> Unit) {
                 )
             }
 
+            ChargeSection(state, request, onConfirmPayment, onRejectPayment)
+
             SummaryCard {
                 SummaryRow(R.drawable.ic_service_general, R.string.request_service, request.categoryName.ifBlank { "—" })
                 SummaryRow(R.drawable.ic_nav_account, R.string.request_client, request.clientName.ifBlank { "—" })
                 val address = listOfNotNull(request.street, request.zone.takeIf { it.isNotBlank() }).joinToString(", ")
                 if (address.isNotEmpty()) SummaryRow(R.drawable.ic_place, R.string.trip_summary_address, address)
-                (request.agreedPrice ?: request.basePrice)?.let {
-                    SummaryRow(R.drawable.ic_tune, R.string.request_base_price, "$" + it.removeSuffix(".00"))
-                }
             }
 
             SummaryCard {
@@ -478,6 +571,79 @@ private fun TripSummary(request: ServiceRequest, onDone: () -> Unit) {
             onClick = onDone,
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
         )
+    }
+}
+
+/**
+ * Cobro del servicio: el desglose y en qué va el pago. El cliente registra lo que pagó y aquí el
+ * técnico confirma que lo recibió o dice que no le llegó; lo que falte queda como adeudo.
+ */
+@Composable
+private fun ChargeSection(
+    state: TripUiState,
+    request: ServiceRequest,
+    onConfirmPayment: () -> Unit,
+    onRejectPayment: () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(
+            stringResource(R.string.trip_charge_title).uppercase(),
+            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+            color = Slate500,
+        )
+        PriceBreakdownCard(request, totalLabel = stringResource(R.string.payment_total_to_charge))
+        val summary = request.paymentSummary
+        val paidCents = MoneyRules.toCents(summary?.paid)
+        val pending = request.pendingPayment
+        when {
+            pending != null -> PaymentNotice(
+                icon = R.drawable.ic_payments,
+                title = stringResource(R.string.trip_payment_registered, MoneyRules.format(pending.amount)),
+                text = listOfNotNull(
+                    paymentMethodLabel(pending.method),
+                    pending.reference?.takeIf { pending.method == PaymentMethod.Transfer }?.let { stringResource(R.string.payment_reference_value, it) },
+                ).joinToString(" · "),
+                tone = NoticeTone.Warning,
+            ) {
+                FixoraPrimaryButton(
+                    text = stringResource(R.string.trip_payment_received),
+                    onClick = onConfirmPayment,
+                    loading = state.isSubmitting && !state.showRejectPaymentSheet,
+                )
+                OutlineActionButton(
+                    text = stringResource(R.string.trip_payment_not_received),
+                    onClick = onRejectPayment,
+                    enabled = !state.isSubmitting,
+                    color = ErrorRed,
+                )
+            }
+            summary?.isPaid == true -> PaymentNotice(
+                icon = R.drawable.ic_check_circle,
+                title = stringResource(R.string.trip_payment_paid),
+                text = stringResource(R.string.trip_payment_paid_hint, MoneyRules.format(paidCents)),
+                tone = NoticeTone.Success,
+            )
+            else -> PaymentNotice(
+                icon = R.drawable.ic_schedule,
+                title = stringResource(R.string.trip_payment_waiting, MoneyRules.format(request.balanceCents)),
+                text = if (paidCents > 0) {
+                    stringResource(R.string.trip_payment_waiting_partial, MoneyRules.format(paidCents))
+                } else {
+                    stringResource(R.string.trip_payment_waiting_hint)
+                },
+            )
+        }
+        val lastFailed = request.payments.lastOrNull()?.takeIf { it.status == PaymentStatus.Failed && pending == null }
+        lastFailed?.let {
+            Text(
+                stringResource(R.string.trip_payment_last_failed, MoneyRules.format(it.amount)),
+                style = MaterialTheme.typography.bodySmall,
+                color = Slate500,
+            )
+        }
+        if (!state.showRejectPaymentSheet) {
+            state.paymentError?.let { Text(it.message(), style = MaterialTheme.typography.bodySmall, color = ErrorRed) }
+        }
     }
 }
 
