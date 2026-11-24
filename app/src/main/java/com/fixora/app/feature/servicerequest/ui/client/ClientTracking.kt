@@ -69,10 +69,9 @@ import com.fixora.app.feature.payment.ui.PaymentSheet
 import com.fixora.app.feature.servicerequest.domain.CancelRules
 import com.fixora.app.feature.servicerequest.domain.RequestStatus
 import com.fixora.app.feature.servicerequest.domain.ServiceRequest
+import com.fixora.app.feature.servicerequest.ui.trip.RouteEta
 import com.fixora.app.feature.servicerequest.ui.trip.TripMap
 import com.fixora.app.feature.servicerequest.ui.trip.formatDateTime
-import com.fixora.app.feature.servicerequest.ui.trip.formatKm
-import com.fixora.app.feature.servicerequest.ui.trip.formatTime
 
 /**
  * Seguimiento del cliente (ANDROID-22), en lugar de «Solicitud aceptada»: el mapa con el técnico
@@ -217,21 +216,7 @@ private fun TrackingHeadline(state: ClientRequestUiState, request: ServiceReques
         val route = state.route
         when (request.status) {
             RequestStatus.OnTheWay -> if (route != null) {
-                Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        stringResource(R.string.trip_minutes, (route.durationSeconds / 60).coerceAtLeast(1)),
-                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Navy900,
-                    )
-                    val km = formatKm(route.distanceMeters / 1000.0)
-                    Text(
-                        route.arrivesAt?.let { stringResource(R.string.trip_km_arrival, km, formatTime(it)) }
-                            ?: stringResource(R.string.trip_km, km),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Slate500,
-                        modifier = Modifier.padding(bottom = 4.dp),
-                    )
-                }
+                RouteEta(route)
                 Text(stringResource(R.string.client_tracking_on_the_way), style = MaterialTheme.typography.bodyMedium, color = Slate500)
             } else {
                 Text(stringResource(R.string.trip_calculating), style = MaterialTheme.typography.titleLarge, color = Navy900)

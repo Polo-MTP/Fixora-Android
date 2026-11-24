@@ -19,6 +19,11 @@ data class TripRoute(
     val durationSeconds: Long,
     val distanceMeters: Long,
     val arrivesAt: Instant?,
+    /**
+     * El servidor de rutas no respondió y la API estimó en línea recta: [path] son solo los dos
+     * extremos y el tiempo es aproximado. Se sigue dibujando hasta tener un servidor propio.
+     */
+    val approximate: Boolean = false,
 )
 
 data class TripTracking(val technician: Coordinates?, val route: TripRoute?)
@@ -76,6 +81,7 @@ internal fun TrackingDto.toTripTracking() = TripTracking(
             durationSeconds = eta.durationSeconds.toLong(),
             distanceMeters = eta.distanceMeters.toLong(),
             arrivesAt = parseApiInstant(eta.etaTimestamp),
+            approximate = eta.isFallback,
         )
     },
 )

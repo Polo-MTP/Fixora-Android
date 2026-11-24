@@ -683,6 +683,9 @@
     <string name="trip_at">Estás en</string>
     <string name="trip_emergency">Emergencia</string>
     <string name="trip_minutes">%1$d min</string>
+    <string name="trip_minutes_approximate">≈ %1$d min</string>
+    <string name="trip_chat_button">Mensaje</string>
+    <string name="trip_route_approximate">Tiempo y ruta aproximados: por ahora no se pudo calcular el camino por calles.</string>
     <string name="trip_km">%1$s km</string>
     <string name="trip_km_arrival">%1$s km · Llegada %2$s</string>
     <string name="trip_calculating">Calculando la ruta…</string>

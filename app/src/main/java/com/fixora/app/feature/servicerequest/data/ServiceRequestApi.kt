@@ -71,6 +71,8 @@ data class RouteEtaDto(
     @SerialName("distance_meters") val distanceMeters: Double = 0.0,
     @SerialName("eta_timestamp") val etaTimestamp: String? = null,
     val geometry: LineStringDto? = null,
+    /** El servidor de rutas no respondió: la API estimó en línea recta (ANDROID-43). */
+    @SerialName("is_fallback") val isFallback: Boolean = false,
 )
 
 /** GeoJSON LineString: cada punto es [longitud, latitud]. */
