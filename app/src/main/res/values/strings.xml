@@ -616,6 +616,17 @@
     <string name="client_request_step_on_the_way_now">El técnico va en camino.</string>
     <string name="client_request_step_arrived_now">El técnico llegó a tu domicilio.</string>
     <string name="client_request_step_scheduled_now">Tu cita quedó agendada.</string>
+    <!-- ANDROID-22: seguimiento del técnico -->
+    <string name="client_tracking_preparing">Tu técnico se prepara para salir. Aquí lo verás en camino.</string>
+    <string name="client_tracking_scheduled_for">Tu cita es el %1$s. Aquí verás al técnico cuando salga.</string>
+    <string name="client_tracking_on_the_way">Tu técnico va en camino.</string>
+    <string name="client_tracking_arrived_title">Tu técnico llegó</string>
+    <string name="client_tracking_arrived_text">Ya está en tu domicilio.</string>
+    <string name="client_tracking_cancel">Cancelar servicio</string>
+    <string name="client_tracking_cancel_title">Cancelar servicio</string>
+    <string name="client_tracking_cancel_hint">El técnico ya aceptó y verá el motivo.</string>
+    <string name="client_tracking_cancel_placeholder">Por ejemplo: ya se resolvió el problema</string>
+    <string name="client_tracking_cancel_confirm">Cancelar servicio</string>
     <string name="client_request_call">Llamar al negocio</string>
     <string name="client_request_home">Volver al inicio</string>
 

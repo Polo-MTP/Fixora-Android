@@ -15,6 +15,8 @@ import com.fixora.app.feature.payment.domain.PaymentSummary
 import com.fixora.app.feature.payment.domain.PriceAdjustment
 import com.fixora.app.feature.payment.ui.PaymentDraft
 import com.fixora.app.feature.servicerequest.data.ClientRequestRepository
+import com.fixora.app.feature.servicerequest.data.TripRoute
+import com.fixora.app.feature.servicerequest.data.TripTracking
 import com.fixora.app.feature.servicerequest.domain.RequestStatus
 import com.fixora.app.feature.servicerequest.domain.ServiceRequest
 import kotlinx.coroutines.Dispatchers
@@ -46,8 +48,16 @@ class ClientRequestViewModelTest {
             loads++
             return ApiResult.Success(request)
         }
-        override suspend fun cancel(id: String): ApiResult<Unit> {
+        val cancelReasons = mutableListOf<String?>()
+        var trackingCalls = 0
+        var tracking = TripTracking(null, null)
+        override suspend fun tracking(id: String): ApiResult<TripTracking> {
+            trackingCalls++
+            return ApiResult.Success(tracking)
+        }
+        override suspend fun cancel(id: String, reason: String?): ApiResult<Unit> {
             canceled++
+            cancelReasons += reason
             cancelError?.let { return ApiResult.Failure(it) }
             request = request.copy(status = RequestStatus.Canceled)
             return ApiResult.Success(Unit)
@@ -303,5 +313,87 @@ class ClientRequestViewModelTest {
         scheduler.advanceTimeBy(ClientRequestViewModel.POLL_INTERVAL_MS * 3)
         scheduler.runCurrent()
         assertEquals(loads, repository.loads)
+    }
+
+    // ANDROID-22: seguimiento del técnico.
+
+    private val technicianHere = Coordinates(25.58, -103.36)
+    private val route = TripRoute(listOf(technicianHere, Coordinates(25.59, -103.35)), durationSeconds = 540, distanceMeters = 2300, arrivesAt = null)
+
+    @Test
+    fun onTheWayItShowsWhereTheTechnicianGoesAndKeepsAsking() {
+        create(request(status = RequestStatus.Accepted))
+        assertEquals(0, repository.trackingCalls)
+        repository.tracking = TripTracking(technicianHere, route)
+
+        repository.request = request(status = RequestStatus.OnTheWay)
+        scheduler.advanceTimeBy(ClientRequestViewModel.POLL_INTERVAL_MS + 1)
+        scheduler.runCurrent()
+
+        assertEquals(technicianHere, state.technicianPosition)
+        assertEquals(route, state.route)
+        val calls = repository.trackingCalls
+        scheduler.advanceTimeBy(ClientRequestViewModel.FOLLOW_INTERVAL_MS)
+        scheduler.runCurrent()
+        assertTrue(repository.trackingCalls > calls)
+    }
+
+    @Test
+    fun whenTheTechnicianArrivesTheAlertSoundsOnceAndTheRouteGoesAway() {
+        create(request(status = RequestStatus.OnTheWay))
+        repository.tracking = TripTracking(technicianHere, route)
+        scheduler.advanceTimeBy(ClientRequestViewModel.FOLLOW_INTERVAL_MS + 1)
+        scheduler.runCurrent()
+        assertEquals(0, state.arrivalAlerts)
+
+        repository.request = request(status = RequestStatus.Arrived)
+        scheduler.advanceTimeBy(ClientRequestViewModel.POLL_INTERVAL_MS + 1)
+        scheduler.runCurrent()
+        assertEquals(1, state.arrivalAlerts)
+        assertEquals(null, state.route)
+
+        // Seguir consultando ya en el domicilio no lo repite.
+        scheduler.advanceTimeBy(ClientRequestViewModel.POLL_INTERVAL_MS + 1)
+        scheduler.runCurrent()
+        assertEquals(1, state.arrivalAlerts)
+    }
+
+    @Test
+    fun openingWithTheTechnicianAlreadyThereDoesNotSound() {
+        create(request(status = RequestStatus.Arrived))
+
+        assertEquals(0, state.arrivalAlerts)
+    }
+
+    @Test
+    fun afterAcceptingCancelingAsksForTheReason() {
+        create(request(status = RequestStatus.OnTheWay))
+        viewModel.cancel()
+        scheduler.runCurrent()
+        // El botón de espera no cancela una aceptada.
+        assertEquals(0, repository.canceled)
+
+        viewModel.openCancelAccepted()
+        assertTrue(state.showCancelSheet)
+        viewModel.cancelAccepted("   ")
+        scheduler.runCurrent()
+        assertEquals(0, repository.canceled)
+
+        viewModel.cancelAccepted("  Ya se resolvió  ")
+        scheduler.runCurrent()
+
+        assertEquals(listOf<String?>("Ya se resolvió"), repository.cancelReasons)
+        assertEquals(ClientPhase.Canceled, state.phase)
+        assertFalse(state.showCancelSheet)
+    }
+
+    @Test
+    fun whileWaitingItCancelsWithoutAReason() {
+        create(request())
+
+        viewModel.cancel()
+        scheduler.runCurrent()
+
+        assertEquals(listOf<String?>(null), repository.cancelReasons)
     }
 }

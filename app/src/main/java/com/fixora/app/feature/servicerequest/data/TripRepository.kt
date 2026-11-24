@@ -53,23 +53,7 @@ class RemoteTripRepository(
 
     override suspend fun request(id: String) = requests.request(id)
 
-    override suspend fun tracking(id: String): ApiResult<TripTracking> = safeApiCall(json) {
-        val data = api.tracking(id).data
-        TripTracking(
-            technician = data.technicianLocation?.let { p -> p.latitude?.let { lat -> p.longitude?.let { Coordinates(lat, it) } } },
-            route = data.routeEta?.let { eta ->
-                TripRoute(
-                    // GeoJSON va [longitud, latitud].
-                    path = eta.geometry?.coordinates.orEmpty().mapNotNull { point ->
-                        if (point.size >= 2) Coordinates(point[1], point[0]) else null
-                    },
-                    durationSeconds = eta.durationSeconds.toLong(),
-                    distanceMeters = eta.distanceMeters.toLong(),
-                    arrivesAt = parseApiInstant(eta.etaTimestamp),
-                )
-            },
-        )
-    }
+    override suspend fun tracking(id: String): ApiResult<TripTracking> = safeApiCall(json) { api.tracking(id).data.toTripTracking() }
 
     override suspend fun advance(id: String, step: TripStep, position: Coordinates) = safeApiCall(json) {
         api.changeStatus(id, StatusChangeRequest(step.apiValue, position.latitude, position.longitude))
@@ -90,6 +74,22 @@ class RemoteTripRepository(
         val EvidencesCategory = "evidences".toRequestBody("text/plain".toMediaType())
     }
 }
+
+/** Posición del técnico y ruta; la usan el técnico (ANDROID-20) y el cliente (ANDROID-22). */
+internal fun TrackingDto.toTripTracking() = TripTracking(
+    technician = technicianLocation?.let { p -> p.latitude?.let { lat -> p.longitude?.let { Coordinates(lat, it) } } },
+    route = routeEta?.let { eta ->
+        TripRoute(
+            // GeoJSON va [longitud, latitud].
+            path = eta.geometry?.coordinates.orEmpty().mapNotNull { point ->
+                if (point.size >= 2) Coordinates(point[1], point[0]) else null
+            },
+            durationSeconds = eta.durationSeconds.toLong(),
+            distanceMeters = eta.distanceMeters.toLong(),
+            arrivesAt = parseApiInstant(eta.etaTimestamp),
+        )
+    },
+)
 
 @Module
 @InstallIn(SingletonComponent::class)

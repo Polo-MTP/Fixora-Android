@@ -18,8 +18,13 @@ import kotlinx.serialization.json.Json
 interface ClientRequestRepository {
     suspend fun request(id: String): ApiResult<ServiceRequest>
 
-    /** Solo mientras nadie la acepta. */
-    suspend fun cancel(id: String): ApiResult<Unit>
+    /**
+     * Mientras nadie la acepta se cancela sin motivo; ya aceptada, la API pide [reason] (ANDROID-22).
+     */
+    suspend fun cancel(id: String, reason: String? = null): ApiResult<Unit>
+
+    /** Dónde va el técnico y cuánto le falta; solo mientras va en camino (ANDROID-22). */
+    suspend fun tracking(id: String): ApiResult<TripTracking>
 
     /**
      * La manda otra vez igual (mismo negocio, servicio, descripción, dirección y fotos; o la misma
@@ -38,7 +43,9 @@ class RemoteClientRequestRepository(
 
     override suspend fun request(id: String) = requests.request(id)
 
-    override suspend fun cancel(id: String) = safeApiCall(json) { api.cancel(id) }
+    override suspend fun cancel(id: String, reason: String?) = safeApiCall(json) { api.cancel(id, CancelRequest(reason = reason)) }
+
+    override suspend fun tracking(id: String) = safeApiCall(json) { api.tracking(id).data.toTripTracking() }
 
     override suspend fun resend(request: ServiceRequest, clientUuid: String): ApiResult<String> {
         val categoryId = request.categoryId ?: return ApiResult.Failure(ApiError.Unknown)

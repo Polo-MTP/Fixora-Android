@@ -732,14 +732,14 @@ private fun SummaryRow(@DrawableRes icon: Int, label: Int, value: String) {
 private fun initials(name: String): String =
     name.split(" ").filter { it.isNotBlank() }.take(2).joinToString("") { it.first().uppercase() }.ifEmpty { "?" }
 
-private fun formatKm(km: Double): String = String.format(Locale.US, "%.1f", km)
+internal fun formatKm(km: Double): String = String.format(Locale.US, "%.1f", km)
 
 private val TimeFormat = DateTimeFormatter.ofPattern("HH:mm")
 private val DateTimeFormat = DateTimeFormatter.ofPattern("d MMM, HH:mm", Locale.forLanguageTag("es-MX"))
 
-private fun formatTime(instant: Instant): String = TimeFormat.format(instant.atZone(ZoneId.systemDefault()))
+internal fun formatTime(instant: Instant): String = TimeFormat.format(instant.atZone(ZoneId.systemDefault()))
 
-private fun formatDateTime(instant: Instant): String = DateTimeFormat.format(instant.atZone(ZoneId.systemDefault()))
+internal fun formatDateTime(instant: Instant): String = DateTimeFormat.format(instant.atZone(ZoneId.systemDefault()))
 
 private fun formatDuration(duration: Duration): String {
     val minutes = duration.toMinutes().coerceAtLeast(1)
