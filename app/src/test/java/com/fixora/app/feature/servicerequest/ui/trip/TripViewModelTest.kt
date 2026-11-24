@@ -5,6 +5,16 @@ import com.fixora.app.core.network.ApiError
 import com.fixora.app.core.network.ApiResult
 import com.fixora.app.feature.availability.location.Coordinates
 import com.fixora.app.feature.availability.location.LocationSource
+import com.fixora.app.feature.payment.data.PaymentRepository
+import com.fixora.app.feature.payment.domain.AdjustmentReason
+import com.fixora.app.feature.payment.domain.AdjustmentStatus
+import com.fixora.app.feature.payment.domain.Debts
+import com.fixora.app.feature.payment.domain.Payment
+import com.fixora.app.feature.payment.domain.PaymentMethod
+import com.fixora.app.feature.payment.domain.PaymentStatus
+import com.fixora.app.feature.payment.domain.PaymentSummary
+import com.fixora.app.feature.payment.domain.PriceAdjustment
+import com.fixora.app.feature.payment.ui.AdjustmentDraft
 import com.fixora.app.feature.servicerequest.data.TripRepository
 import com.fixora.app.feature.servicerequest.data.TripRoute
 import com.fixora.app.feature.servicerequest.data.TripStep
@@ -40,14 +50,19 @@ class TripViewModelTest {
         var advanceError: ApiError? = null
         var trackingCalls = 0
         var tracking = TripTracking(null, null)
+        var requestCalls = 0
+        var adjustments = emptyList<PriceAdjustment>()
+        var payments = emptyList<Payment>()
+        var summary: PaymentSummary? = null
         override suspend fun request(id: String) = ApiResult.Success(
             ServiceRequest(
                 id = id, status = status, isEmergency = false, description = "Fuga", categoryName = "Plomería",
                 clientName = "Carla Prueba", clientRating = 0.0, zone = "Torreón Jardín", position = Coordinates(25.6054, -103.3593),
                 basePrice = "300.00", photoUrls = emptyList(), createdAt = null, expiresAt = null, scheduledAt = null,
-                technicianName = "juan", street = "Av. Morelos 845",
+                technicianName = "juan", street = "Av. Morelos 845", agreedPrice = "300.00",
+                adjustments = adjustments, payments = payments, paymentSummary = summary,
             ),
-        )
+        ).also { requestCalls++ }
         override suspend fun tracking(id: String): ApiResult<TripTracking> {
             trackingCalls++
             return ApiResult.Success(tracking)
@@ -83,6 +98,31 @@ class TripViewModelTest {
         }
     }
 
+    private class FakePayments : PaymentRepository {
+        val proposals = mutableListOf<Pair<AdjustmentDraft, String>>()
+        val responses = mutableListOf<Triple<String, Boolean, String?>>()
+        var error: ApiError? = null
+        var onPropose: () -> Unit = {}
+        override suspend fun proposeAdjustment(
+            requestId: String, amountCents: Long, reason: AdjustmentReason, description: String?, clientUuid: String,
+        ): ApiResult<Unit> {
+            proposals += AdjustmentDraft(amountCents, reason, description) to clientUuid
+            error?.let { return ApiResult.Failure(it) }
+            onPropose()
+            return ApiResult.Success(Unit)
+        }
+        override suspend fun respondPayment(requestId: String, paymentId: String, received: Boolean, reason: String?): ApiResult<Unit> {
+            responses += Triple(paymentId, received, reason)
+            return error?.let { ApiResult.Failure(it) } ?: ApiResult.Success(Unit)
+        }
+        override suspend fun respondAdjustment(requestId: String, adjustmentId: String, approve: Boolean) = ApiResult.Success(Unit)
+        override suspend fun registerPayment(requestId: String, method: PaymentMethod, amountCents: Long, reference: String?, clientUuid: String) =
+            ApiResult.Success(Unit)
+        override suspend fun debts() = ApiResult.Success(Debts("0.00", emptyList()))
+        override suspend fun sendReminder(requestId: String) = ApiResult.Success(Unit)
+    }
+
+    private val payments = FakePayments()
     private val location = FakeLocation()
     private val trip = FakeTrip()
     private lateinit var repository: FakeRepository
@@ -97,7 +137,7 @@ class TripViewModelTest {
 
     private fun create(status: RequestStatus) {
         repository = FakeRepository(status)
-        viewModel = TripViewModel(SavedStateHandle(mapOf("requestId" to "15")), repository, location, trip)
+        viewModel = TripViewModel(SavedStateHandle(mapOf("requestId" to "15")), repository, location, trip, payments)
         scheduler.runCurrent()
     }
 
@@ -209,5 +249,101 @@ class TripViewModelTest {
         assertEquals(repository.advanceError, state.actionError)
         assertEquals(RequestStatus.Canceled, state.request?.status)
         assertNull(state.nextStep)
+    }
+
+    private fun pendingAdjustment() = PriceAdjustment("4", "120.00", AdjustmentReason.ExtraMaterials, null, AdjustmentStatus.Pending, null)
+
+    @Test
+    fun atTheHomeItProposesAnAdjustmentAndCannotFinishUntilTheClientAnswers() {
+        create(RequestStatus.Arrived)
+        assertTrue(state.canProposeAdjustment)
+        payments.onPropose = { repository.adjustments = listOf(pendingAdjustment()) }
+
+        viewModel.openAdjustment()
+        viewModel.proposeAdjustment(AdjustmentDraft(12_000, AdjustmentReason.ExtraMaterials, null))
+        scheduler.runCurrent()
+
+        assertFalse(state.showAdjustmentSheet)
+        assertTrue(state.waitsAdjustmentAnswer)
+        assertFalse(state.canProposeAdjustment)
+        // Pendiente todavía no suma al total.
+        assertEquals(30_000L, state.request?.totalCents)
+        // Sin respuesta del cliente el botón Finalizar no hace nada.
+        viewModel.advance()
+        scheduler.runCurrent()
+        assertTrue(repository.steps.isEmpty())
+
+        // El cliente lo aprueba: se ve solo, sin recargar a mano, y ya puede finalizar.
+        repository.adjustments = listOf(pendingAdjustment().copy(status = AdjustmentStatus.Approved))
+        scheduler.advanceTimeBy(TripViewModel.WATCH_INTERVAL_MS + 1)
+        scheduler.runCurrent()
+        assertFalse(state.waitsAdjustmentAnswer)
+        assertEquals(42_000L, state.request?.totalCents)
+        viewModel.advance()
+        scheduler.runCurrent()
+        assertEquals(TripStep.Finish, repository.steps.single().first)
+    }
+
+    @Test
+    fun retryingAFailedAdjustmentUsesTheSameKey() {
+        create(RequestStatus.Arrived)
+        payments.error = ApiError.NoConnection
+
+        viewModel.openAdjustment()
+        viewModel.proposeAdjustment(AdjustmentDraft(5_000, AdjustmentReason.Other, "Llave de paso"))
+        scheduler.runCurrent()
+        assertTrue(state.showAdjustmentSheet)
+        assertEquals(ApiError.NoConnection, state.paymentError)
+
+        payments.error = null
+        viewModel.proposeAdjustment(AdjustmentDraft(5_000, AdjustmentReason.Other, "Llave de paso"))
+        scheduler.runCurrent()
+        assertEquals(2, payments.proposals.size)
+        assertEquals(payments.proposals[0].second, payments.proposals[1].second)
+        assertFalse(state.showAdjustmentSheet)
+    }
+
+    @Test
+    fun finishedItConfirmsThePaymentTheClientRegistered() {
+        create(RequestStatus.Completed)
+        repository.payments = listOf(Payment("7", "300.00", PaymentMethod.Cash, null, PaymentStatus.Pending, null, null))
+        repository.summary = PaymentSummary("300.00", "0.00", "300.00", "300.00", true)
+        // Con saldo se revisa cada pocos segundos si el cliente ya registró su pago.
+        scheduler.advanceTimeBy(TripViewModel.WATCH_INTERVAL_MS + 1)
+        scheduler.runCurrent()
+        assertEquals("7", state.request?.pendingPayment?.id)
+
+        repository.payments = listOf(Payment("7", "300.00", PaymentMethod.Cash, null, PaymentStatus.Confirmed, null, null))
+        repository.summary = PaymentSummary("300.00", "300.00", "0.00", "0.00", false)
+        viewModel.confirmPayment()
+        scheduler.runCurrent()
+
+        assertEquals(listOf(Triple("7", true, null as String?)), payments.responses)
+        assertTrue(state.request?.paymentSummary?.isPaid == true)
+        // Ya pagado deja de consultar.
+        val calls = repository.requestCalls
+        scheduler.advanceTimeBy(TripViewModel.WATCH_INTERVAL_MS * 3)
+        scheduler.runCurrent()
+        assertEquals(calls, repository.requestCalls)
+    }
+
+    @Test
+    fun ifThePaymentDidNotArriveItSaysWhy() {
+        repositoryWithPendingPayment()
+
+        viewModel.openRejectPayment()
+        viewModel.rejectPayment("No llegó la transferencia")
+        scheduler.runCurrent()
+
+        assertEquals(listOf(Triple("7", false, "No llegó la transferencia")), payments.responses)
+        assertFalse(state.showRejectPaymentSheet)
+    }
+
+    private fun repositoryWithPendingPayment() {
+        create(RequestStatus.Completed)
+        repository.payments = listOf(Payment("7", "300.00", PaymentMethod.Transfer, "ABC", PaymentStatus.Pending, null, null))
+        repository.summary = PaymentSummary("300.00", "0.00", "300.00", "300.00", true)
+        scheduler.advanceTimeBy(TripViewModel.WATCH_INTERVAL_MS + 1)
+        scheduler.runCurrent()
     }
 }

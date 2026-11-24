@@ -4,6 +4,7 @@ import com.fixora.app.core.network.ApiError
 import com.fixora.app.core.network.ApiResult
 import com.fixora.app.core.network.NetworkModule
 import com.fixora.app.feature.account.domain.Address
+import com.fixora.app.feature.availability.location.Coordinates
 import com.fixora.app.feature.account.domain.PersonalData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -207,6 +208,45 @@ class RemoteAccountRepositoryTest {
         assertEquals("true", create.jsonBody().text("is_main"))
         assertEquals("/api/me/addresses", take().url.encodedPath)
         assertEquals(listOf("3"), repository.addresses.first().map { it.id })
+    }
+
+    @Test
+    fun createAddress_sendsThePointMarkedOnTheMap() = runBlocking {
+        respond(data("[]"))
+        repository.addresses.first()
+        take()
+
+        respond(data(address("3", "Casa", isMain = true)), code = 201)
+        respond(data("[${address("3", "Casa", isMain = true)}]"))
+        repository.saveAddress(sampleAddress(id = null, alias = "Casa", isMain = true).copy(location = Coordinates(25.5428, -103.4068)))
+
+        val body = take().jsonBody()
+        assertEquals("25.5428", body.text("latitude"))
+        assertEquals("-103.4068", body.text("longitude"))
+    }
+
+    @Test
+    fun editAddress_onlyThePointMoved_sendsTheNewPoint() = runBlocking {
+        respond(data("[${address("5", "Casa", isMain = true)}]"))
+        val saved = repository.addresses.first().single()
+        take()
+        assertNull(saved.location)
+
+        respond(data(address("8", "Casa", isMain = true)))
+        respond(data("[${address("8", "Casa", isMain = true)}]"))
+        repository.saveAddress(saved.copy(location = Coordinates(25.5428, -103.4068)))
+
+        // La ubicación es parte de la dirección: la API crea la fila nueva con el punto.
+        val body = take().jsonBody()
+        assertEquals("25.5428", body.text("latitude"))
+        assertEquals("Morelos", body.text("street"))
+    }
+
+    @Test
+    fun addressWithCoordinates_loadsItsLocation() = runBlocking {
+        respond(data("[${address("5", "Casa", isMain = true).replace("\"latitude\":null,\"longitude\":null", "\"latitude\":25.5428,\"longitude\":-103.4068")}]"))
+
+        assertEquals(Coordinates(25.5428, -103.4068), repository.addresses.first().single().location)
     }
 
     @Test

@@ -58,6 +58,10 @@ class RemoteServiceRequestRepository(
         addressReference = address?.reference?.trim()?.takeIf { it.isNotEmpty() },
         dispatchesSent = dispatches.sent,
         dispatchesRejected = dispatches.rejected,
+        totalAmount = totalAmount,
+        adjustments = priceAdjustments.map { it.toDomain() },
+        paymentSummary = paymentSummary?.toDomain(),
+        payments = payments.map { it.toDomain() },
     )
 
     private fun AddressDto.streetLine(): String? {

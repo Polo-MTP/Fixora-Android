@@ -36,7 +36,7 @@ import javax.inject.Inject
 enum class WhenMode { Now, Scheduled }
 
 /** Qué impide enviar; la pantalla lo explica junto al botón. */
-enum class MissingField { Service, Description, Address, Slot }
+enum class MissingField { Service, Description, Address, AddressLocation, Slot }
 
 data class RequestFormUiState(
     val isLoading: Boolean = true,
@@ -76,6 +76,8 @@ data class RequestFormUiState(
             service == null -> MissingField.Service
             description.isBlank() -> MissingField.Description
             selectedAddress == null && !(addressChoice == AddressChoice.Current && currentAddress != null) -> MissingField.Address
+            // Sin el punto en el mapa el técnico no sabe a dónde llegar (ANDROID-41).
+            selectedAddress != null && selectedAddress?.location == null -> MissingField.AddressLocation
             whenMode == WhenMode.Scheduled && selectedSlot == null -> MissingField.Slot
             else -> null
         }

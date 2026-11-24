@@ -105,6 +105,7 @@ fun RequestFormScreen(
     onBack: () -> Unit,
     onSent: (requestId: String) -> Unit,
     onAddAddress: () -> Unit,
+    onEditAddress: (addressId: String) -> Unit,
     viewModel: RequestFormViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -151,6 +152,7 @@ fun RequestFormScreen(
         onAddress = viewModel::onAddressSelected,
         onCurrentLocation = viewModel::onUseCurrentLocation,
         onAddAddress = onAddAddress,
+        onEditAddress = onEditAddress,
         onSend = viewModel::send,
     )
 }
@@ -173,6 +175,7 @@ private fun RequestFormContent(
     onAddress: (String) -> Unit,
     onCurrentLocation: () -> Unit,
     onAddAddress: () -> Unit,
+    onEditAddress: (addressId: String) -> Unit,
     onSend: () -> Unit,
 ) {
     SystemBarsAppearance(lightIcons = false)
@@ -230,6 +233,9 @@ private fun RequestFormContent(
                     }
                     Section(stringResource(R.string.request_form_address)) {
                         AddressRow(state, onChange = { choosingAddress = true })
+                        state.selectedAddress?.takeIf { it.location == null }?.id?.let { id ->
+                            NoLocationNotice(onMark = { onEditAddress(id) })
+                        }
                         if (state.currentAddressFailed) {
                             Text(stringResource(R.string.request_form_current_failed), style = MaterialTheme.typography.bodySmall, color = ErrorRed)
                         }
@@ -514,6 +520,23 @@ private fun AddressRow(state: RequestFormUiState, onChange: () -> Unit) {
     }
 }
 
+/** La dirección se guardó antes de que se pudiera marcar en el mapa (ANDROID-41). */
+@Composable
+private fun NoLocationNotice(onMark: () -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(stringResource(R.string.request_form_address_no_location), style = MaterialTheme.typography.bodySmall, color = ErrorRed)
+        Text(
+            stringResource(R.string.request_form_address_mark_location),
+            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+            color = Orange500,
+            modifier = Modifier
+                .clip(RoundedCornerShape(8.dp))
+                .clickable(role = Role.Button, onClick = onMark)
+                .padding(vertical = 6.dp),
+        )
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AddressSheet(
@@ -620,6 +643,7 @@ private fun MissingField.hint(): Int = when (this) {
     MissingField.Service -> R.string.request_form_missing_service
     MissingField.Description -> R.string.request_form_missing_description
     MissingField.Address -> R.string.request_form_missing_address
+    MissingField.AddressLocation -> R.string.request_form_missing_location
     MissingField.Slot -> R.string.request_form_missing_slot
 }
 
@@ -650,7 +674,7 @@ private fun RequestFormPreview() {
             ),
             onBack = {}, onRetry = {}, onService = {}, onProblem = {}, onDetails = {}, onPickPhotos = {}, onTakePhoto = {},
             onRemovePhoto = {}, onWhenMode = {}, onDay = {}, onSlot = {}, onRetrySlots = {}, onAddress = {},
-            onCurrentLocation = {}, onAddAddress = {}, onSend = {},
+            onCurrentLocation = {}, onAddAddress = {}, onEditAddress = {}, onSend = {},
         )
     }
 }

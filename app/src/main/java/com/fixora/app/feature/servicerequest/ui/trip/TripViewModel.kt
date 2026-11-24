@@ -7,6 +7,8 @@ import com.fixora.app.core.network.ApiError
 import com.fixora.app.core.network.ApiResult
 import com.fixora.app.feature.availability.location.Coordinates
 import com.fixora.app.feature.availability.location.LocationSource
+import com.fixora.app.feature.payment.data.PaymentRepository
+import com.fixora.app.feature.payment.ui.AdjustmentDraft
 import com.fixora.app.feature.servicerequest.data.TripRepository
 import com.fixora.app.feature.servicerequest.data.TripRoute
 import com.fixora.app.feature.servicerequest.data.TripStep
@@ -22,6 +24,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.util.UUID
 import javax.inject.Inject
 
 data class TripUiState(
@@ -41,7 +44,23 @@ data class TripUiState(
     val locationDenied: Boolean = false,
     /** Paso que espera el permiso para continuar. */
     val pendingStep: TripStep? = null,
+    /** Hoja para proponer un ajuste de precio (ANDROID-25). */
+    val showAdjustmentSheet: Boolean = false,
+    /** Hoja para decir que no llegó el pago del cliente. */
+    val showRejectPaymentSheet: Boolean = false,
+    /** Se manda un ajuste o la respuesta a un pago. */
+    val isSubmitting: Boolean = false,
+    /** Error de la hoja abierta o de confirmar el pago. */
+    val paymentError: ApiError? = null,
 ) {
+    /** No se puede finalizar mientras el cliente no responda un ajuste (la API responde 409). */
+    val waitsAdjustmentAnswer: Boolean
+        get() = request?.status == RequestStatus.Arrived && request.pendingAdjustment != null
+
+    /** Ya en el domicilio puede proponer un ajuste, uno a la vez. */
+    val canProposeAdjustment: Boolean
+        get() = request?.status == RequestStatus.Arrived && request.pendingAdjustment == null
+
     /** El siguiente paso según el estado; null cuando ya terminó o no le toca al técnico. */
     val nextStep: TripStep?
         get() = when (request?.status) {
@@ -63,6 +82,7 @@ class TripViewModel @Inject constructor(
     private val repository: TripRepository,
     private val location: LocationSource,
     private val trip: TripTrackingController,
+    private val payments: PaymentRepository,
 ) : ViewModel() {
 
     private val requestId: String = checkNotNull(savedStateHandle["requestId"])
@@ -71,6 +91,10 @@ class TripViewModel @Inject constructor(
     val uiState: StateFlow<TripUiState> = _uiState.asStateFlow()
 
     private var follower: Job? = null
+    private var watcher: Job? = null
+
+    /** Llave del ajuste que se está proponiendo: la misma en cada reintento para no duplicarlo. */
+    private var adjustmentKey: String? = null
 
     init {
         load(showLoading = true)
@@ -83,6 +107,7 @@ class TripViewModel @Inject constructor(
         val state = _uiState.value
         val step = state.nextStep ?: return
         if (state.isAdvancing) return
+        if (step == TripStep.Finish && state.waitsAdjustmentAnswer) return
         if (!location.hasPermission()) {
             _uiState.update { it.copy(needsLocation = true, pendingStep = step) }
             return
@@ -137,6 +162,7 @@ class TripViewModel @Inject constructor(
                 _uiState.update { it.copy(isLoading = false, loadError = null, request = result.data) }
                 shareTripLocation()
                 if (result.data.status == RequestStatus.OnTheWay) follow() else stopFollowing()
+                if (needsWatching(result.data)) watch() else stopWatching()
                 if (_uiState.value.technician == null && location.hasPermission()) {
                     location.current()?.let { here -> _uiState.update { it.copy(technician = it.technician ?: here) } }
                 }
@@ -177,6 +203,83 @@ class TripViewModel @Inject constructor(
         }
     }
 
+    fun openAdjustment() {
+        if (!_uiState.value.canProposeAdjustment) return
+        if (adjustmentKey == null) adjustmentKey = UUID.randomUUID().toString()
+        _uiState.update { it.copy(showAdjustmentSheet = true, paymentError = null) }
+    }
+
+    fun dismissAdjustment() = _uiState.update { it.copy(showAdjustmentSheet = false, paymentError = null) }
+
+    /** Lo manda al cliente; queda pendiente hasta que lo apruebe o lo rechace. */
+    fun proposeAdjustment(draft: AdjustmentDraft) {
+        if (_uiState.value.isSubmitting) return
+        val key = adjustmentKey ?: UUID.randomUUID().toString().also { adjustmentKey = it }
+        _uiState.update { it.copy(isSubmitting = true, paymentError = null) }
+        viewModelScope.launch {
+            when (val result = payments.proposeAdjustment(requestId, draft.amountCents, draft.reason, draft.description, key)) {
+                is ApiResult.Success -> {
+                    adjustmentKey = null
+                    _uiState.update { it.copy(isSubmitting = false, showAdjustmentSheet = false) }
+                    loadNow(showLoading = false)
+                }
+                is ApiResult.Failure -> _uiState.update { it.copy(isSubmitting = false, paymentError = result.error) }
+            }
+        }
+    }
+
+    /** Recibió el pago que registró el cliente. */
+    fun confirmPayment() = respondPayment(received = true, reason = null)
+
+    fun openRejectPayment() = _uiState.update { it.copy(showRejectPaymentSheet = true, paymentError = null) }
+
+    fun dismissRejectPayment() = _uiState.update { it.copy(showRejectPaymentSheet = false, paymentError = null) }
+
+    /** No le llegó: el cliente lo ve con el motivo y puede registrarlo otra vez. */
+    fun rejectPayment(reason: String?) = respondPayment(received = false, reason = reason)
+
+    private fun respondPayment(received: Boolean, reason: String?) {
+        val state = _uiState.value
+        val payment = state.request?.pendingPayment ?: return
+        if (state.isSubmitting) return
+        _uiState.update { it.copy(isSubmitting = true, paymentError = null) }
+        viewModelScope.launch {
+            val result = payments.respondPayment(requestId, payment.id, received, reason)
+            if (result is ApiResult.Failure) {
+                _uiState.update { it.copy(isSubmitting = false, paymentError = result.error) }
+            } else {
+                _uiState.update { it.copy(isSubmitting = false, showRejectPaymentSheet = false) }
+            }
+            // 409: el pago ya se había respondido (por ejemplo, el dueño desde otro celular).
+            loadNow(showLoading = false)
+        }
+    }
+
+    /**
+     * En el domicilio espera que el cliente responda los ajustes, y al terminar, que registre su
+     * pago: mientras tanto se consulta la solicitud para ver la respuesta sin recargar.
+     */
+    private fun needsWatching(request: ServiceRequest): Boolean = when (request.status) {
+        RequestStatus.Arrived -> true
+        RequestStatus.Completed -> request.balanceCents > 0
+        else -> false
+    }
+
+    private fun watch() {
+        if (watcher?.isActive == true) return
+        watcher = viewModelScope.launch {
+            while (isActive) {
+                delay(WATCH_INTERVAL_MS)
+                loadNow(showLoading = false)
+            }
+        }
+    }
+
+    private fun stopWatching() {
+        watcher?.cancel()
+        watcher = null
+    }
+
     private fun stopFollowing() {
         follower?.cancel()
         follower = null
@@ -186,5 +289,8 @@ class TripViewModel @Inject constructor(
     companion object {
         /** La API recalcula la ruta cada minuto o si se desvía; con 10 s el tiempo baja fluido. */
         const val FOLLOW_INTERVAL_MS = 10_000L
+
+        /** Cada cuánto se revisa si el cliente ya respondió el ajuste o registró el pago. */
+        const val WATCH_INTERVAL_MS = 5_000L
     }
 }

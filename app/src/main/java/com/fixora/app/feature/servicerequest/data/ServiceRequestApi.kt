@@ -1,6 +1,9 @@
 package com.fixora.app.feature.servicerequest.data
 
 import com.fixora.app.core.network.DataResponse
+import com.fixora.app.feature.payment.data.PaymentDto
+import com.fixora.app.feature.payment.data.PaymentSummaryDto
+import com.fixora.app.feature.payment.data.PriceAdjustmentDto
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import retrofit2.http.Body
@@ -80,6 +83,11 @@ data class ServiceRequestDto(
     @SerialName("base_price") val basePrice: String? = null,
     val attachments: List<AttachmentDto> = emptyList(),
     @SerialName("agreed_price") val agreedPrice: String? = null,
+    /** Precio acordado más los ajustes aprobados; la API lo fija al finalizar (API-36). */
+    @SerialName("total_amount") val totalAmount: String? = null,
+    @SerialName("price_adjustments") val priceAdjustments: List<PriceAdjustmentDto> = emptyList(),
+    @SerialName("payment_summary") val paymentSummary: PaymentSummaryDto? = null,
+    val payments: List<PaymentDto> = emptyList(),
     @SerialName("accepted_at") val acceptedAt: String? = null,
     @SerialName("arrived_at") val arrivedAt: String? = null,
     @SerialName("completed_at") val completedAt: String? = null,

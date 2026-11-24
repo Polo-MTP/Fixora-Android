@@ -2,6 +2,7 @@ package com.fixora.app.navigation
 
 import com.fixora.app.core.notifications.PushMessage
 import com.fixora.app.core.notifications.PushNotifier
+import com.fixora.app.feature.chat.navigation.ChatRoute
 import com.fixora.app.feature.servicerequest.navigation.IncomingRequestRoute
 import com.fixora.app.feature.servicerequest.navigation.ServiceRequestRoute
 import org.junit.Assert.assertEquals
@@ -23,6 +24,13 @@ class NotificationNavigationTest {
         val message = PushMessage(type = "solicitud_aceptada", entityType = "service_request", entityId = "8")
 
         assertEquals(ServiceRequestRoute("8"), notificationRoute(message))
+    }
+
+    @Test
+    fun aChatMessageOpensTheChat() {
+        val message = PushMessage(type = "chat_message", entityType = "service_request", entityId = "15")
+
+        assertEquals(ChatRoute("15"), notificationRoute(message))
     }
 
     @Test
