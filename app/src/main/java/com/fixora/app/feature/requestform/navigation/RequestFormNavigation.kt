@@ -20,6 +20,7 @@ fun NavGraphBuilder.requestFormScreen(
     onBack: () -> Unit,
     onSent: (requestId: String) -> Unit,
     onAddAddress: () -> Unit,
+    onEditAddress: (addressId: String) -> Unit,
 ) {
-    composable<RequestServiceRoute> { RequestFormScreen(onBack = onBack, onSent = onSent, onAddAddress = onAddAddress) }
+    composable<RequestServiceRoute> { RequestFormScreen(onBack = onBack, onSent = onSent, onAddAddress = onAddAddress, onEditAddress = onEditAddress) }
 }

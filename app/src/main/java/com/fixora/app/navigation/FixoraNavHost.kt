@@ -183,6 +183,7 @@ fun FixoraNavHost(
                 }
             },
             onAddAddress = { navController.navigate(AddressFormRoute()) },
+            onEditAddress = { navController.navigate(AddressFormRoute(it)) },
         )
         emergencyScreen(
             onCancel = navController::popBackStack,
