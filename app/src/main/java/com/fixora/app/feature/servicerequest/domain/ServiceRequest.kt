@@ -7,6 +7,7 @@ import com.fixora.app.feature.payment.domain.Payment
 import com.fixora.app.feature.payment.domain.PaymentStatus
 import com.fixora.app.feature.payment.domain.PaymentSummary
 import com.fixora.app.feature.payment.domain.PriceAdjustment
+import com.fixora.app.feature.profile.domain.Vehicle
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -54,6 +55,10 @@ data class ServiceRequest(
     val branchName: String? = null,
     val branchPhone: String? = null,
     val technicianPhotoUrl: String? = null,
+    /** Con qué llega el técnico (ANDROID-27): la copia guardada al aceptar. */
+    val technicianVehicle: Vehicle? = null,
+    /** Insignia de datos verificados: el proveedor tiene su alta aprobada. */
+    val technicianVerified: Boolean = false,
     /** Para reenviarla igual: la dirección guardada y las llaves de sus fotos. */
     val addressId: String? = null,
     val photoKeys: List<String> = emptyList(),

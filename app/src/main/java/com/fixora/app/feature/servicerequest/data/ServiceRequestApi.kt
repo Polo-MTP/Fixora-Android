@@ -128,6 +128,18 @@ data class BranchDto(val id: String, val name: String = "", val phone: String? =
 data class TechnicianDto(
     val name: String = "",
     @SerialName("photo_url") val photoUrl: String? = null,
+    /** El de la copia guardada al aceptar (API-55); null si no registró vehículo. */
+    val vehicle: VehicleDto? = null,
+    /** El proveedor tiene su alta aprobada (API-56). */
+    val verified: Boolean = false,
+)
+
+@Serializable
+data class VehicleDto(
+    val plate: String = "",
+    val brand: String = "",
+    val model: String = "",
+    val color: String = "",
 )
 
 /** A cuántos técnicos se avisó y cuántos rechazaron (API-30). */

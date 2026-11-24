@@ -638,6 +638,11 @@
     <string name="client_request_completed_title">Servicio terminado</string>
     <string name="client_request_completed_hint">Gracias por usar Fixora.</string>
     <string name="client_request_your_technician">Tu técnico</string>
+    <!-- ANDROID-27: tarjeta del técnico -->
+    <string name="technician_card_verified">Datos verificados por Fixora</string>
+    <string name="technician_card_vehicle">Llega en</string>
+    <string name="technician_card_vehicle_unknown">Vehículo registrado</string>
+    <string name="technician_card_plate">Placas %1$s</string>
     <string name="client_request_technician_pending">Por asignar</string>
     <string name="client_request_step_accepted">Aceptada</string>
     <string name="client_request_step_on_the_way">En camino</string>

@@ -48,7 +48,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -61,7 +60,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import coil3.compose.AsyncImage
 import com.fixora.app.R
 import com.fixora.app.core.designsystem.component.FixoraPrimaryButton
 import com.fixora.app.core.designsystem.theme.FixoraTheme
@@ -463,45 +461,6 @@ internal fun statusLabel(status: RequestStatus?): String = stringResource(
         else -> R.string.client_request_step_accepted_now
     },
 )
-
-@Composable
-internal fun TechnicianCard(request: ServiceRequest) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(14.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, Mist200, RoundedCornerShape(18.dp))
-            .padding(16.dp),
-    ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .size(56.dp)
-                .clip(CircleShape)
-                .background(Navy900),
-        ) {
-            val name = request.technicianName.orEmpty()
-            Text(
-                name.split(' ').filter { it.isNotBlank() }.take(2).joinToString("") { it.first().uppercase() }.ifBlank { "?" },
-                style = MaterialTheme.typography.titleMedium,
-                color = White,
-            )
-            request.technicianPhotoUrl?.let {
-                AsyncImage(model = it, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
-            }
-        }
-        Column(Modifier.weight(1f)) {
-            Text(stringResource(R.string.client_request_your_technician), style = MaterialTheme.typography.labelSmall, color = Slate500)
-            Text(
-                request.technicianName ?: stringResource(R.string.client_request_technician_pending),
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = Navy900,
-            )
-            request.branchName?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Slate500) }
-        }
-    }
-}
 
 /** Aceptada → En camino → Llegó → Terminado, con el paso actual marcado. */
 @Composable
