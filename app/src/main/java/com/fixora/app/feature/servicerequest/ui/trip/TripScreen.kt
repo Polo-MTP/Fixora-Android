@@ -1,9 +1,11 @@
 package com.fixora.app.feature.servicerequest.ui.trip
 
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
@@ -18,6 +20,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -35,6 +38,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -48,19 +52,23 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.fixora.app.BuildConfig
 import com.fixora.app.R
 import com.fixora.app.core.designsystem.component.FixoraPrimaryButton
+import com.fixora.app.core.designsystem.component.FixoraTextLink
 import com.fixora.app.core.designsystem.theme.ErrorRed
 import com.fixora.app.core.designsystem.theme.Mist200
 import com.fixora.app.core.designsystem.theme.Mist50
@@ -75,10 +83,23 @@ import com.fixora.app.core.ui.message
 import com.fixora.app.feature.account.ui.components.LoadErrorNotice
 import com.fixora.app.feature.availability.location.FusedLocationSource
 import com.fixora.app.feature.map.domain.MapRules
+import com.fixora.app.feature.payment.domain.MoneyRules
+import com.fixora.app.feature.payment.domain.PaymentMethod
+import com.fixora.app.feature.payment.domain.PaymentStatus
+import com.fixora.app.feature.payment.ui.NoticeTone
+import com.fixora.app.feature.payment.ui.OutlineActionButton
+import com.fixora.app.feature.payment.ui.PaymentNotice
+import com.fixora.app.feature.payment.ui.PriceBreakdownCard
+import com.fixora.app.feature.payment.ui.ProposeAdjustmentSheet
+import com.fixora.app.feature.payment.ui.RejectPaymentSheet
+import com.fixora.app.feature.payment.ui.paymentMethodLabel
+import com.fixora.app.feature.servicerequest.data.TripRoute
 import com.fixora.app.feature.servicerequest.data.TripStep
+import com.fixora.app.feature.servicerequest.domain.CancelRules
 import com.fixora.app.feature.servicerequest.domain.RequestStatus
 import com.fixora.app.feature.servicerequest.domain.ServiceRequest
 import com.fixora.app.feature.servicerequest.ui.incoming.IncomingRequestViewModel
+import java.io.File
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
@@ -93,6 +114,8 @@ import java.util.Locale
 @Composable
 fun TripScreen(
     onBack: () -> Unit,
+    onOpenChat: () -> Unit,
+    onRate: () -> Unit,
     viewModel: TripViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -104,6 +127,23 @@ fun TripScreen(
     LifecycleResumeEffect(Unit) {
         viewModel.onResume()
         onPauseOrDispose { }
+    }
+
+    // Evidencia de la cancelación (ANDROID-21): foto de la cámara o un archivo.
+    var cameraUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+    val takePhoto = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { taken ->
+        if (taken) viewModel.onEvidencePicked(cameraUri)
+    }
+    val pickFile = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        viewModel.onEvidencePicked(uri)
+    }
+    val canceledMessage = stringResource(R.string.trip_cancel_done)
+    val noCameraMessage = stringResource(R.string.profile_photo_no_camera)
+    LaunchedEffect(state.canceled) {
+        if (state.canceled) {
+            Toast.makeText(context, canceledMessage, Toast.LENGTH_LONG).show()
+            onBack()
+        }
     }
 
     val request = state.request
@@ -120,11 +160,21 @@ fun TripScreen(
             if (error != null) LoadErrorNotice(error, onRetry = viewModel::retry)
             else CircularProgressIndicator(color = Navy800, strokeWidth = 2.dp, modifier = Modifier.size(24.dp))
         }
-        request.status == RequestStatus.Completed -> TripSummary(request, onDone = onBack)
+        request.status == RequestStatus.Completed -> TripSummary(
+            state = state,
+            request = request,
+            onDone = onBack,
+            onRate = onRate,
+            onConfirmPayment = viewModel::confirmPayment,
+            onRejectPayment = viewModel::openRejectPayment,
+        )
         else -> TripNavigation(
             state = state,
             request = request,
             onBack = onBack,
+            onOpenChat = onOpenChat,
+            onProposeAdjustment = viewModel::openAdjustment,
+            onCancel = viewModel::openCancel,
             onAdvance = { if (state.nextStep == TripStep.Finish) confirmingFinish = true else viewModel.advance() },
             onEnableLocation = { permissionLauncher.launch(FusedLocationSource.LOCATION_PERMISSIONS) },
             onOpenSettings = {
@@ -161,6 +211,42 @@ fun TripScreen(
             containerColor = White,
         )
     }
+
+    if (state.showAdjustmentSheet) {
+        ProposeAdjustmentSheet(
+            isSaving = state.isSubmitting,
+            error = state.paymentError,
+            onDismiss = viewModel::dismissAdjustment,
+            onSubmit = viewModel::proposeAdjustment,
+        )
+    }
+    if (state.showCancelSheet) {
+        CancelServiceSheet(
+            form = state.cancelForm,
+            onReasonChange = viewModel::onCancelReasonChange,
+            onTakePhoto = {
+                val uri = newEvidencePhotoUri(context)
+                cameraUri = uri
+                try {
+                    takePhoto.launch(uri)
+                } catch (_: ActivityNotFoundException) {
+                    Toast.makeText(context, noCameraMessage, Toast.LENGTH_SHORT).show()
+                }
+            },
+            onPickFile = { pickFile.launch(CancelRules.EVIDENCE_MIME_TYPES) },
+            onRemoveEvidence = viewModel::removeEvidence,
+            onConfirm = viewModel::confirmCancel,
+            onDismiss = viewModel::dismissCancel,
+        )
+    }
+    if (state.showRejectPaymentSheet) {
+        RejectPaymentSheet(
+            isSaving = state.isSubmitting,
+            error = state.paymentError,
+            onDismiss = viewModel::dismissRejectPayment,
+            onSubmit = viewModel::rejectPayment,
+        )
+    }
 }
 
 @Composable
@@ -168,6 +254,9 @@ private fun TripNavigation(
     state: TripUiState,
     request: ServiceRequest,
     onBack: () -> Unit,
+    onOpenChat: () -> Unit,
+    onProposeAdjustment: () -> Unit,
+    onCancel: () -> Unit,
     onAdvance: () -> Unit,
     onEnableLocation: () -> Unit,
     onOpenSettings: () -> Unit,
@@ -255,8 +344,18 @@ private fun TripNavigation(
                     .size(width = 40.dp, height = 4.dp)
                     .background(Mist200, CircleShape),
             )
-            Headline(state, request)
-            ClientRow(request)
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier
+                    .heightIn(max = LocalConfiguration.current.screenHeightDp.dp * 0.55f)
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                Headline(state, request)
+                ClientRow(request, onOpenChat)
+                if (request.status == RequestStatus.Arrived) {
+                    PriceSection(state, request, onProposeAdjustment)
+                }
+            }
             if (state.needsLocation) LocationNotice(state.locationDenied, onEnableLocation, onOpenSettings)
             if (state.nextStep == TripStep.Start || state.nextStep == TripStep.Arrive) {
                 OtherAppButton(enabled = request.position != null, onClick = onOtherApp)
@@ -274,10 +373,27 @@ private fun TripNavigation(
                     ),
                     onClick = onAdvance,
                     loading = state.isAdvancing,
+                    enabled = !(step == TripStep.Finish && state.waitsAdjustmentAnswer),
+                )
+            }
+            if (state.canCancel) {
+                FixoraTextLink(
+                    text = stringResource(R.string.trip_cancel_open),
+                    onClick = { if (!state.isAdvancing) onCancel() },
+                    color = ErrorRed,
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
                 )
             }
         }
     }
+}
+
+/** Archivo nuevo en la caché para la foto de la cámara; borra los de cancelaciones anteriores. */
+private fun newEvidencePhotoUri(context: Context): Uri {
+    val dir = File(context.cacheDir, "camera_photos").apply { mkdirs() }
+    dir.listFiles()?.filter { it.name.startsWith("cancelacion-") }?.forEach { it.delete() }
+    val file = File(dir, "cancelacion-${System.currentTimeMillis()}.jpg")
+    return FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
 }
 
 private fun destinationTitle(status: RequestStatus): Int = when (status) {
@@ -299,21 +415,7 @@ private fun Headline(state: TripUiState, request: ServiceRequest) {
         val route = state.route
         when (request.status) {
             RequestStatus.OnTheWay -> if (route != null) {
-                Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        stringResource(R.string.trip_minutes, (route.durationSeconds / 60).coerceAtLeast(1)),
-                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Navy900,
-                    )
-                    val km = formatKm(route.distanceMeters / 1000.0)
-                    Text(
-                        route.arrivesAt?.let { stringResource(R.string.trip_km_arrival, km, formatTime(it)) }
-                            ?: stringResource(R.string.trip_km, km),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Slate500,
-                        modifier = Modifier.padding(bottom = 4.dp),
-                    )
-                }
+                RouteEta(route)
             } else {
                 Text(stringResource(R.string.trip_calculating), style = MaterialTheme.typography.titleLarge, color = Navy900)
             }
@@ -335,8 +437,63 @@ private fun Headline(state: TripUiState, request: ServiceRequest) {
     }
 }
 
+/**
+ * Cuánto falta y a qué hora llega. Si el servidor de rutas no respondió (ANDROID-43), el tiempo
+ * se marca como aproximado y se avisa, porque la API lo estimó en línea recta.
+ */
 @Composable
-private fun ClientRow(request: ServiceRequest) {
+internal fun RouteEta(route: TripRoute) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            val minutes = (route.durationSeconds / 60).coerceAtLeast(1)
+            Text(
+                stringResource(if (route.approximate) R.string.trip_minutes_approximate else R.string.trip_minutes, minutes),
+                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                color = Navy900,
+            )
+            val km = formatKm(route.distanceMeters / 1000.0)
+            Text(
+                route.arrivesAt?.takeUnless { route.approximate }?.let { stringResource(R.string.trip_km_arrival, km, formatTime(it)) }
+                    ?: stringResource(R.string.trip_km, km),
+                style = MaterialTheme.typography.bodyMedium,
+                color = Slate500,
+                modifier = Modifier.padding(bottom = 4.dp),
+            )
+        }
+        if (route.approximate) {
+            Text(stringResource(R.string.trip_route_approximate), style = MaterialTheme.typography.bodySmall, color = Slate500)
+        }
+    }
+}
+
+/**
+ * En el domicilio (ANDROID-25): cuánto se cobra con los ajustes y el botón para proponer otro.
+ * Mientras el cliente no responda uno, no se puede finalizar.
+ */
+@Composable
+private fun PriceSection(state: TripUiState, request: ServiceRequest, onProposeAdjustment: () -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        PriceBreakdownCard(request, totalLabel = stringResource(R.string.payment_total_to_charge))
+        val pending = request.pendingAdjustment
+        if (pending != null) {
+            PaymentNotice(
+                icon = R.drawable.ic_schedule,
+                title = stringResource(R.string.trip_adjustment_waiting, MoneyRules.format(pending.amount)),
+                text = stringResource(R.string.trip_adjustment_waiting_hint),
+                tone = NoticeTone.Warning,
+            )
+        } else {
+            OutlineActionButton(
+                text = stringResource(R.string.trip_adjustment_propose),
+                onClick = onProposeAdjustment,
+                enabled = state.canProposeAdjustment,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ClientRow(request: ServiceRequest, onOpenChat: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         HorizontalDivider(color = Mist200)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -360,9 +517,28 @@ private fun ClientRow(request: ServiceRequest) {
                 request.addressReference?.let {
                     Text(stringResource(R.string.trip_reference, it), style = MaterialTheme.typography.bodySmall, color = Slate500)
                 }
+                if (request.categoryName.isNotBlank()) {
+                    Text(request.categoryName, style = MaterialTheme.typography.labelMedium, color = Navy800)
+                }
             }
-            if (request.categoryName.isNotBlank()) {
-                Text(request.categoryName, style = MaterialTheme.typography.labelMedium, color = Navy800)
+            // Chat con el cliente (ANDROID-23). Con texto (ANDROID-43): solo el ícono no se notaba.
+            val chatDescription = stringResource(R.string.chat_open_client)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier
+                    .height(44.dp)
+                    .clip(RoundedCornerShape(22.dp))
+                    .background(Navy900)
+                    .clickable(onClickLabel = chatDescription, role = Role.Button, onClick = onOpenChat)
+                    .padding(horizontal = 14.dp),
+            ) {
+                Icon(painterResource(R.drawable.ic_chat), contentDescription = null, tint = White, modifier = Modifier.size(18.dp))
+                Text(
+                    stringResource(R.string.trip_chat_button),
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                    color = White,
+                )
             }
         }
         HorizontalDivider(color = Mist200)
@@ -415,9 +591,16 @@ private fun LocationNotice(denied: Boolean, onEnable: () -> Unit, onOpenSettings
     }
 }
 
-/** Al finalizar: lo que se hizo, para quién y cuánto tardó. */
+/** Al finalizar: el cobro (ANDROID-25), lo que se hizo, para quién y cuánto tardó. */
 @Composable
-private fun TripSummary(request: ServiceRequest, onDone: () -> Unit) {
+private fun TripSummary(
+    state: TripUiState,
+    request: ServiceRequest,
+    onDone: () -> Unit,
+    onRate: () -> Unit,
+    onConfirmPayment: () -> Unit,
+    onRejectPayment: () -> Unit,
+) {
     SystemBarsAppearance(lightIcons = false)
     Column(
         Modifier
@@ -455,14 +638,13 @@ private fun TripSummary(request: ServiceRequest, onDone: () -> Unit) {
                 )
             }
 
+            ChargeSection(state, request, onConfirmPayment, onRejectPayment)
+
             SummaryCard {
                 SummaryRow(R.drawable.ic_service_general, R.string.request_service, request.categoryName.ifBlank { "—" })
                 SummaryRow(R.drawable.ic_nav_account, R.string.request_client, request.clientName.ifBlank { "—" })
                 val address = listOfNotNull(request.street, request.zone.takeIf { it.isNotBlank() }).joinToString(", ")
                 if (address.isNotEmpty()) SummaryRow(R.drawable.ic_place, R.string.trip_summary_address, address)
-                (request.agreedPrice ?: request.basePrice)?.let {
-                    SummaryRow(R.drawable.ic_tune, R.string.request_base_price, "$" + it.removeSuffix(".00"))
-                }
             }
 
             SummaryCard {
@@ -473,11 +655,90 @@ private fun TripSummary(request: ServiceRequest, onDone: () -> Unit) {
                 onSite?.let { SummaryRow(R.drawable.ic_schedule, R.string.trip_summary_on_site, formatDuration(it)) }
             }
         }
+        // Calificar al cliente (ANDROID-26); la pantalla avisa si ya lo calificó.
+        OutlineActionButton(
+            text = stringResource(R.string.review_rate_client),
+            onClick = onRate,
+            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 16.dp),
+        )
         FixoraPrimaryButton(
             text = stringResource(R.string.trip_summary_done),
             onClick = onDone,
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
         )
+    }
+}
+
+/**
+ * Cobro del servicio: el desglose y en qué va el pago. El cliente registra lo que pagó y aquí el
+ * técnico confirma que lo recibió o dice que no le llegó; lo que falte queda como adeudo.
+ */
+@Composable
+private fun ChargeSection(
+    state: TripUiState,
+    request: ServiceRequest,
+    onConfirmPayment: () -> Unit,
+    onRejectPayment: () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(
+            stringResource(R.string.trip_charge_title).uppercase(),
+            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+            color = Slate500,
+        )
+        PriceBreakdownCard(request, totalLabel = stringResource(R.string.payment_total_to_charge))
+        val summary = request.paymentSummary
+        val paidCents = MoneyRules.toCents(summary?.paid)
+        val pending = request.pendingPayment
+        when {
+            pending != null -> PaymentNotice(
+                icon = R.drawable.ic_payments,
+                title = stringResource(R.string.trip_payment_registered, MoneyRules.format(pending.amount)),
+                text = listOfNotNull(
+                    paymentMethodLabel(pending.method),
+                    pending.reference?.takeIf { pending.method == PaymentMethod.Transfer }?.let { stringResource(R.string.payment_reference_value, it) },
+                ).joinToString(" · "),
+                tone = NoticeTone.Warning,
+            ) {
+                FixoraPrimaryButton(
+                    text = stringResource(R.string.trip_payment_received),
+                    onClick = onConfirmPayment,
+                    loading = state.isSubmitting && !state.showRejectPaymentSheet,
+                )
+                OutlineActionButton(
+                    text = stringResource(R.string.trip_payment_not_received),
+                    onClick = onRejectPayment,
+                    enabled = !state.isSubmitting,
+                    color = ErrorRed,
+                )
+            }
+            summary?.isPaid == true -> PaymentNotice(
+                icon = R.drawable.ic_check_circle,
+                title = stringResource(R.string.trip_payment_paid),
+                text = stringResource(R.string.trip_payment_paid_hint, MoneyRules.format(paidCents)),
+                tone = NoticeTone.Success,
+            )
+            else -> PaymentNotice(
+                icon = R.drawable.ic_schedule,
+                title = stringResource(R.string.trip_payment_waiting, MoneyRules.format(request.balanceCents)),
+                text = if (paidCents > 0) {
+                    stringResource(R.string.trip_payment_waiting_partial, MoneyRules.format(paidCents))
+                } else {
+                    stringResource(R.string.trip_payment_waiting_hint)
+                },
+            )
+        }
+        val lastFailed = request.payments.lastOrNull()?.takeIf { it.status == PaymentStatus.Failed && pending == null }
+        lastFailed?.let {
+            Text(
+                stringResource(R.string.trip_payment_last_failed, MoneyRules.format(it.amount)),
+                style = MaterialTheme.typography.bodySmall,
+                color = Slate500,
+            )
+        }
+        if (!state.showRejectPaymentSheet) {
+            state.paymentError?.let { Text(it.message(), style = MaterialTheme.typography.bodySmall, color = ErrorRed) }
+        }
     }
 }
 
@@ -493,26 +754,36 @@ private fun SummaryCard(content: @Composable () -> Unit) {
     ) { content() }
 }
 
+/**
+ * Etiqueta a la izquierda y valor a la derecha. Los dos tienen su parte del ancho (ANDROID-43):
+ * antes el valor tomaba todo y, con uno largo como la dirección, la etiqueta quedaba aplastada.
+ */
 @Composable
 private fun SummaryRow(@DrawableRes icon: Int, label: Int, value: String) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+    Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Icon(painterResource(icon), contentDescription = null, tint = Navy800, modifier = Modifier.size(20.dp))
         Text(stringResource(label), style = MaterialTheme.typography.bodyMedium, color = Slate500, modifier = Modifier.weight(1f))
-        Text(value, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold), color = Navy900)
+        Text(
+            value,
+            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+            color = Navy900,
+            textAlign = TextAlign.End,
+            modifier = Modifier.weight(1.4f),
+        )
     }
 }
 
 private fun initials(name: String): String =
     name.split(" ").filter { it.isNotBlank() }.take(2).joinToString("") { it.first().uppercase() }.ifEmpty { "?" }
 
-private fun formatKm(km: Double): String = String.format(Locale.US, "%.1f", km)
+internal fun formatKm(km: Double): String = String.format(Locale.US, "%.1f", km)
 
 private val TimeFormat = DateTimeFormatter.ofPattern("HH:mm")
 private val DateTimeFormat = DateTimeFormatter.ofPattern("d MMM, HH:mm", Locale.forLanguageTag("es-MX"))
 
-private fun formatTime(instant: Instant): String = TimeFormat.format(instant.atZone(ZoneId.systemDefault()))
+internal fun formatTime(instant: Instant): String = TimeFormat.format(instant.atZone(ZoneId.systemDefault()))
 
-private fun formatDateTime(instant: Instant): String = DateTimeFormat.format(instant.atZone(ZoneId.systemDefault()))
+internal fun formatDateTime(instant: Instant): String = DateTimeFormat.format(instant.atZone(ZoneId.systemDefault()))
 
 private fun formatDuration(duration: Duration): String {
     val minutes = duration.toMinutes().coerceAtLeast(1)

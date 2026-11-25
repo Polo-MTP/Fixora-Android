@@ -1,7 +1,5 @@
 package com.fixora.app.feature.servicerequest.ui.client
 
-import android.content.ActivityNotFoundException
-import android.content.Intent
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
@@ -50,8 +48,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -63,9 +59,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import coil3.compose.AsyncImage
 import com.fixora.app.R
 import com.fixora.app.core.designsystem.component.FixoraPrimaryButton
 import com.fixora.app.core.designsystem.theme.FixoraTheme
@@ -81,10 +75,19 @@ import com.fixora.app.core.ui.SystemBarsAppearance
 import com.fixora.app.core.ui.message
 import com.fixora.app.feature.account.ui.components.LoadErrorNotice
 import com.fixora.app.feature.map.ui.serviceIcon
+import com.fixora.app.feature.payment.domain.MoneyRules
+import com.fixora.app.feature.payment.domain.PaymentStatus
+import com.fixora.app.feature.payment.ui.NoticeTone
+import com.fixora.app.feature.payment.ui.OutlineActionButton
+import com.fixora.app.feature.payment.ui.PaymentNotice
+import com.fixora.app.feature.payment.ui.PriceBreakdownCard
+import com.fixora.app.feature.payment.ui.RegisterPaymentSheet
+import com.fixora.app.feature.payment.ui.adjustmentReasonLabel
+import com.fixora.app.feature.payment.ui.paymentMethodLabel
 import com.fixora.app.feature.servicerequest.domain.RequestStatus
 import com.fixora.app.feature.servicerequest.domain.ServiceRequest
 
-private val EmergencyRed = Color(0xFFD32F2F)
+internal val EmergencyRed = Color(0xFFD32F2F)
 private val EndedSlate = Color(0xFF475569)
 
 /** Pantalla de espera y estado de la solicitud del cliente (ANDROID-17). */
@@ -93,6 +96,8 @@ fun ClientRequestScreen(
     onHome: () -> Unit,
     onResent: (requestId: String) -> Unit,
     onChooseAnother: (categoryId: String?) -> Unit,
+    onOpenChat: (requestId: String) -> Unit,
+    onRate: (requestId: String) -> Unit,
     viewModel: ClientRequestViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -104,7 +109,32 @@ fun ClientRequestScreen(
         onResend = viewModel::resend,
         onChooseAnother = { onChooseAnother(state.request?.categoryId) },
         onHome = onHome,
+        onRespondAdjustment = viewModel::respondAdjustment,
+        onOpenPayment = viewModel::openPayment,
+        onOpenChat = { state.request?.id?.let(onOpenChat) },
+        onCancelAccepted = viewModel::openCancelAccepted,
+        onRate = { state.request?.id?.let(onRate) },
     )
+    ArrivalAlertEffect(state.arrivalAlerts)
+    if (state.showCancelSheet) {
+        CancelAcceptedSheet(
+            isCanceling = state.isCanceling,
+            error = state.actionError?.message(),
+            onDismiss = viewModel::dismissCancelAccepted,
+            onConfirm = viewModel::cancelAccepted,
+        )
+    }
+    if (state.showPaymentSheet) {
+        state.request?.let { request ->
+            RegisterPaymentSheet(
+                balanceCents = request.balanceCents,
+                isSaving = state.isRegisteringPayment,
+                error = state.paymentError,
+                onDismiss = viewModel::dismissPayment,
+                onSubmit = viewModel::registerPayment,
+            )
+        }
+    }
 }
 
 @Composable
@@ -115,8 +145,12 @@ private fun ClientRequestContent(
     onResend: () -> Unit,
     onChooseAnother: () -> Unit,
     onHome: () -> Unit,
+    onRespondAdjustment: (approve: Boolean) -> Unit = {},
+    onOpenPayment: () -> Unit = {},
+    onOpenChat: () -> Unit = {},
+    onCancelAccepted: () -> Unit = {},
+    onRate: () -> Unit = {},
 ) {
-    SystemBarsAppearance(lightIcons = true)
     val request = state.request
     val phase = state.phase
     val emergency = request?.isEmergency == true
@@ -126,12 +160,25 @@ private fun ClientRequestContent(
         else -> if (emergency) Brush.verticalGradient(listOf(EmergencyRed, Color(0xFFB71C1C))) else Brush.verticalGradient(listOf(Navy900, Navy600))
     }
     var confirmCancel by rememberSaveable { mutableStateOf(false) }
+    var confirmRejectAdjustment by rememberSaveable { mutableStateOf(false) }
 
-    Column(
+    // Aceptada: el seguimiento en el mapa (ANDROID-22) en lugar de «Solicitud aceptada».
+    if (phase == ClientPhase.Accepted && request != null) {
+        ClientTrackingContent(
+            state = state,
+            request = request,
+            onBack = onHome,
+            onOpenChat = onOpenChat,
+            onCancel = onCancelAccepted,
+            onApproveAdjustment = { onRespondAdjustment(true) },
+            onRejectAdjustment = { confirmRejectAdjustment = true },
+        )
+    } else Column(
         Modifier
             .fillMaxSize()
             .background(background),
     ) {
+        SystemBarsAppearance(lightIcons = true)
         Header(state)
         Column(
             Modifier
@@ -151,17 +198,25 @@ private fun ClientRequestContent(
             ) {
                 when {
                     request != null -> {
-                        if (phase == ClientPhase.Accepted || phase == ClientPhase.Completed) TechnicianCard(request)
-                        if (phase == ClientPhase.Accepted || phase == ClientPhase.Completed) StatusSteps(request.status)
+                        if (phase == ClientPhase.Completed) {
+                            TechnicianCard(request)
+                            StatusSteps(request.status)
+                            PaymentSection(request)
+                        }
                         RequestSummary(request)
                     }
                     loadError != null -> LoadErrorNotice(loadError, onRetry = onRetry)
                     else -> CircularProgressIndicator(color = Navy800, strokeWidth = 2.dp, modifier = Modifier.size(24.dp))
                 }
                 state.actionError?.let { Text(it.message(), style = MaterialTheme.typography.bodySmall, color = EmergencyRed) }
+                if (!state.showPaymentSheet) {
+                    state.paymentError?.let { Text(it.message(), style = MaterialTheme.typography.bodySmall, color = EmergencyRed) }
+                }
             }
             Actions(
                 state = state,
+                onOpenPayment = onOpenPayment,
+                onRate = onRate,
                 onCancel = { confirmCancel = true },
                 onResend = onResend,
                 onChooseAnother = onChooseAnother,
@@ -185,6 +240,105 @@ private fun ClientRequestContent(
                 TextButton(onClick = { confirmCancel = false }) { Text(stringResource(R.string.client_request_keep_waiting)) }
             },
         )
+    }
+
+    if (confirmRejectAdjustment) {
+        AlertDialog(
+            onDismissRequest = { confirmRejectAdjustment = false },
+            title = { Text(stringResource(R.string.client_adjustment_reject_title)) },
+            text = { Text(stringResource(R.string.client_adjustment_reject_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmRejectAdjustment = false
+                    onRespondAdjustment(false)
+                }) { Text(stringResource(R.string.client_adjustment_reject_confirm), color = EmergencyRed) }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmRejectAdjustment = false }) { Text(stringResource(R.string.client_adjustment_reject_keep)) }
+            },
+        )
+    }
+}
+
+/**
+ * El técnico propone cobrar de más (ANDROID-24): el cliente ve cuánto, por qué y cómo queda el total,
+ * y lo aprueba o lo rechaza. Sin respuesta, el técnico no puede finalizar.
+ */
+@Composable
+internal fun AdjustmentSection(
+    request: ServiceRequest,
+    responding: Boolean,
+    onApprove: () -> Unit,
+    onReject: () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        request.pendingAdjustment?.let { adjustment ->
+            val newTotal = request.totalCents + MoneyRules.toCents(adjustment.amount)
+            PaymentNotice(
+                icon = R.drawable.ic_payments,
+                title = stringResource(R.string.client_adjustment_title, MoneyRules.format(adjustment.amount)),
+                text = listOfNotNull(adjustmentReasonLabel(adjustment.reason), adjustment.description).joinToString(" · ") +
+                    "\n" + stringResource(R.string.client_adjustment_new_total, MoneyRules.format(newTotal)),
+                tone = NoticeTone.Warning,
+            ) {
+                FixoraPrimaryButton(
+                    text = stringResource(R.string.client_adjustment_approve),
+                    onClick = onApprove,
+                    loading = responding,
+                )
+                OutlineActionButton(
+                    text = stringResource(R.string.client_adjustment_reject),
+                    onClick = onReject,
+                    enabled = !responding,
+                    color = EmergencyRed,
+                )
+            }
+        }
+        PriceBreakdownCard(request, totalLabel = stringResource(R.string.client_payment_total))
+    }
+}
+
+/**
+ * Servicio terminado (ANDROID-24): el resumen con base, ajustes y total, y en qué va el pago. El
+ * cliente lo registra y el proveedor confirma que lo recibió; lo que falte queda como adeudo.
+ */
+@Composable
+private fun PaymentSection(request: ServiceRequest) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        PriceBreakdownCard(request, totalLabel = stringResource(R.string.client_payment_total_to_pay))
+        val summary = request.paymentSummary
+        val paidCents = MoneyRules.toCents(summary?.paid)
+        val pending = request.pendingPayment
+        val lastFailed = request.payments.lastOrNull()?.takeIf { it.status == PaymentStatus.Failed }
+        when {
+            pending != null -> PaymentNotice(
+                icon = R.drawable.ic_schedule,
+                title = stringResource(R.string.client_payment_registered, MoneyRules.format(pending.amount)),
+                text = paymentMethodLabel(pending.method) + " · " + stringResource(R.string.client_payment_registered_hint),
+                tone = NoticeTone.Warning,
+            )
+            summary?.isPaid == true -> PaymentNotice(
+                icon = R.drawable.ic_check_circle,
+                title = stringResource(R.string.client_payment_paid),
+                text = stringResource(R.string.client_payment_paid_hint, MoneyRules.format(paidCents)),
+                tone = NoticeTone.Success,
+            )
+            lastFailed != null -> PaymentNotice(
+                icon = R.drawable.ic_info,
+                title = stringResource(R.string.client_payment_failed, MoneyRules.format(lastFailed.amount)),
+                text = lastFailed.rejectionReason ?: stringResource(R.string.client_payment_failed_hint),
+                tone = NoticeTone.Error,
+            )
+            else -> PaymentNotice(
+                icon = R.drawable.ic_payments,
+                title = stringResource(R.string.client_payment_due, MoneyRules.format(request.balanceCents)),
+                text = if (paidCents > 0) {
+                    stringResource(R.string.client_payment_due_partial, MoneyRules.format(paidCents))
+                } else {
+                    stringResource(R.string.client_payment_due_hint)
+                },
+            )
+        }
     }
 }
 
@@ -299,7 +453,7 @@ private fun EndHeader(@DrawableRes icon: Int, title: String, subtitle: String) {
 }
 
 @Composable
-private fun statusLabel(status: RequestStatus?): String = stringResource(
+internal fun statusLabel(status: RequestStatus?): String = stringResource(
     when (status) {
         RequestStatus.OnTheWay -> R.string.client_request_step_on_the_way_now
         RequestStatus.Arrived -> R.string.client_request_step_arrived_now
@@ -308,48 +462,9 @@ private fun statusLabel(status: RequestStatus?): String = stringResource(
     },
 )
 
-@Composable
-private fun TechnicianCard(request: ServiceRequest) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(14.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, Mist200, RoundedCornerShape(18.dp))
-            .padding(16.dp),
-    ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .size(56.dp)
-                .clip(CircleShape)
-                .background(Navy900),
-        ) {
-            val name = request.technicianName.orEmpty()
-            Text(
-                name.split(' ').filter { it.isNotBlank() }.take(2).joinToString("") { it.first().uppercase() }.ifBlank { "?" },
-                style = MaterialTheme.typography.titleMedium,
-                color = White,
-            )
-            request.technicianPhotoUrl?.let {
-                AsyncImage(model = it, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
-            }
-        }
-        Column(Modifier.weight(1f)) {
-            Text(stringResource(R.string.client_request_your_technician), style = MaterialTheme.typography.labelSmall, color = Slate500)
-            Text(
-                request.technicianName ?: stringResource(R.string.client_request_technician_pending),
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = Navy900,
-            )
-            request.branchName?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Slate500) }
-        }
-    }
-}
-
 /** Aceptada → En camino → Llegó → Terminado, con el paso actual marcado. */
 @Composable
-private fun StatusSteps(status: RequestStatus) {
+internal fun StatusSteps(status: RequestStatus) {
     val steps = listOf(
         RequestStatus.Accepted to R.string.client_request_step_accepted,
         RequestStatus.OnTheWay to R.string.client_request_step_on_the_way,
@@ -408,12 +523,13 @@ private fun RequestSummary(request: ServiceRequest) {
 @Composable
 private fun Actions(
     state: ClientRequestUiState,
+    onOpenPayment: () -> Unit,
+    onRate: () -> Unit,
     onCancel: () -> Unit,
     onResend: () -> Unit,
     onChooseAnother: () -> Unit,
     onHome: () -> Unit,
 ) {
-    val context = LocalContext.current
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp),
         modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 16.dp, top = 8.dp),
@@ -431,29 +547,24 @@ private fun Actions(
                 }
                 SecondaryButton(stringResource(R.string.client_request_choose_another), onClick = onChooseAnother)
             }
-            ClientPhase.Accepted -> {
-                val phone = state.request?.branchPhone
-                if (phone != null) {
-                    FixoraPrimaryButton(
-                        text = stringResource(R.string.client_request_call),
-                        onClick = {
-                            try {
-                                context.startActivity(Intent(Intent.ACTION_DIAL, "tel:$phone".toUri()))
-                            } catch (_: ActivityNotFoundException) {
-                                // Sin app de teléfono (por ejemplo una tableta) no hay a dónde llamar.
-                            }
-                        },
-                    )
+            ClientPhase.Completed -> {
+                // Primero el pago, si falta; calificar (ANDROID-26) avisa si ya lo hizo.
+                if (state.canRegisterPayment) {
+                    FixoraPrimaryButton(text = stringResource(R.string.client_payment_register), onClick = onOpenPayment)
+                    SecondaryButton(stringResource(R.string.review_rate_technician), onClick = onRate)
+                } else {
+                    FixoraPrimaryButton(text = stringResource(R.string.review_rate_technician), onClick = onRate)
                 }
                 SecondaryButton(stringResource(R.string.client_request_home), onClick = onHome)
             }
-            ClientPhase.Canceled, ClientPhase.Completed, null -> SecondaryButton(stringResource(R.string.client_request_home), onClick = onHome)
+            // Aceptada se ve en el seguimiento (ClientTrackingContent), con sus propias acciones.
+            ClientPhase.Accepted, ClientPhase.Canceled, null -> SecondaryButton(stringResource(R.string.client_request_home), onClick = onHome)
         }
     }
 }
 
 @Composable
-private fun SecondaryButton(text: String, onClick: () -> Unit, loading: Boolean = false, color: Color = Navy900) {
+internal fun SecondaryButton(text: String, onClick: () -> Unit, loading: Boolean = false, color: Color = Navy900) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier

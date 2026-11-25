@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.fixora.app.core.network.ApiError
 import com.fixora.app.core.network.ApiResult
 import com.fixora.app.feature.providerprofile.data.ProviderProfileRepository
+import com.fixora.app.feature.providerprofile.domain.Review
+import com.fixora.app.feature.review.data.ReviewRepository
 import com.fixora.app.feature.providerprofile.domain.BasePrice
 import com.fixora.app.feature.providerprofile.domain.ProviderProfile
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,13 +30,29 @@ data class ProviderProfileUiState(
     val tab: ProfileTab = ProfileTab.Info,
     /** Servicio elegido en el mapa; el formulario de solicitud lo trae elegido. */
     val categoryId: String? = null,
-)
+    /**
+     * Reseñas ya cargadas con «Ver más» (ANDROID-26); null mientras solo se muestran las últimas
+     * que trae la ficha.
+     */
+    val reviews: List<Review>? = null,
+    val reviewsPage: Int = 0,
+    val moreReviewsAvailable: Boolean = true,
+    val isLoadingReviews: Boolean = false,
+    val reviewsError: ApiError? = null,
+) {
+    val shownReviews: List<Review> get() = reviews ?: profile?.latestReviews.orEmpty()
+
+    /** Faltan reseñas por ver: la ficha trae solo las últimas y la lista va por páginas. */
+    val hasMoreReviews: Boolean
+        get() = profile != null && moreReviewsAvailable && profile.reviewsCount > shownReviews.size
+}
 
 /** Ficha pública del proveedor (ANDROID-11). */
 @HiltViewModel
 class ProviderProfileViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val repository: ProviderProfileRepository,
+    private val reviewRepository: ReviewRepository,
 ) : ViewModel() {
 
     // Los argumentos de ProviderProfileRoute se guardan con el nombre de cada propiedad.
@@ -54,6 +72,36 @@ class ProviderProfileViewModel @Inject constructor(
 
     fun onTabSelected(tab: ProfileTab) = _uiState.update { it.copy(tab = tab) }
 
+    /** La siguiente página de reseñas; la primera reemplaza a las últimas que trae la ficha. */
+    fun loadMoreReviews() {
+        val state = _uiState.value
+        if (state.isLoadingReviews || !state.hasMoreReviews) return
+        val page = state.reviewsPage + 1
+        _uiState.update { it.copy(isLoadingReviews = true, reviewsError = null) }
+        viewModelScope.launch {
+            when (val result = reviewRepository.branchReviews(branchId, page, REVIEWS_PAGE_SIZE)) {
+                is ApiResult.Success -> _uiState.update {
+                    val items = result.data.items.map { review ->
+                        Review(
+                            rating = review.rating,
+                            comment = review.comment,
+                            author = review.authorName,
+                            createdAt = review.createdAt,
+                            photoUrls = review.evidence.filterNot { item -> item.isVideo }.map { item -> item.url },
+                        )
+                    }
+                    it.copy(
+                        isLoadingReviews = false,
+                        reviews = if (page == 1) items else it.reviews.orEmpty() + items,
+                        reviewsPage = page,
+                        moreReviewsAvailable = result.data.hasMore,
+                    )
+                }
+                is ApiResult.Failure -> _uiState.update { it.copy(isLoadingReviews = false, reviewsError = result.error) }
+            }
+        }
+    }
+
     private fun load() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
@@ -64,5 +112,9 @@ class ProviderProfileViewModel @Inject constructor(
                 is ApiResult.Failure -> _uiState.update { it.copy(isLoading = false, error = result.error) }
             }
         }
+    }
+
+    companion object {
+        const val REVIEWS_PAGE_SIZE = 10
     }
 }

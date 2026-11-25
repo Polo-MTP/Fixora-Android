@@ -84,6 +84,8 @@ private val TRIP_STATUSES = setOf(
 @Composable
 fun ServiceRequestScreen(
     onBack: () -> Unit,
+    onOpenChat: (requestId: String) -> Unit,
+    onRate: (requestId: String) -> Unit,
     viewModel: ServiceRequestViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -91,7 +93,7 @@ fun ServiceRequestScreen(
     var choosingReason by rememberSaveable { mutableStateOf(false) }
     // Ya aceptada: el traslado con su mapa y los botones para avanzar (ANDROID-20).
     if (request != null && request.status in TRIP_STATUSES) {
-        TripScreen(onBack = onBack)
+        TripScreen(onBack = onBack, onOpenChat = { onOpenChat(request.id) }, onRate = { onRate(request.id) })
         return
     }
     LaunchedEffect(state.rejected) { if (state.rejected) onBack() }

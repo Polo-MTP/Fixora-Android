@@ -1,11 +1,18 @@
 package com.fixora.app.feature.servicerequest.data
 
 import com.fixora.app.core.network.DataResponse
+import com.fixora.app.feature.payment.data.PaymentDto
+import com.fixora.app.feature.payment.data.PaymentSummaryDto
+import com.fixora.app.feature.payment.data.PriceAdjustmentDto
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.Path
 
 /** Solicitudes de servicio (API-26 y API-27). */
@@ -29,10 +36,24 @@ interface ServiceRequestApi {
     @GET("service-requests/{id}/tracking")
     suspend fun tracking(@Path("id") id: String): DataResponse<TrackingDto>
 
-    /** El cliente cancela mientras nadie la acepta (sin motivo). */
+    /**
+     * Cancela la solicitud. El cliente, mientras nadie la acepta, sin motivo; después de aceptar, el
+     * técnico con motivo y, si tiene, las llaves de su evidencia (ANDROID-21).
+     */
     @POST("service-requests/{id}/cancel")
     suspend fun cancel(@Path("id") id: String, @Body body: CancelRequest = CancelRequest())
+
+    /** La evidencia de la cancelación se sube antes en la categoría «evidences». */
+    @Multipart
+    @POST("files/upload")
+    suspend fun uploadEvidence(
+        @Part("category") category: RequestBody,
+        @Part file: MultipartBody.Part,
+    ): DataResponse<UploadedEvidenceDto>
 }
+
+@Serializable
+data class UploadedEvidenceDto(@SerialName("file_key") val fileKey: String)
 
 @Serializable
 data class StatusChangeRequest(val status: String, val latitude: Double, val longitude: Double)
@@ -50,6 +71,8 @@ data class RouteEtaDto(
     @SerialName("distance_meters") val distanceMeters: Double = 0.0,
     @SerialName("eta_timestamp") val etaTimestamp: String? = null,
     val geometry: LineStringDto? = null,
+    /** El servidor de rutas no respondió: la API estimó en línea recta (ANDROID-43). */
+    @SerialName("is_fallback") val isFallback: Boolean = false,
 )
 
 /** GeoJSON LineString: cada punto es [longitud, latitud]. */
@@ -57,7 +80,10 @@ data class RouteEtaDto(
 data class LineStringDto(val coordinates: List<List<Double>> = emptyList())
 
 @Serializable
-data class CancelRequest(val reason: String? = null)
+data class CancelRequest(
+    val reason: String? = null,
+    @SerialName("evidence_keys") val evidenceKeys: List<String>? = null,
+)
 
 @Serializable
 data class AcceptRequest(@SerialName("employee_id") val employeeId: String)
@@ -80,6 +106,11 @@ data class ServiceRequestDto(
     @SerialName("base_price") val basePrice: String? = null,
     val attachments: List<AttachmentDto> = emptyList(),
     @SerialName("agreed_price") val agreedPrice: String? = null,
+    /** Precio acordado más los ajustes aprobados; la API lo fija al finalizar (API-36). */
+    @SerialName("total_amount") val totalAmount: String? = null,
+    @SerialName("price_adjustments") val priceAdjustments: List<PriceAdjustmentDto> = emptyList(),
+    @SerialName("payment_summary") val paymentSummary: PaymentSummaryDto? = null,
+    val payments: List<PaymentDto> = emptyList(),
     @SerialName("accepted_at") val acceptedAt: String? = null,
     @SerialName("arrived_at") val arrivedAt: String? = null,
     @SerialName("completed_at") val completedAt: String? = null,
@@ -99,6 +130,18 @@ data class BranchDto(val id: String, val name: String = "", val phone: String? =
 data class TechnicianDto(
     val name: String = "",
     @SerialName("photo_url") val photoUrl: String? = null,
+    /** El de la copia guardada al aceptar (API-55); null si no registró vehículo. */
+    val vehicle: VehicleDto? = null,
+    /** El proveedor tiene su alta aprobada (API-56). */
+    val verified: Boolean = false,
+)
+
+@Serializable
+data class VehicleDto(
+    val plate: String = "",
+    val brand: String = "",
+    val model: String = "",
+    val color: String = "",
 )
 
 /** A cuántos técnicos se avisó y cuántos rechazaron (API-30). */

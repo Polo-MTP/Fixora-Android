@@ -1,4 +1,6 @@
 <resources>
+    <!-- ANDROID-44 -->
+    <string name="logging_out">Cerrando sesión…</string>
     <!-- app_name lo define cada flavor en app/build.gradle.kts -->
 
     <!-- Landing -->
@@ -143,6 +145,11 @@
     <string name="personal_data_title">Datos personales</string>
     <string name="personal_data_email_hint">El correo es con el que inicias sesión y no se puede cambiar aquí.</string>
     <string name="personal_data_saved">Datos actualizados</string>
+    <!-- API-55: datos que no se cambian con un servicio en curso -->
+    <string name="active_service_name_locked">Tienes un servicio en curso. Tu nombre no se puede cambiar hasta que termine; el teléfono y la fecha de nacimiento sí.</string>
+    <string name="active_service_photo_locked">Tienes un servicio en curso. Podrás cambiar tu foto cuando termine.</string>
+    <string name="active_service_technician_photo_locked">Tienes un servicio en curso. Podrás cambiar tu foto cuando termine; la biografía sí se puede editar.</string>
+    <string name="active_service_vehicle_locked">Tienes un servicio en curso. El cliente identifica tu vehículo con estos datos: podrás cambiarlos cuando termine.</string>
 
     <!-- Mi cuenta · Direcciones -->
     <string name="addresses_title">Mis direcciones</string>
@@ -179,6 +186,18 @@
     <string name="address_delete_title">¿Eliminar esta dirección?</string>
     <string name="address_delete_message">Ya no aparecerá al pedir un servicio.</string>
     <string name="address_delete_confirm">Eliminar</string>
+    <!-- Ubicación de la dirección en el mapa (ANDROID-41) -->
+    <string name="address_location_title">Ubicación en el mapa</string>
+    <string name="address_location_hint">Marca dónde está para que el técnico llegue directo.</string>
+    <string name="address_location_set">Marcada. El técnico llegará a este punto.</string>
+    <string name="address_location_mark">Marcar</string>
+    <string name="address_location_change">Cambiar</string>
+    <string name="address_location_required">Marca la ubicación en el mapa.</string>
+    <string name="address_location_picker_title">Marca la ubicación</string>
+    <string name="address_location_picker_hint">Mueve el mapa hasta que el pin quede en la entrada.</string>
+    <string name="address_location_confirm">Confirmar ubicación</string>
+    <string name="address_location_looking_up">Buscando la dirección de ese punto…</string>
+    <string name="address_location_review">Llenamos la dirección con el punto del mapa. Revisa que los datos sean correctos y corrígelos si algo no coincide, sobre todo el número y la colonia.</string>
 
     <!-- Mi cuenta · Cambiar contraseña -->
     <string name="change_password_title">Cambiar contraseña</string>
@@ -386,6 +405,37 @@
     <string name="provider_profile_reviews_latest">Se muestran las %1$d más recientes de %2$d.</string>
     <string name="provider_profile_review_author_unknown">Cliente</string>
     <string name="provider_profile_stars">%1$d de 5 estrellas</string>
+    <!-- ANDROID-26: calificar al terminar el servicio -->
+    <string name="review_title">Califica el servicio</string>
+    <string name="review_question_technician">¿Cómo te fue con %1$s?</string>
+    <string name="review_question_client">¿Cómo fue atender a %1$s?</string>
+    <string name="review_the_technician">tu técnico</string>
+    <string name="review_the_client">el cliente</string>
+    <string name="review_tap_stars">Toca las estrellas para calificar</string>
+    <string name="review_star">%1$d estrellas: %2$s</string>
+    <string name="review_rating_1">Muy malo</string>
+    <string name="review_rating_2">Malo</string>
+    <string name="review_rating_3">Regular</string>
+    <string name="review_rating_4">Bueno</string>
+    <string name="review_rating_5">Excelente</string>
+    <string name="review_comment">Comentario (opcional)</string>
+    <string name="review_comment_placeholder_technician">Cuéntanos qué tal el trabajo, la puntualidad y el trato</string>
+    <string name="review_comment_placeholder_client">Cuéntanos si el cliente estuvo a tiempo y si la información era correcta</string>
+    <string name="review_evidence">Fotos o video (opcional)</string>
+    <string name="review_evidence_hint">Hasta %1$d fotos o videos MP4 de máximo 25 MB.</string>
+    <string name="review_take_photo">Tomar foto</string>
+    <string name="review_pick_media">Elegir de la galería</string>
+    <string name="review_evidence_wrong_type">Ese archivo no se puede adjuntar. Elige una foto JPG, PNG o WebP, o un video MP4.</string>
+    <string name="review_send">Enviar calificación</string>
+    <string name="review_done">Listo</string>
+    <string name="review_thanks">Gracias por tu calificación</string>
+    <string name="review_already_title">Ya calificaste este servicio</string>
+    <string name="review_already_hint">Una calificación no se puede cambiar.</string>
+    <string name="review_not_yet_title">Todavía no puedes calificar</string>
+    <string name="review_not_yet_text">Podrás hacerlo cuando el servicio termine.</string>
+    <string name="review_rate_technician">Calificar al técnico</string>
+    <string name="review_rate_client">Calificar al cliente</string>
+    <string name="provider_profile_reviews_more">Ver más reseñas</string>
     <string name="provider_profile_no_works">Todavía no ha publicado trabajos.</string>
     <string name="provider_profile_no_certificates">No tiene certificados publicados.</string>
     <string name="provider_profile_certificate_open">Ver</string>
@@ -540,6 +590,9 @@
     <string name="request_form_missing_description">Elige qué está pasando o descríbelo.</string>
     <string name="request_form_missing_address">Elige a dónde va el técnico.</string>
     <string name="request_form_missing_slot">Elige un horario para la cita.</string>
+    <string name="request_form_missing_location">Marca la dirección en el mapa para que el técnico sepa a dónde llegar.</string>
+    <string name="request_form_address_no_location">Esta dirección no está marcada en el mapa.</string>
+    <string name="request_form_address_mark_location">Marcar en el mapa</string>
 
     <!-- Botón de emergencia (ANDROID-16) -->
     <string name="emergency_title">¿Es una emergencia real?</string>
@@ -587,6 +640,11 @@
     <string name="client_request_completed_title">Servicio terminado</string>
     <string name="client_request_completed_hint">Gracias por usar Fixora.</string>
     <string name="client_request_your_technician">Tu técnico</string>
+    <!-- ANDROID-27: tarjeta del técnico -->
+    <string name="technician_card_verified">Datos verificados por Fixora</string>
+    <string name="technician_card_vehicle">Llega en</string>
+    <string name="technician_card_vehicle_unknown">Vehículo registrado</string>
+    <string name="technician_card_plate">Placas %1$s</string>
     <string name="client_request_technician_pending">Por asignar</string>
     <string name="client_request_step_accepted">Aceptada</string>
     <string name="client_request_step_on_the_way">En camino</string>
@@ -596,6 +654,17 @@
     <string name="client_request_step_on_the_way_now">El técnico va en camino.</string>
     <string name="client_request_step_arrived_now">El técnico llegó a tu domicilio.</string>
     <string name="client_request_step_scheduled_now">Tu cita quedó agendada.</string>
+    <!-- ANDROID-22: seguimiento del técnico -->
+    <string name="client_tracking_preparing">Tu técnico se prepara para salir. Aquí lo verás en camino.</string>
+    <string name="client_tracking_scheduled_for">Tu cita es el %1$s. Aquí verás al técnico cuando salga.</string>
+    <string name="client_tracking_on_the_way">Tu técnico va en camino.</string>
+    <string name="client_tracking_arrived_title">Tu técnico llegó</string>
+    <string name="client_tracking_arrived_text">Ya está en tu domicilio.</string>
+    <string name="client_tracking_cancel">Cancelar servicio</string>
+    <string name="client_tracking_cancel_title">Cancelar servicio</string>
+    <string name="client_tracking_cancel_hint">El técnico ya aceptó y verá el motivo.</string>
+    <string name="client_tracking_cancel_placeholder">Por ejemplo: ya se resolvió el problema</string>
+    <string name="client_tracking_cancel_confirm">Cancelar servicio</string>
     <string name="client_request_call">Llamar al negocio</string>
     <string name="client_request_home">Volver al inicio</string>
 
@@ -616,6 +685,9 @@
     <string name="trip_at">Estás en</string>
     <string name="trip_emergency">Emergencia</string>
     <string name="trip_minutes">%1$d min</string>
+    <string name="trip_minutes_approximate">≈ %1$d min</string>
+    <string name="trip_chat_button">Mensaje</string>
+    <string name="trip_route_approximate">Tiempo y ruta aproximados: por ahora no se pudo calcular el camino por calles.</string>
     <string name="trip_km">%1$s km</string>
     <string name="trip_km_arrival">%1$s km · Llegada %2$s</string>
     <string name="trip_calculating">Calculando la ruta…</string>
@@ -634,6 +706,25 @@
     <string name="trip_finish_text">Al finalizar, el cliente verá el servicio como terminado.</string>
     <string name="trip_finish_confirm">Finalizar</string>
     <string name="trip_finish_cancel">Todavía no</string>
+    <!-- ANDROID-21: el técnico cancela un servicio ya aceptado -->
+    <string name="trip_cancel_open">Cancelar servicio</string>
+    <string name="trip_cancel_title">Cancelar servicio</string>
+    <string name="trip_cancel_hint">El cliente verá el motivo. Cancela solo si de verdad no puedes atender.</string>
+    <string name="trip_cancel_reason">Motivo</string>
+    <string name="trip_cancel_reason_placeholder">Por ejemplo: se ponchó una llanta y no llego a tiempo</string>
+    <string name="trip_cancel_reason_required">Escribe por qué cancelas.</string>
+    <string name="trip_cancel_evidence">Evidencia (opcional)</string>
+    <string name="trip_cancel_evidence_hint">Hasta %1$d fotos, PDF o videos MP4 de máximo 25 MB.</string>
+    <string name="trip_cancel_take_photo">Tomar foto</string>
+    <string name="trip_cancel_pick_file">Elegir archivo</string>
+    <string name="evidence_remove">Quitar %1$s</string>
+    <string name="trip_cancel_evidence_wrong_type">Ese archivo no se puede adjuntar. Elige una foto JPG, PNG o WebP, un PDF o un video MP4.</string>
+    <string name="trip_cancel_evidence_too_large">El archivo pesa más de 25 MB. Elige uno más ligero.</string>
+    <string name="trip_cancel_evidence_unreadable">No se pudo leer el archivo. Intenta con otro.</string>
+    <string name="trip_cancel_penalty_title">Sin evidencia puede haber una penalización</string>
+    <string name="trip_cancel_penalty_text">Si no puedes atender por algo ajeno a ti, como una falla del vehículo o un accidente, adjunta una foto o un archivo que lo muestre.</string>
+    <string name="trip_cancel_confirm">Cancelar servicio</string>
+    <string name="trip_cancel_done">Cancelaste el servicio. Se le avisó al cliente.</string>
     <string name="trip_summary_title">Servicio finalizado</string>
     <string name="trip_summary_subtitle">Solicitud #%1$s</string>
     <string name="trip_summary_address">Domicilio</string>
@@ -642,4 +733,122 @@
     <string name="trip_summary_finished">Terminado</string>
     <string name="trip_summary_on_site">Tiempo en el domicilio</string>
     <string name="trip_summary_done">Listo</string>
+
+    <!-- Cobro del servicio: ajustes de precio, pagos y adeudos (ANDROID-24 y ANDROID-25) -->
+    <string name="payment_base_price">Precio base</string>
+    <string name="payment_total_to_charge">Total a cobrar</string>
+    <string name="payment_reason_materials">Materiales extra</string>
+    <string name="payment_reason_time">Tiempo adicional</string>
+    <string name="payment_reason_other">Otro</string>
+    <string name="payment_method_cash">Efectivo</string>
+    <string name="payment_method_transfer">Transferencia</string>
+    <string name="payment_reference_value">Ref. %1$s</string>
+    <string name="payment_adjustment_pending">Esperando respuesta del cliente</string>
+    <string name="payment_adjustment_rejected">Rechazado por el cliente</string>
+    <string name="payment_amount_invalid">Escribe un monto mayor a 0, con máximo 2 decimales.</string>
+    <string name="payment_amount_too_high">El ajuste no puede pasar de %1$s.</string>
+    <string name="payment_adjustment_title">Proponer ajuste de precio</string>
+    <string name="payment_adjustment_hint">El cliente debe aprobarlo antes de que se sume al total.</string>
+    <string name="payment_adjustment_amount">¿Cuánto se agrega?</string>
+    <string name="payment_adjustment_reason">Motivo</string>
+    <string name="payment_adjustment_description">Explica el ajuste</string>
+    <string name="payment_adjustment_description_optional">Detalle (opcional)</string>
+    <string name="payment_adjustment_description_placeholder">Ej. Se cambió la llave de paso</string>
+    <string name="payment_adjustment_description_required">Explica qué se cobra cuando el motivo es «Otro».</string>
+    <string name="payment_adjustment_send">Enviar al cliente</string>
+    <string name="payment_reject_title">No recibí el pago</string>
+    <string name="payment_reject_hint">El cliente verá el motivo y podrá registrarlo otra vez.</string>
+    <string name="payment_reject_reason">Motivo (opcional)</string>
+    <string name="payment_reject_reason_placeholder">Ej. No llegó la transferencia</string>
+    <string name="payment_reject_send">Avisar al cliente</string>
+
+    <string name="trip_adjustment_propose">Proponer ajuste de precio</string>
+    <string name="trip_adjustment_waiting">Ajuste de %1$s enviado</string>
+    <string name="trip_adjustment_waiting_hint">Podrás finalizar cuando el cliente lo apruebe o lo rechace.</string>
+    <string name="trip_charge_title">Cobro</string>
+    <string name="trip_payment_registered">El cliente registró un pago de %1$s</string>
+    <string name="trip_payment_received">Lo recibí</string>
+    <string name="trip_payment_not_received">No lo recibí</string>
+    <string name="trip_payment_paid">Servicio pagado</string>
+    <string name="trip_payment_paid_hint">Recibiste %1$s.</string>
+    <string name="trip_payment_waiting">Faltan %1$s por cobrar</string>
+    <string name="trip_payment_waiting_hint">Cuando el cliente registre su pago, confirma aquí que lo recibiste. Lo que no pague queda como adeudo.</string>
+    <string name="trip_payment_waiting_partial">Ya recibiste %1$s. Lo que falta queda como adeudo.</string>
+    <string name="trip_payment_last_failed">Marcaste como no recibido el último pago de %1$s.</string>
+
+    <string name="debts_title_provider">Adeudos</string>
+    <string name="debts_title_client">Pagos pendientes</string>
+    <string name="debts_total_provider">Por cobrar</string>
+    <string name="debts_total_client">Por pagar</string>
+    <string name="debts_count_one">1 adeudo</string>
+    <string name="debts_count">%1$d adeudos</string>
+    <string name="debts_empty_provider">Ningún cliente te debe.</string>
+    <string name="debts_empty_client">No tienes pagos pendientes.</string>
+    <string name="debts_finished_on">Terminado el %1$s</string>
+    <string name="debts_paid_of">Pagado %1$s de %2$s</string>
+    <string name="debts_awaiting_provider">El cliente registró %1$s: confírmalo</string>
+    <string name="debts_awaiting_client">Registraste %1$s; falta que el proveedor lo confirme</string>
+    <string name="debts_reminder_sent">Recordatorio enviado</string>
+    <string name="debts_reminder_next">Podrás recordarle otra vez el %1$s</string>
+    <string name="debts_reminders_one">Se le ha recordado 1 vez</string>
+    <string name="debts_reminders">Se le ha recordado %1$d veces</string>
+    <string name="debts_remind">Recordar pago</string>
+    <string name="debts_home_provider">%1$s por cobrar</string>
+    <string name="debts_home_client">%1$s por pagar</string>
+
+    <!-- El cliente: aprobar ajustes y registrar su pago (ANDROID-24) -->
+    <string name="payment_amount_over_balance">No puede ser mayor a lo que falta por pagar (%1$s).</string>
+    <string name="payment_register_title">Registrar pago</string>
+    <string name="payment_register_hint">El proveedor confirmará que lo recibió.</string>
+    <string name="payment_register_method">¿Cómo pagaste?</string>
+    <string name="payment_register_amount">¿Cuánto pagaste?</string>
+    <string name="payment_register_partial">Quedarán %1$s como adeudo.</string>
+    <string name="payment_register_reference">Referencia de la transferencia (opcional)</string>
+    <string name="payment_register_reference_placeholder">Ej. clave de rastreo</string>
+    <string name="payment_register_send">Registrar pago</string>
+    <string name="client_adjustment_title">El técnico propone cobrar %1$s más</string>
+    <string name="client_adjustment_new_total">Si lo apruebas, el total queda en %1$s.</string>
+    <string name="client_adjustment_approve">Aprobar ajuste</string>
+    <string name="client_adjustment_reject">Rechazar</string>
+    <string name="client_adjustment_reject_title">¿Rechazar el ajuste?</string>
+    <string name="client_adjustment_reject_message">No se sumará al total. Si tienes dudas, coméntalo con el técnico antes de rechazarlo.</string>
+    <string name="client_adjustment_reject_confirm">Rechazar ajuste</string>
+    <string name="client_adjustment_reject_keep">Volver</string>
+    <string name="client_payment_total">Total</string>
+    <string name="client_payment_total_to_pay">Total a pagar</string>
+    <string name="client_payment_registered">Registraste un pago de %1$s</string>
+    <string name="client_payment_registered_hint">Falta que el proveedor confirme que lo recibió.</string>
+    <string name="client_payment_paid">Servicio pagado</string>
+    <string name="client_payment_paid_hint">Pagaste %1$s. Gracias.</string>
+    <string name="client_payment_failed">El proveedor no recibió tu pago de %1$s</string>
+    <string name="client_payment_failed_hint">Revisa el pago y regístralo de nuevo.</string>
+    <string name="client_payment_due">Faltan %1$s por pagar</string>
+    <string name="client_payment_due_hint">Págale al técnico en efectivo o por transferencia y regístralo aquí.</string>
+    <string name="client_payment_due_partial">Ya pagaste %1$s. Lo que falta queda como adeudo.</string>
+    <string name="client_payment_register">Registrar pago</string>
+
+    <!-- Chat de la solicitud (ANDROID-23) -->
+    <string name="chat_title">Chat</string>
+    <string name="chat_open_technician">Enviar mensaje al técnico</string>
+    <string name="chat_open_client">Enviar mensaje al cliente</string>
+    <string name="chat_empty">Todavía no hay mensajes. Escribe para coordinar el servicio.</string>
+    <string name="chat_empty_closed">Esta solicitud no tuvo mensajes.</string>
+    <string name="chat_closed">El servicio terminó; el chat queda solo para consulta.</string>
+    <string name="chat_reconnecting">Sin conexión en tiempo real. Reconectando…</string>
+    <string name="chat_placeholder">Escribe un mensaje</string>
+    <string name="chat_send">Enviar</string>
+    <string name="chat_sending">Enviando…</string>
+    <string name="chat_read">Leído</string>
+    <string name="chat_failed_retry">No se envió. Reintentar</string>
+    <string name="chat_failed_discard">Descartar</string>
+    <string name="chat_today">Hoy</string>
+    <string name="chat_yesterday">Ayer</string>
+    <string name="chat_photo">Foto</string>
+    <string name="chat_photo_remove">Quitar foto</string>
+    <string name="chat_photo_error">No se pudo leer una de las fotos. Elige otra.</string>
+    <string name="chat_attach_gallery">Adjuntar fotos</string>
+    <string name="chat_attach_camera">Tomar foto</string>
+    <string name="chat_reply_you">Tú</string>
+    <string name="chat_reply_other">Mensaje</string>
+    <string name="chat_reply_cancel">Cancelar respuesta</string>
 </resources>

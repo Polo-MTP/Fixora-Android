@@ -1,5 +1,6 @@
 package com.fixora.app.feature.providerprofile.domain
 
+import java.time.Instant
 import com.fixora.app.feature.availability.location.Coordinates
 import com.fixora.app.feature.portfolio.domain.PortfolioWork
 
@@ -40,7 +41,15 @@ data class ProviderProfile(
 }
 
 /** Reseña de un cliente; [comment] vacío si solo dejó estrellas. */
-data class Review(val rating: Int, val comment: String, val author: String)
+data class Review(
+    val rating: Int,
+    val comment: String,
+    val author: String,
+    /** Fecha de la reseña; la ficha (últimas 5) no la manda, la lista completa sí (ANDROID-26). */
+    val createdAt: Instant? = null,
+    /** Fotos que adjuntó el cliente; los videos no se muestran en la ficha. */
+    val photoUrls: List<String> = emptyList(),
+)
 
 /** [isMinimum]: es el más barato de varios servicios, se muestra como «Desde». */
 data class BasePrice(val amount: String, val isMinimum: Boolean)

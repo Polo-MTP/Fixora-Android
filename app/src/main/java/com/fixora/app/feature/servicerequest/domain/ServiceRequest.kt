@@ -1,6 +1,13 @@
 package com.fixora.app.feature.servicerequest.domain
 
 import com.fixora.app.feature.availability.location.Coordinates
+import com.fixora.app.feature.payment.domain.AdjustmentStatus
+import com.fixora.app.feature.payment.domain.MoneyRules
+import com.fixora.app.feature.payment.domain.Payment
+import com.fixora.app.feature.payment.domain.PaymentStatus
+import com.fixora.app.feature.payment.domain.PaymentSummary
+import com.fixora.app.feature.payment.domain.PriceAdjustment
+import com.fixora.app.feature.profile.domain.Vehicle
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -48,6 +55,10 @@ data class ServiceRequest(
     val branchName: String? = null,
     val branchPhone: String? = null,
     val technicianPhotoUrl: String? = null,
+    /** Con qué llega el técnico (ANDROID-27): la copia guardada al aceptar. */
+    val technicianVehicle: Vehicle? = null,
+    /** Insignia de datos verificados: el proveedor tiene su alta aprobada. */
+    val technicianVerified: Boolean = false,
     /** Para reenviarla igual: la dirección guardada y las llaves de sus fotos. */
     val addressId: String? = null,
     val photoKeys: List<String> = emptyList(),
@@ -61,7 +72,30 @@ data class ServiceRequest(
     val addressReference: String? = null,
     val dispatchesSent: Int = 0,
     val dispatchesRejected: Int = 0,
+    /** Fijo al finalizar; antes se calcula con el acordado y los ajustes aprobados. */
+    val totalAmount: String? = null,
+    val adjustments: List<PriceAdjustment> = emptyList(),
+    val paymentSummary: PaymentSummary? = null,
+    val payments: List<Payment> = emptyList(),
 ) {
+    /** El ajuste que espera la respuesta del cliente; la API permite uno a la vez. */
+    val pendingAdjustment: PriceAdjustment?
+        get() = adjustments.firstOrNull { it.status == AdjustmentStatus.Pending }
+
+    /** Precio del servicio sin ajustes: el acordado al aceptar o, si no, el de la sucursal. */
+    val baseCents: Long get() = MoneyRules.toCents(agreedPrice ?: basePrice)
+
+    /** Lo que se cobra: el total fijo o el acordado más los ajustes aprobados. */
+    val totalCents: Long
+        get() = totalAmount?.let(MoneyRules::toCents)
+            ?: (baseCents + adjustments.filter { it.status.countsTowardTotal }.sumOf { MoneyRules.toCents(it.amount) })
+
+    /** El pago que el cliente registró y el proveedor todavía no confirma. */
+    val pendingPayment: Payment? get() = payments.lastOrNull { it.status == PaymentStatus.Pending }
+
+    /** Lo que falta por pagar; sin resumen de la API, el total. */
+    val balanceCents: Long get() = paymentSummary?.let { MoneyRules.toCents(it.balanceDue) } ?: totalCents
+
     /**
      * El proveedor ya dijo que no. Una normal va a un solo negocio: con un rechazo se acabó. Una
      * emergencia sigue abierta mientras quede algún técnico avisado sin responder.

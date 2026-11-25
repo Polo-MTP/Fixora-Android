@@ -4,6 +4,7 @@ import com.fixora.app.core.network.ApiResult
 import com.fixora.app.core.network.safeApiCall
 import com.fixora.app.feature.availability.location.Coordinates
 import com.fixora.app.feature.servicerequest.domain.RequestStatus
+import com.fixora.app.feature.profile.domain.Vehicle
 import com.fixora.app.feature.servicerequest.domain.ServiceRequest
 import com.fixora.app.feature.servicerequest.domain.parseApiInstant
 import dagger.Module
@@ -48,6 +49,10 @@ class RemoteServiceRequestRepository(
         branchName = branch?.name?.takeIf { it.isNotBlank() },
         branchPhone = branch?.phone?.takeIf { it.isNotBlank() },
         technicianPhotoUrl = technician?.photoUrl,
+        technicianVehicle = technician?.vehicle?.takeIf { it.plate.isNotBlank() }?.let {
+            Vehicle(plate = it.plate, brand = it.brand, model = it.model, color = it.color)
+        },
+        technicianVerified = technician?.verified == true,
         addressId = address?.id,
         photoKeys = attachments.map { it.fileKey }.filter { it.isNotBlank() },
         agreedPrice = agreedPrice,
@@ -58,6 +63,10 @@ class RemoteServiceRequestRepository(
         addressReference = address?.reference?.trim()?.takeIf { it.isNotEmpty() },
         dispatchesSent = dispatches.sent,
         dispatchesRejected = dispatches.rejected,
+        totalAmount = totalAmount,
+        adjustments = priceAdjustments.map { it.toDomain() },
+        paymentSummary = paymentSummary?.toDomain(),
+        payments = payments.map { it.toDomain() },
     )
 
     private fun AddressDto.streetLine(): String? {

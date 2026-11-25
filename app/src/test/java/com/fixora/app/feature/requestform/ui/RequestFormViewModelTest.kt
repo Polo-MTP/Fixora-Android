@@ -76,8 +76,8 @@ class RequestFormViewModelTest {
     private val now = Instant.parse("2026-11-21T18:00:00Z") // 12:00 en CDMX
     private val plumbing = ProviderService("1", "Plomería", "350.00", 60)
     private val electric = ProviderService("2", "Electricidad", "500.00", 60)
-    private val home = Address("14", "Casa", "Av. Juárez", "10", "", "Centro", "06000", "Cuauhtémoc", "CDMX", "", isMain = true)
-    private val work = Address("15", "Trabajo", "Reforma", "222", "", "Juárez", "06600", "Cuauhtémoc", "CDMX", "", isMain = false)
+    private val home = Address("14", "Casa", "Av. Juárez", "10", "", "Centro", "06000", "Cuauhtémoc", "CDMX", "", isMain = true, location = Coordinates(19.4352, -99.1412))
+    private val work = Address("15", "Trabajo", "Reforma", "222", "", "Juárez", "06600", "Cuauhtémoc", "CDMX", "", isMain = false, location = Coordinates(19.4270, -99.1676))
 
     private lateinit var account: FakeAccount
     private lateinit var form: FakeForm
@@ -126,6 +126,18 @@ class RequestFormViewModelTest {
         assertEquals("$500", "$" + state.service!!.basePrice.removeSuffix(".00"))
         assertEquals(AddressChoice.Saved("14"), state.addressChoice)
         assertEquals(MissingField.Description, state.missing)
+    }
+
+    @Test
+    fun anAddressSavedWithoutItsPointOnTheMapCannotBeSent() {
+        account.list.value = listOf(work, home.copy(location = null))
+        create(categoryId = "2")
+        viewModel.onProblemSelected("Corto circuito")
+
+        assertEquals(MissingField.AddressLocation, state.missing)
+
+        viewModel.onAddressSelected("15")
+        assertNull(state.missing)
     }
 
     @Test

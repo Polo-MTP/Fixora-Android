@@ -61,6 +61,7 @@ import coil3.compose.AsyncImage
 import com.fixora.app.BuildConfig
 import com.fixora.app.R
 import com.fixora.app.core.designsystem.component.FixoraPrimaryButton
+import com.fixora.app.core.designsystem.theme.ErrorRed
 import com.fixora.app.core.designsystem.theme.FixoraTheme
 import com.fixora.app.core.designsystem.theme.Mist200
 import com.fixora.app.core.designsystem.theme.Mist50
@@ -72,11 +73,13 @@ import com.fixora.app.core.designsystem.theme.SuccessGreen
 import com.fixora.app.core.designsystem.theme.White
 import com.fixora.app.core.ui.PhotoViewer
 import com.fixora.app.core.ui.SystemBarsAppearance
+import com.fixora.app.core.ui.message
 import com.fixora.app.feature.account.ui.components.LoadErrorNotice
 import com.fixora.app.feature.map.domain.MapProvider
 import com.fixora.app.feature.map.ui.CameraRequest
 import com.fixora.app.feature.map.ui.ProvidersMap
 import com.fixora.app.feature.map.ui.serviceIcon
+import com.fixora.app.feature.payment.ui.OutlineActionButton
 import com.fixora.app.feature.portfolio.domain.PortfolioWork
 import com.fixora.app.feature.providerprofile.domain.BasePrice
 import com.fixora.app.feature.providerprofile.domain.DaySchedule
@@ -85,8 +88,10 @@ import com.fixora.app.feature.providerprofile.domain.ProviderService
 import com.fixora.app.feature.providerprofile.domain.PublicCertificate
 import com.fixora.app.feature.providerprofile.domain.ScheduleGroup
 import com.fixora.app.feature.providerprofile.domain.ScheduleRules
-import java.util.Locale
 import kotlin.math.roundToInt
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 private val MapHeight = 260.dp
 private val PanelOverlap = 28.dp
@@ -132,6 +137,7 @@ fun ProviderProfileScreen(
                 state = state,
                 profile = profile,
                 onTabSelected = viewModel::onTabSelected,
+                onMoreReviews = viewModel::loadMoreReviews,
                 onRequestService = { onRequestService(profile.id, state.categoryId, state.distanceKm) },
                 modifier = Modifier.padding(top = if (position != null) MapHeight else 72.dp),
             )
@@ -187,6 +193,7 @@ private fun ProfilePanel(
     onTabSelected: (ProfileTab) -> Unit,
     onRequestService: () -> Unit,
     modifier: Modifier = Modifier,
+    onMoreReviews: () -> Unit = {},
 ) {
     Column(
         modifier
@@ -214,7 +221,7 @@ private fun ProfilePanel(
             ProfileTabs(state.tab, profile, onTabSelected)
             when (state.tab) {
                 ProfileTab.Info -> InfoTab(profile)
-                ProfileTab.Reviews -> ReviewsTab(profile)
+                ProfileTab.Reviews -> ReviewsTab(state, profile, onMoreReviews)
                 ProfileTab.Works -> WorksTab(profile.works)
                 ProfileTab.Certificates -> CertificatesTab(profile.certificates)
             }
@@ -500,10 +507,10 @@ private fun scheduleText(schedules: List<DaySchedule>): String {
 
 private fun ScheduleGroup.coversWholeWeek() = firstDay == 1 && lastDay == 0
 
-/** Promedio y las últimas reseñas; la lista completa llega con «Calificar al finalizar el servicio». */
+/** Promedio y las reseñas: primero las últimas de la ficha y, con «Ver más», la lista completa. */
 @Composable
-private fun ReviewsTab(profile: ProviderProfile) {
-    if (!profile.hasReviews || profile.latestReviews.isEmpty()) {
+private fun ReviewsTab(state: ProviderProfileUiState, profile: ProviderProfile, onMoreReviews: () -> Unit) {
+    if (!profile.hasReviews || state.shownReviews.isEmpty()) {
         EmptyTabText(stringResource(R.string.provider_profile_no_reviews))
         return
     }
@@ -519,7 +526,7 @@ private fun ReviewsTab(profile: ProviderProfile) {
                 )
             }
         }
-        profile.latestReviews.forEach { review ->
+        state.shownReviews.forEach { review ->
             Column(
                 verticalArrangement = Arrangement.spacedBy(6.dp),
                 modifier = Modifier
@@ -537,20 +544,46 @@ private fun ReviewsTab(profile: ProviderProfile) {
                     )
                     Stars(rating = review.rating)
                 }
+                review.createdAt?.let {
+                    Text(ReviewDateFormat.format(it.atZone(ZoneId.systemDefault())), style = MaterialTheme.typography.labelSmall, color = Slate500)
+                }
                 if (review.comment.isNotEmpty()) {
                     Text(review.comment, style = MaterialTheme.typography.bodyMedium, color = Slate500)
                 }
+                if (review.photoUrls.isNotEmpty()) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        review.photoUrls.forEach { url ->
+                            AsyncImage(
+                                model = url,
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(64.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(Mist200),
+                            )
+                        }
+                    }
+                }
             }
         }
-        if (profile.reviewsCount > profile.latestReviews.size) {
+        if (state.hasMoreReviews) {
             Text(
-                stringResource(R.string.provider_profile_reviews_latest, profile.latestReviews.size, profile.reviewsCount),
+                stringResource(R.string.provider_profile_reviews_latest, state.shownReviews.size, profile.reviewsCount),
                 style = MaterialTheme.typography.labelSmall,
                 color = Slate500,
+            )
+            state.reviewsError?.let { Text(it.message(), style = MaterialTheme.typography.bodySmall, color = ErrorRed) }
+            OutlineActionButton(
+                text = stringResource(R.string.provider_profile_reviews_more),
+                onClick = onMoreReviews,
+                loading = state.isLoadingReviews,
             )
         }
     }
 }
+
+private val ReviewDateFormat = DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", Locale.forLanguageTag("es-MX"))
 
 /** Cinco estrellas, llenas hasta [rating]; se lee como «4 de 5 estrellas». */
 @Composable

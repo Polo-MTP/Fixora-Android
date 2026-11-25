@@ -36,6 +36,7 @@ import com.fixora.app.core.designsystem.theme.FixoraTheme
 import com.fixora.app.core.designsystem.theme.Slate500
 import com.fixora.app.core.ui.message
 import com.fixora.app.feature.account.ui.components.AccountScaffold
+import com.fixora.app.feature.account.ui.components.ActiveServiceNotice
 import com.fixora.app.feature.account.ui.components.FormErrorText
 import com.fixora.app.feature.profile.ui.components.ProfilePhoto
 import java.io.File
@@ -101,13 +102,17 @@ private fun AccountPhotoContent(
             FixoraPrimaryButton(
                 text = stringResource(R.string.account_save),
                 onClick = onSave,
-                enabled = state.isLoaded,
+                enabled = state.isLoaded && !state.locked,
                 loading = state.isSaving,
             )
         },
     ) {
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             ProfilePhoto(model = state.shownPhoto, initials = "", size = 120.dp)
+        }
+        if (state.locked) {
+            ActiveServiceNotice(stringResource(R.string.active_service_photo_locked))
+            return@AccountScaffold
         }
         FixoraCard {
             FixoraListRow(

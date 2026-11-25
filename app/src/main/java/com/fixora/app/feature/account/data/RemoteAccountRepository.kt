@@ -64,9 +64,12 @@ class RemoteAccountRepository(
         val userId = currentUserId.first() ?: return NoSession
         val result = safeApiCall(json) { api.updatePersonalData(data.toRequest()) }
         if (result is ApiResult.Success) {
-            // La respuesta no trae la foto: se conserva la que ya estaba.
-            val photoUrl = personalCache.value?.takeIf { it.userId == userId }?.value?.photoUrl
-            personalCache.value = Cached(userId, result.data.data.toDomain().copy(photoUrl = photoUrl))
+            // La respuesta no trae la foto ni si hay un servicio en curso: se conserva lo que ya estaba.
+            val before = personalCache.value?.takeIf { it.userId == userId }?.value
+            personalCache.value = Cached(
+                userId,
+                result.data.data.toDomain().copy(photoUrl = before?.photoUrl, activeService = before?.activeService ?: false),
+            )
         }
         return result.toUnit()
     }
@@ -146,7 +149,10 @@ class RemoteAccountRepository(
         when (val result = retryApiCall(json) { api.getMe() }) {
             is ApiResult.Success -> {
                 val me = result.data.data
-                personalCache.value = Cached(userId, me.personalData.toDomain().copy(photoUrl = me.photoUrl))
+                personalCache.value = Cached(
+                    userId,
+                    me.personalData.toDomain().copy(photoUrl = me.photoUrl, activeService = me.activeService),
+                )
                 ApiResult.Success(Unit)
             }
             is ApiResult.Failure -> result.also { personalError.value = it.error }

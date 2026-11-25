@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fixora.app.core.network.ApiError
 import com.fixora.app.core.network.ApiResult
+import com.fixora.app.feature.account.data.AccountRepository
 import com.fixora.app.feature.profile.data.PhotoReader
 import com.fixora.app.feature.profile.data.ProfileState
 import com.fixora.app.feature.profile.data.TechnicianProfileRepository
@@ -26,6 +27,8 @@ data class TechnicianPhotoUiState(
     /** Foto recién tomada o elegida, todavía sin guardar. */
     val pickedPhoto: Uri? = null,
     val bio: String = "",
+    /** Hay un servicio en curso: la foto no se puede cambiar, la biografía sí (API-55). */
+    val photoLocked: Boolean = false,
     val isSaving: Boolean = false,
     val error: ApiError? = null,
     /** La foto elegida no se pudo leer (archivo dañado o que no es imagen). */
@@ -40,12 +43,19 @@ data class TechnicianPhotoUiState(
 class TechnicianPhotoViewModel @Inject constructor(
     private val repository: TechnicianProfileRepository,
     private val photoReader: PhotoReader,
+    private val accountRepository: AccountRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TechnicianPhotoUiState())
     val uiState: StateFlow<TechnicianPhotoUiState> = _uiState.asStateFlow()
 
     init {
+        viewModelScope.launch {
+            accountRepository.activeService.collect { locked ->
+                _uiState.update { it.copy(photoLocked = locked, pickedPhoto = it.pickedPhoto.takeUnless { locked }) }
+            }
+        }
+        viewModelScope.launch { accountRepository.refreshPersonalData() }
         viewModelScope.launch {
             repository.state.collect { state ->
                 _uiState.update { ui ->
@@ -76,7 +86,7 @@ class TechnicianPhotoViewModel @Inject constructor(
     }
 
     fun onPhotoPicked(uri: Uri?) {
-        if (uri != null) _uiState.update { it.copy(pickedPhoto = uri, photoUnreadable = false, error = null) }
+        if (uri != null) _uiState.update { if (it.photoLocked) it else it.copy(pickedPhoto = uri, photoUnreadable = false, error = null) }
     }
 
     fun onBioChange(value: String) =
