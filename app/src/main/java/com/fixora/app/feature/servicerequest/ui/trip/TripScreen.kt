@@ -1,9 +1,11 @@
 package com.fixora.app.feature.servicerequest.ui.trip
 
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
@@ -36,6 +38,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -56,13 +59,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.fixora.app.BuildConfig
 import com.fixora.app.R
 import com.fixora.app.core.designsystem.component.FixoraPrimaryButton
+import com.fixora.app.core.designsystem.component.FixoraTextLink
 import com.fixora.app.core.designsystem.theme.ErrorRed
 import com.fixora.app.core.designsystem.theme.Mist200
 import com.fixora.app.core.designsystem.theme.Mist50
@@ -87,10 +93,13 @@ import com.fixora.app.feature.payment.ui.PriceBreakdownCard
 import com.fixora.app.feature.payment.ui.ProposeAdjustmentSheet
 import com.fixora.app.feature.payment.ui.RejectPaymentSheet
 import com.fixora.app.feature.payment.ui.paymentMethodLabel
+import com.fixora.app.feature.servicerequest.data.TripRoute
 import com.fixora.app.feature.servicerequest.data.TripStep
+import com.fixora.app.feature.servicerequest.domain.CancelRules
 import com.fixora.app.feature.servicerequest.domain.RequestStatus
 import com.fixora.app.feature.servicerequest.domain.ServiceRequest
 import com.fixora.app.feature.servicerequest.ui.incoming.IncomingRequestViewModel
+import java.io.File
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
@@ -106,6 +115,7 @@ import java.util.Locale
 fun TripScreen(
     onBack: () -> Unit,
     onOpenChat: () -> Unit,
+    onRate: () -> Unit,
     viewModel: TripViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -117,6 +127,23 @@ fun TripScreen(
     LifecycleResumeEffect(Unit) {
         viewModel.onResume()
         onPauseOrDispose { }
+    }
+
+    // Evidencia de la cancelación (ANDROID-21): foto de la cámara o un archivo.
+    var cameraUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+    val takePhoto = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { taken ->
+        if (taken) viewModel.onEvidencePicked(cameraUri)
+    }
+    val pickFile = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        viewModel.onEvidencePicked(uri)
+    }
+    val canceledMessage = stringResource(R.string.trip_cancel_done)
+    val noCameraMessage = stringResource(R.string.profile_photo_no_camera)
+    LaunchedEffect(state.canceled) {
+        if (state.canceled) {
+            Toast.makeText(context, canceledMessage, Toast.LENGTH_LONG).show()
+            onBack()
+        }
     }
 
     val request = state.request
@@ -137,6 +164,7 @@ fun TripScreen(
             state = state,
             request = request,
             onDone = onBack,
+            onRate = onRate,
             onConfirmPayment = viewModel::confirmPayment,
             onRejectPayment = viewModel::openRejectPayment,
         )
@@ -146,6 +174,7 @@ fun TripScreen(
             onBack = onBack,
             onOpenChat = onOpenChat,
             onProposeAdjustment = viewModel::openAdjustment,
+            onCancel = viewModel::openCancel,
             onAdvance = { if (state.nextStep == TripStep.Finish) confirmingFinish = true else viewModel.advance() },
             onEnableLocation = { permissionLauncher.launch(FusedLocationSource.LOCATION_PERMISSIONS) },
             onOpenSettings = {
@@ -191,6 +220,25 @@ fun TripScreen(
             onSubmit = viewModel::proposeAdjustment,
         )
     }
+    if (state.showCancelSheet) {
+        CancelServiceSheet(
+            form = state.cancelForm,
+            onReasonChange = viewModel::onCancelReasonChange,
+            onTakePhoto = {
+                val uri = newEvidencePhotoUri(context)
+                cameraUri = uri
+                try {
+                    takePhoto.launch(uri)
+                } catch (_: ActivityNotFoundException) {
+                    Toast.makeText(context, noCameraMessage, Toast.LENGTH_SHORT).show()
+                }
+            },
+            onPickFile = { pickFile.launch(CancelRules.EVIDENCE_MIME_TYPES) },
+            onRemoveEvidence = viewModel::removeEvidence,
+            onConfirm = viewModel::confirmCancel,
+            onDismiss = viewModel::dismissCancel,
+        )
+    }
     if (state.showRejectPaymentSheet) {
         RejectPaymentSheet(
             isSaving = state.isSubmitting,
@@ -208,6 +256,7 @@ private fun TripNavigation(
     onBack: () -> Unit,
     onOpenChat: () -> Unit,
     onProposeAdjustment: () -> Unit,
+    onCancel: () -> Unit,
     onAdvance: () -> Unit,
     onEnableLocation: () -> Unit,
     onOpenSettings: () -> Unit,
@@ -327,8 +376,24 @@ private fun TripNavigation(
                     enabled = !(step == TripStep.Finish && state.waitsAdjustmentAnswer),
                 )
             }
+            if (state.canCancel) {
+                FixoraTextLink(
+                    text = stringResource(R.string.trip_cancel_open),
+                    onClick = { if (!state.isAdvancing) onCancel() },
+                    color = ErrorRed,
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                )
+            }
         }
     }
+}
+
+/** Archivo nuevo en la caché para la foto de la cámara; borra los de cancelaciones anteriores. */
+private fun newEvidencePhotoUri(context: Context): Uri {
+    val dir = File(context.cacheDir, "camera_photos").apply { mkdirs() }
+    dir.listFiles()?.filter { it.name.startsWith("cancelacion-") }?.forEach { it.delete() }
+    val file = File(dir, "cancelacion-${System.currentTimeMillis()}.jpg")
+    return FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
 }
 
 private fun destinationTitle(status: RequestStatus): Int = when (status) {
@@ -350,21 +415,7 @@ private fun Headline(state: TripUiState, request: ServiceRequest) {
         val route = state.route
         when (request.status) {
             RequestStatus.OnTheWay -> if (route != null) {
-                Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        stringResource(R.string.trip_minutes, (route.durationSeconds / 60).coerceAtLeast(1)),
-                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Navy900,
-                    )
-                    val km = formatKm(route.distanceMeters / 1000.0)
-                    Text(
-                        route.arrivesAt?.let { stringResource(R.string.trip_km_arrival, km, formatTime(it)) }
-                            ?: stringResource(R.string.trip_km, km),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Slate500,
-                        modifier = Modifier.padding(bottom = 4.dp),
-                    )
-                }
+                RouteEta(route)
             } else {
                 Text(stringResource(R.string.trip_calculating), style = MaterialTheme.typography.titleLarge, color = Navy900)
             }
@@ -382,6 +433,35 @@ private fun Headline(state: TripUiState, request: ServiceRequest) {
                 }
                 text?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Slate500) }
             }
+        }
+    }
+}
+
+/**
+ * Cuánto falta y a qué hora llega. Si el servidor de rutas no respondió (ANDROID-43), el tiempo
+ * se marca como aproximado y se avisa, porque la API lo estimó en línea recta.
+ */
+@Composable
+internal fun RouteEta(route: TripRoute) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            val minutes = (route.durationSeconds / 60).coerceAtLeast(1)
+            Text(
+                stringResource(if (route.approximate) R.string.trip_minutes_approximate else R.string.trip_minutes, minutes),
+                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                color = Navy900,
+            )
+            val km = formatKm(route.distanceMeters / 1000.0)
+            Text(
+                route.arrivesAt?.takeUnless { route.approximate }?.let { stringResource(R.string.trip_km_arrival, km, formatTime(it)) }
+                    ?: stringResource(R.string.trip_km, km),
+                style = MaterialTheme.typography.bodyMedium,
+                color = Slate500,
+                modifier = Modifier.padding(bottom = 4.dp),
+            )
+        }
+        if (route.approximate) {
+            Text(stringResource(R.string.trip_route_approximate), style = MaterialTheme.typography.bodySmall, color = Slate500)
         }
     }
 }
@@ -441,16 +521,24 @@ private fun ClientRow(request: ServiceRequest, onOpenChat: () -> Unit) {
                     Text(request.categoryName, style = MaterialTheme.typography.labelMedium, color = Navy800)
                 }
             }
-            // Chat con el cliente (ANDROID-23).
-            Box(
-                contentAlignment = Alignment.Center,
+            // Chat con el cliente (ANDROID-23). Con texto (ANDROID-43): solo el ícono no se notaba.
+            val chatDescription = stringResource(R.string.chat_open_client)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
                 modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
+                    .height(44.dp)
+                    .clip(RoundedCornerShape(22.dp))
                     .background(Navy900)
-                    .clickable(role = Role.Button, onClick = onOpenChat),
+                    .clickable(onClickLabel = chatDescription, role = Role.Button, onClick = onOpenChat)
+                    .padding(horizontal = 14.dp),
             ) {
-                Icon(painterResource(R.drawable.ic_chat), contentDescription = stringResource(R.string.chat_open_client), tint = White, modifier = Modifier.size(20.dp))
+                Icon(painterResource(R.drawable.ic_chat), contentDescription = null, tint = White, modifier = Modifier.size(18.dp))
+                Text(
+                    stringResource(R.string.trip_chat_button),
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                    color = White,
+                )
             }
         }
         HorizontalDivider(color = Mist200)
@@ -509,6 +597,7 @@ private fun TripSummary(
     state: TripUiState,
     request: ServiceRequest,
     onDone: () -> Unit,
+    onRate: () -> Unit,
     onConfirmPayment: () -> Unit,
     onRejectPayment: () -> Unit,
 ) {
@@ -566,6 +655,12 @@ private fun TripSummary(
                 onSite?.let { SummaryRow(R.drawable.ic_schedule, R.string.trip_summary_on_site, formatDuration(it)) }
             }
         }
+        // Calificar al cliente (ANDROID-26); la pantalla avisa si ya lo calificó.
+        OutlineActionButton(
+            text = stringResource(R.string.review_rate_client),
+            onClick = onRate,
+            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 16.dp),
+        )
         FixoraPrimaryButton(
             text = stringResource(R.string.trip_summary_done),
             onClick = onDone,
@@ -659,26 +754,36 @@ private fun SummaryCard(content: @Composable () -> Unit) {
     ) { content() }
 }
 
+/**
+ * Etiqueta a la izquierda y valor a la derecha. Los dos tienen su parte del ancho (ANDROID-43):
+ * antes el valor tomaba todo y, con uno largo como la dirección, la etiqueta quedaba aplastada.
+ */
 @Composable
 private fun SummaryRow(@DrawableRes icon: Int, label: Int, value: String) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+    Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Icon(painterResource(icon), contentDescription = null, tint = Navy800, modifier = Modifier.size(20.dp))
         Text(stringResource(label), style = MaterialTheme.typography.bodyMedium, color = Slate500, modifier = Modifier.weight(1f))
-        Text(value, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold), color = Navy900)
+        Text(
+            value,
+            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+            color = Navy900,
+            textAlign = TextAlign.End,
+            modifier = Modifier.weight(1.4f),
+        )
     }
 }
 
 private fun initials(name: String): String =
     name.split(" ").filter { it.isNotBlank() }.take(2).joinToString("") { it.first().uppercase() }.ifEmpty { "?" }
 
-private fun formatKm(km: Double): String = String.format(Locale.US, "%.1f", km)
+internal fun formatKm(km: Double): String = String.format(Locale.US, "%.1f", km)
 
 private val TimeFormat = DateTimeFormatter.ofPattern("HH:mm")
 private val DateTimeFormat = DateTimeFormatter.ofPattern("d MMM, HH:mm", Locale.forLanguageTag("es-MX"))
 
-private fun formatTime(instant: Instant): String = TimeFormat.format(instant.atZone(ZoneId.systemDefault()))
+internal fun formatTime(instant: Instant): String = TimeFormat.format(instant.atZone(ZoneId.systemDefault()))
 
-private fun formatDateTime(instant: Instant): String = DateTimeFormat.format(instant.atZone(ZoneId.systemDefault()))
+internal fun formatDateTime(instant: Instant): String = DateTimeFormat.format(instant.atZone(ZoneId.systemDefault()))
 
 private fun formatDuration(duration: Duration): String {
     val minutes = duration.toMinutes().coerceAtLeast(1)

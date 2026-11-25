@@ -1,7 +1,5 @@
 package com.fixora.app.feature.servicerequest.ui.client
 
-import android.content.ActivityNotFoundException
-import android.content.Intent
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
@@ -50,8 +48,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -63,9 +59,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import coil3.compose.AsyncImage
 import com.fixora.app.R
 import com.fixora.app.core.designsystem.component.FixoraPrimaryButton
 import com.fixora.app.core.designsystem.theme.FixoraTheme
@@ -93,7 +87,7 @@ import com.fixora.app.feature.payment.ui.paymentMethodLabel
 import com.fixora.app.feature.servicerequest.domain.RequestStatus
 import com.fixora.app.feature.servicerequest.domain.ServiceRequest
 
-private val EmergencyRed = Color(0xFFD32F2F)
+internal val EmergencyRed = Color(0xFFD32F2F)
 private val EndedSlate = Color(0xFF475569)
 
 /** Pantalla de espera y estado de la solicitud del cliente (ANDROID-17). */
@@ -103,6 +97,7 @@ fun ClientRequestScreen(
     onResent: (requestId: String) -> Unit,
     onChooseAnother: (categoryId: String?) -> Unit,
     onOpenChat: (requestId: String) -> Unit,
+    onRate: (requestId: String) -> Unit,
     viewModel: ClientRequestViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -117,7 +112,18 @@ fun ClientRequestScreen(
         onRespondAdjustment = viewModel::respondAdjustment,
         onOpenPayment = viewModel::openPayment,
         onOpenChat = { state.request?.id?.let(onOpenChat) },
+        onCancelAccepted = viewModel::openCancelAccepted,
+        onRate = { state.request?.id?.let(onRate) },
     )
+    ArrivalAlertEffect(state.arrivalAlerts)
+    if (state.showCancelSheet) {
+        CancelAcceptedSheet(
+            isCanceling = state.isCanceling,
+            error = state.actionError?.message(),
+            onDismiss = viewModel::dismissCancelAccepted,
+            onConfirm = viewModel::cancelAccepted,
+        )
+    }
     if (state.showPaymentSheet) {
         state.request?.let { request ->
             RegisterPaymentSheet(
@@ -142,8 +148,9 @@ private fun ClientRequestContent(
     onRespondAdjustment: (approve: Boolean) -> Unit = {},
     onOpenPayment: () -> Unit = {},
     onOpenChat: () -> Unit = {},
+    onCancelAccepted: () -> Unit = {},
+    onRate: () -> Unit = {},
 ) {
-    SystemBarsAppearance(lightIcons = true)
     val request = state.request
     val phase = state.phase
     val emergency = request?.isEmergency == true
@@ -155,11 +162,23 @@ private fun ClientRequestContent(
     var confirmCancel by rememberSaveable { mutableStateOf(false) }
     var confirmRejectAdjustment by rememberSaveable { mutableStateOf(false) }
 
-    Column(
+    // Aceptada: el seguimiento en el mapa (ANDROID-22) en lugar de «Solicitud aceptada».
+    if (phase == ClientPhase.Accepted && request != null) {
+        ClientTrackingContent(
+            state = state,
+            request = request,
+            onBack = onHome,
+            onOpenChat = onOpenChat,
+            onCancel = onCancelAccepted,
+            onApproveAdjustment = { onRespondAdjustment(true) },
+            onRejectAdjustment = { confirmRejectAdjustment = true },
+        )
+    } else Column(
         Modifier
             .fillMaxSize()
             .background(background),
     ) {
+        SystemBarsAppearance(lightIcons = true)
         Header(state)
         Column(
             Modifier
@@ -179,17 +198,11 @@ private fun ClientRequestContent(
             ) {
                 when {
                     request != null -> {
-                        if (phase == ClientPhase.Accepted || phase == ClientPhase.Completed) TechnicianCard(request)
-                        if (phase == ClientPhase.Accepted || phase == ClientPhase.Completed) StatusSteps(request.status)
-                        if (phase == ClientPhase.Accepted && request.adjustments.isNotEmpty()) {
-                            AdjustmentSection(
-                                request = request,
-                                responding = state.respondingAdjustmentId != null,
-                                onApprove = { onRespondAdjustment(true) },
-                                onReject = { confirmRejectAdjustment = true },
-                            )
+                        if (phase == ClientPhase.Completed) {
+                            TechnicianCard(request)
+                            StatusSteps(request.status)
+                            PaymentSection(request)
                         }
-                        if (phase == ClientPhase.Completed) PaymentSection(request)
                         RequestSummary(request)
                     }
                     loadError != null -> LoadErrorNotice(loadError, onRetry = onRetry)
@@ -203,7 +216,7 @@ private fun ClientRequestContent(
             Actions(
                 state = state,
                 onOpenPayment = onOpenPayment,
-                onOpenChat = onOpenChat,
+                onRate = onRate,
                 onCancel = { confirmCancel = true },
                 onResend = onResend,
                 onChooseAnother = onChooseAnother,
@@ -252,7 +265,7 @@ private fun ClientRequestContent(
  * y lo aprueba o lo rechaza. Sin respuesta, el técnico no puede finalizar.
  */
 @Composable
-private fun AdjustmentSection(
+internal fun AdjustmentSection(
     request: ServiceRequest,
     responding: Boolean,
     onApprove: () -> Unit,
@@ -440,7 +453,7 @@ private fun EndHeader(@DrawableRes icon: Int, title: String, subtitle: String) {
 }
 
 @Composable
-private fun statusLabel(status: RequestStatus?): String = stringResource(
+internal fun statusLabel(status: RequestStatus?): String = stringResource(
     when (status) {
         RequestStatus.OnTheWay -> R.string.client_request_step_on_the_way_now
         RequestStatus.Arrived -> R.string.client_request_step_arrived_now
@@ -449,48 +462,9 @@ private fun statusLabel(status: RequestStatus?): String = stringResource(
     },
 )
 
-@Composable
-private fun TechnicianCard(request: ServiceRequest) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(14.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, Mist200, RoundedCornerShape(18.dp))
-            .padding(16.dp),
-    ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .size(56.dp)
-                .clip(CircleShape)
-                .background(Navy900),
-        ) {
-            val name = request.technicianName.orEmpty()
-            Text(
-                name.split(' ').filter { it.isNotBlank() }.take(2).joinToString("") { it.first().uppercase() }.ifBlank { "?" },
-                style = MaterialTheme.typography.titleMedium,
-                color = White,
-            )
-            request.technicianPhotoUrl?.let {
-                AsyncImage(model = it, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
-            }
-        }
-        Column(Modifier.weight(1f)) {
-            Text(stringResource(R.string.client_request_your_technician), style = MaterialTheme.typography.labelSmall, color = Slate500)
-            Text(
-                request.technicianName ?: stringResource(R.string.client_request_technician_pending),
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = Navy900,
-            )
-            request.branchName?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Slate500) }
-        }
-    }
-}
-
 /** Aceptada → En camino → Llegó → Terminado, con el paso actual marcado. */
 @Composable
-private fun StatusSteps(status: RequestStatus) {
+internal fun StatusSteps(status: RequestStatus) {
     val steps = listOf(
         RequestStatus.Accepted to R.string.client_request_step_accepted,
         RequestStatus.OnTheWay to R.string.client_request_step_on_the_way,
@@ -550,13 +524,12 @@ private fun RequestSummary(request: ServiceRequest) {
 private fun Actions(
     state: ClientRequestUiState,
     onOpenPayment: () -> Unit,
-    onOpenChat: () -> Unit,
+    onRate: () -> Unit,
     onCancel: () -> Unit,
     onResend: () -> Unit,
     onChooseAnother: () -> Unit,
     onHome: () -> Unit,
 ) {
-    val context = LocalContext.current
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp),
         modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 16.dp, top = 8.dp),
@@ -574,37 +547,24 @@ private fun Actions(
                 }
                 SecondaryButton(stringResource(R.string.client_request_choose_another), onClick = onChooseAnother)
             }
-            ClientPhase.Accepted -> {
-                // Chat con el técnico (ANDROID-23); llamar queda como respaldo.
-                FixoraPrimaryButton(text = stringResource(R.string.chat_open_technician), onClick = onOpenChat)
-                val phone = state.request?.branchPhone
-                if (phone != null) {
-                    SecondaryButton(
-                        stringResource(R.string.client_request_call),
-                        onClick = {
-                            try {
-                                context.startActivity(Intent(Intent.ACTION_DIAL, "tel:$phone".toUri()))
-                            } catch (_: ActivityNotFoundException) {
-                                // Sin app de teléfono (por ejemplo una tableta) no hay a dónde llamar.
-                            }
-                        },
-                    )
-                }
-                SecondaryButton(stringResource(R.string.client_request_home), onClick = onHome)
-            }
             ClientPhase.Completed -> {
+                // Primero el pago, si falta; calificar (ANDROID-26) avisa si ya lo hizo.
                 if (state.canRegisterPayment) {
                     FixoraPrimaryButton(text = stringResource(R.string.client_payment_register), onClick = onOpenPayment)
+                    SecondaryButton(stringResource(R.string.review_rate_technician), onClick = onRate)
+                } else {
+                    FixoraPrimaryButton(text = stringResource(R.string.review_rate_technician), onClick = onRate)
                 }
                 SecondaryButton(stringResource(R.string.client_request_home), onClick = onHome)
             }
-            ClientPhase.Canceled, null -> SecondaryButton(stringResource(R.string.client_request_home), onClick = onHome)
+            // Aceptada se ve en el seguimiento (ClientTrackingContent), con sus propias acciones.
+            ClientPhase.Accepted, ClientPhase.Canceled, null -> SecondaryButton(stringResource(R.string.client_request_home), onClick = onHome)
         }
     }
 }
 
 @Composable
-private fun SecondaryButton(text: String, onClick: () -> Unit, loading: Boolean = false, color: Color = Navy900) {
+internal fun SecondaryButton(text: String, onClick: () -> Unit, loading: Boolean = false, color: Color = Navy900) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier

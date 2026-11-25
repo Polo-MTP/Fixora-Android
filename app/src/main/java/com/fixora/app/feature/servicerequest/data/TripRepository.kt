@@ -19,6 +19,11 @@ data class TripRoute(
     val durationSeconds: Long,
     val distanceMeters: Long,
     val arrivesAt: Instant?,
+    /**
+     * El servidor de rutas no respondió y la API estimó en línea recta: [path] son solo los dos
+     * extremos y el tiempo es aproximado. Se sigue dibujando hasta tener un servidor propio.
+     */
+    val approximate: Boolean = false,
 )
 
 data class TripTracking(val technician: Coordinates?, val route: TripRoute?)
@@ -33,6 +38,12 @@ interface TripRepository {
 
     /** La API pide dónde está el técnico al salir, al llegar y al terminar. */
     suspend fun advance(id: String, step: TripStep, position: Coordinates): ApiResult<Unit>
+
+    /** Sube una evidencia de la cancelación y devuelve su llave (ANDROID-21). */
+    suspend fun uploadEvidence(name: String, mimeType: String, bytes: ByteArray): ApiResult<String>
+
+    /** El técnico cancela ya aceptada: el motivo es obligatorio y la evidencia, opcional. */
+    suspend fun cancel(id: String, reason: String, evidenceKeys: List<String>): ApiResult<Unit>
 }
 
 class RemoteTripRepository(
@@ -43,28 +54,37 @@ class RemoteTripRepository(
 
     override suspend fun request(id: String) = requests.request(id)
 
-    override suspend fun tracking(id: String): ApiResult<TripTracking> = safeApiCall(json) {
-        val data = api.tracking(id).data
-        TripTracking(
-            technician = data.technicianLocation?.let { p -> p.latitude?.let { lat -> p.longitude?.let { Coordinates(lat, it) } } },
-            route = data.routeEta?.let { eta ->
-                TripRoute(
-                    // GeoJSON va [longitud, latitud].
-                    path = eta.geometry?.coordinates.orEmpty().mapNotNull { point ->
-                        if (point.size >= 2) Coordinates(point[1], point[0]) else null
-                    },
-                    durationSeconds = eta.durationSeconds.toLong(),
-                    distanceMeters = eta.distanceMeters.toLong(),
-                    arrivesAt = parseApiInstant(eta.etaTimestamp),
-                )
-            },
-        )
-    }
+    override suspend fun tracking(id: String): ApiResult<TripTracking> = safeApiCall(json) { api.tracking(id).data.toTripTracking() }
 
     override suspend fun advance(id: String, step: TripStep, position: Coordinates) = safeApiCall(json) {
         api.changeStatus(id, StatusChangeRequest(step.apiValue, position.latitude, position.longitude))
     }
+
+    override suspend fun uploadEvidence(name: String, mimeType: String, bytes: ByteArray) = safeApiCall(json) {
+        api.uploadEvidence(EvidencesCategory, evidencePart(mimeType, bytes)).data.fileKey
+    }
+
+    override suspend fun cancel(id: String, reason: String, evidenceKeys: List<String>) = safeApiCall(json) {
+        api.cancel(id, CancelRequest(reason = reason, evidenceKeys = evidenceKeys.takeIf { it.isNotEmpty() }))
+    }
 }
+
+/** Posición del técnico y ruta; la usan el técnico (ANDROID-20) y el cliente (ANDROID-22). */
+internal fun TrackingDto.toTripTracking() = TripTracking(
+    technician = technicianLocation?.let { p -> p.latitude?.let { lat -> p.longitude?.let { Coordinates(lat, it) } } },
+    route = routeEta?.let { eta ->
+        TripRoute(
+            // GeoJSON va [longitud, latitud].
+            path = eta.geometry?.coordinates.orEmpty().mapNotNull { point ->
+                if (point.size >= 2) Coordinates(point[1], point[0]) else null
+            },
+            durationSeconds = eta.durationSeconds.toLong(),
+            distanceMeters = eta.distanceMeters.toLong(),
+            arrivesAt = parseApiInstant(eta.etaTimestamp),
+            approximate = eta.isFallback,
+        )
+    },
+)
 
 @Module
 @InstallIn(SingletonComponent::class)

@@ -4,6 +4,7 @@ import com.fixora.app.core.network.ApiError
 import com.fixora.app.core.network.ApiResult
 import com.fixora.app.core.network.NetworkModule
 import com.fixora.app.feature.availability.location.Coordinates
+import com.fixora.app.feature.profile.domain.Vehicle
 import com.fixora.app.feature.servicerequest.domain.RequestStatus
 import com.fixora.app.feature.servicerequest.domain.parseApiInstant
 import kotlinx.coroutines.runBlocking
@@ -12,6 +13,7 @@ import mockwebserver3.MockWebServer
 import okhttp3.MediaType.Companion.toMediaType
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -74,6 +76,29 @@ class RemoteServiceRequestRepositoryTest {
         assertEquals(Instant.parse("2026-11-20T18:35:00Z"), request.expiresAt)
         assertNull(request.scheduledAt)
         assertNull(request.technicianName)
+    }
+
+    @Test
+    fun theTechnicianComesWithTheVehicleAndTheBadge() = runBlocking {
+        respond(
+            """{"success":true,"data":{"id":"31","status":"en_camino","is_emergency":false,"description":"Fuga",
+            "technician":{"employee_id":"5","name":"Laura Méndez","photo_url":null,"verified":true,
+                          "vehicle":{"plate":"FRX-123-A","brand":"Nissan","model":"NP300","color":"Blanco"}},
+            "client":{"name":"Ana"},"location":{"latitude":25.54,"longitude":-103.41}}}""",
+        )
+        respond(
+            """{"success":true,"data":{"id":"32","status":"aceptada","is_emergency":false,"description":"Fuga",
+            "technician":{"employee_id":"5","name":"Laura Méndez","photo_url":null,"vehicle":null},"client":{"name":"Ana"}}}""",
+        )
+
+        val withVehicle = (repository.request("31") as ApiResult.Success).data
+        assertEquals(Vehicle("FRX-123-A", "Nissan", "NP300", "Blanco"), withVehicle.technicianVehicle)
+        assertTrue(withVehicle.technicianVerified)
+
+        // Una API anterior a API-56 no manda la insignia: no se muestra.
+        val withoutVehicle = (repository.request("32") as ApiResult.Success).data
+        assertNull(withoutVehicle.technicianVehicle)
+        assertFalse(withoutVehicle.technicianVerified)
     }
 
     @Test
